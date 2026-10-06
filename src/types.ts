@@ -39,6 +39,8 @@ export interface Question {
   skills: SkillId[]
   difficulty: 1 | 2 | 3 | 4 | 5
   explanation: string
+  explanationTh?: string
+  evidence?: string
   whyOthers?: Record<string, string>
   passageId?: string
   source?: 'core' | 'personalized'
@@ -56,6 +58,9 @@ export interface Passage {
   body: string
   questions: string[]
   sourceLabel?: string
+  visual?: 'floor-plan' | 'schedule' | 'receipt' | 'poster' | 'chart' | 'route' | 'table' | 'menu'
+  visualTitle?: string
+  visualData?: string[]
 }
 
 export interface SkillState {

@@ -233,14 +233,41 @@ function greetingLabel(lang: Language) {
   return L(lang, 'Evening study plan', 'แผนฝึกช่วงเย็น')
 }
 
-function passageWithActiveBlank(body: string, stem: string) {
+function passageWithActiveBlank(
+  body: string,
+  stem: string,
+  options?: {
+    selectedText?: string
+    checked?: boolean
+    correct?: boolean
+    onClick?: () => void
+  },
+) {
   const blank = stem.match(/\[(\d+)\]/)?.[1]
   const pieces = body.split(/(\[\d+\]\s*_____)/g)
   return pieces.map((piece, index) => {
     const match = piece.match(/\[(\d+)\]/)
     if (!match) return <span key={index}>{piece}</span>
     const active = match[1] === blank
-    return <mark key={index} className={active ? 'passage-blank active' : 'passage-blank'}>{piece}</mark>
+    const label = active && options?.selectedText ? `[${match[1]}] ${options.selectedText}` : piece
+    const stateClass = active && options?.checked
+      ? (options.correct ? ' correct' : ' wrong')
+      : active && options?.selectedText
+        ? ' chosen'
+        : ''
+    if (active && options?.onClick) {
+      return (
+        <button
+          key={index}
+          type="button"
+          className={`passage-blank active tappable${stateClass}`}
+          onClick={options.onClick}
+        >
+          {label}
+        </button>
+      )
+    }
+    return <mark key={index} className={active ? 'passage-blank active' : 'passage-blank'}>{label}</mark>
   })
 }
 
@@ -292,6 +319,214 @@ function fallbackWrongExplanation(question: Question, lang: Language) {
     ? (th[skill] ?? 'ทบทวนรูปแบบไวยากรณ์ ความหมาย และบริบทรอบช่องว่างก่อนเทียบตัวเลือกอีกครั้ง')
     : (en[skill] ?? 'Re-check the grammar pattern, meaning, and context before comparing the answer choices again.')
 }
+
+
+function localizedQuestionExplanation(question: Question, lang: Language) {
+  if (lang === 'en') return question.explanation
+  if (question.explanationTh) return question.explanationTh
+  const byRule: Record<string, string> = {
+    'wordform.adjective-before-noun':'ช่องว่างอยู่หน้าคำนาม จึงต้องใช้ adjective เพื่อขยายคำนาม ไม่ใช่ noun/adverb/verb',
+    'wordform.adverb-modifier':'ช่องว่างทำหน้าที่ขยายกริยาหรือ adjective จึงต้องใช้ adverb',
+    'wordform.noun-position':'ตำแหน่งนี้ต้องการ noun เพราะทำหน้าที่เป็นประธาน กรรม หรืออยู่หลัง article/possessive',
+    'tense.present-perfect-since':'คำว่า since บอกจุดเริ่มต้นในอดีตและช่วงเวลายังเชื่อมถึงปัจจุบัน จึงใช้ present perfect: has/have + V3',
+    'tense.past-perfect-sequence':'มีเหตุการณ์อดีต 2 เหตุการณ์ เหตุการณ์ที่เกิดก่อนใช้ past perfect: had + V3',
+    'tense.future-progressive':'บริบทพูดถึงเหตุการณ์ในอนาคต ให้เลือก future form ที่ตรงกับช่วงเวลาและลำดับเหตุการณ์',
+    'sva.head-subject':'ต้องหาประธานตัวจริงก่อนแล้วจึงผันกริยาให้ตรง อย่าหลงคำนามที่อยู่ใกล้กริยาแต่เป็นเพียงส่วนขยาย',
+    'sva.correlative':'either...or / neither...nor ให้กริยาสอดคล้องกับประธานที่อยู่ใกล้กริยามากกว่า',
+    'passive.core':'ประธานเป็นผู้ถูกกระทำ จึงต้องใช้ passive voice: be + V3 และผัน be ให้ตรงกับ tense',
+    'gerund.after-preposition':'หลัง preposition ถ้าตามด้วยกริยาให้ใช้ V-ing',
+    'infinitive.pattern':'โครงสร้างนี้ต้องใช้ infinitive: to + V1',
+    'preposition.time':'ให้ดูความหมายเวลา เช่น deadline, จุดเริ่มต้น, ระยะเวลา หรือวัน/เวลาเฉพาะ แล้วเลือก preposition ให้ตรง',
+    'preposition.verb-collocation':'เป็น fixed collocation ต้องจำ verb/adjective + preposition เป็นชุดเดียว',
+    'connector.clause-vs-phrase':'ดูสิ่งที่ตามหลังช่องว่างก่อน: conjunction ตามด้วย clause ส่วน preposition เช่น despite/because of ตามด้วย noun phrase',
+    'connector.condition-purpose':'หาความสัมพันธ์ของใจความก่อนว่าเป็นเงื่อนไข เหตุผล จุดประสงค์ เวลา หรือความขัดแย้ง',
+    'relative.pronouns':'เลือก relative pronoun จากคำนามข้างหน้าและหน้าที่ใน relative clause',
+    'pronoun.forms':'ดูว่าช่องว่างต้องการ subject/object/possessive/reflexive form',
+    'comparison.patterns':'คำอย่าง than, as...as และ of the group เป็นตัวบอกว่าใช้ comparative, equality หรือ superlative',
+    'participle.feeling':'-ing ใช้กับสิ่งที่ก่อให้เกิดความรู้สึก ส่วน -ed ใช้กับผู้ที่รู้สึก',
+    'vocab.business-collocation':'ต้องเลือกคำที่เข้าความหมายธุรกิจและจับคู่กับคำรอบข้างได้เป็นธรรมชาติ',
+    'p6.word-form':'Part 6 ต้องดูทั้งชนิดคำและประโยครอบช่องว่าง ไม่ใช่แปลคำแยกจากบริบท',
+    'p6.connector-context':'อ่านประโยคก่อนและหลังแล้วเลือกคำเชื่อมให้ตรงความสัมพันธ์ของเนื้อหา',
+    'p6.fixed-phrase':'ข้อนี้ทดสอบวลีตายตัว ให้จำเป็น chunk และตรวจว่าความหมายเข้ากับย่อหน้าด้วย',
+    'p6.sentence-placement':'ประโยคที่หายไปต้องเชื่อมกับทั้งประโยคก่อนหน้าและหลังผ่านหัวข้อ ลำดับเหตุการณ์ และ reference words',
+    'p6.preposition':'ดูทั้ง fixed phrase และความสัมพันธ์เวลา/สถานที่ของย่อหน้า',
+    'p6.verb-form':'หา subject, time signal และ voice ก่อนเลือก tense/verb form',
+    'p6.passive-tense':'ประธานถูกกระทำ จึงต้องใช้ passive และผัน tense ให้ตรงกับบริบท',
+    'p6.relative':'เลือก relative word ให้ตรงกับ antecedent และหน้าที่ใน clause',
+    'p6.if-clause':'ดูรูป if-clause และ result clause เป็นคู่ ไม่เลือก tense จากประโยคเดียว',
+  }
+  return byRule[question.ruleId ?? ''] ?? fallbackWrongExplanation(question, lang)
+}
+
+function selectedChoiceExplanation(question: Question, selected: string, lang: Language) {
+  const selectedText = question.choices.find(c => c.id === selected)?.text ?? ''
+  const answerText = question.choices.find(c => c.id === question.answer)?.text ?? ''
+  const correct = selected === question.answer
+  const rule = localizedQuestionExplanation(question, lang)
+  if (correct) {
+    return lang === 'th' ? `ถูก เพราะ ${rule}` : `Correct. ${question.explanation}`
+  }
+  const specific = lang === 'en' ? question.whyOthers?.[selected] : undefined
+  const whyWrong = specific ?? fallbackWrongExplanation(question, lang)
+  return lang === 'th'
+    ? `ตัวเลือก ${selected}. ${selectedText} ไม่ใช่คำตอบ เพราะ ${whyWrong} คำตอบที่ถูกคือ ${question.answer}. ${answerText} — ${rule}`
+    : `Choice ${selected}. ${selectedText} is not correct. ${whyWrong} The correct answer is ${question.answer}. ${answerText}. ${question.explanation}`
+}
+
+function lineKey(row: string[], index: number) {
+  return `${index}-${row.join('-')}`
+}
+
+function PassageVisual({ passage }: { passage: Passage }) {
+  if (!passage.visual || !passage.visualData?.length) return null
+  const rows = passage.visualData.map(line => line.split('|').map(part => part.trim()))
+
+  if (passage.visual === 'floor-plan') {
+    return (
+      <div className="passage-visual visual-floor-plan">
+        <strong>{passage.visualTitle}</strong>
+        <div className="floor-grid">
+          {rows.map((row, index) => (
+            <div className={index === 2 ? 'floor-unit occupied' : 'floor-unit'} key={lineKey(row, index)}>
+              <b>{row[0]}</b><span>{row[1]}</span><small>{row[2]}</small>
+            </div>
+          ))}
+          <div className="floor-courtyard">COURTYARD</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (passage.visual === 'chart') {
+    return (
+      <div className="passage-visual visual-chart">
+        <strong>{passage.visualTitle}</strong>
+        {rows.map((row, index) => {
+          const value = Math.max(0, Math.min(100, Number.parseInt(row[1] ?? '0', 10) || 0))
+          return (
+            <div className="chart-row" key={lineKey(row, index)}>
+              <span>{row[0]}</span><div><i style={{ width: `${value}%` }} /></div><b>{value}%</b>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  if (passage.visual === 'route') {
+    return (
+      <div className="passage-visual visual-route">
+        <strong>{passage.visualTitle}</strong>
+        <div className="route-line">
+          {rows.map((row, index) => (
+            <div className="route-stop" key={lineKey(row, index)}>
+              <span>{index + 1}</span><b>{row[0]}</b><small>{row[1]}</small>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (passage.visual === 'poster') {
+    return (
+      <div className="passage-visual visual-poster">
+        <strong>{passage.visualTitle}</strong>
+        {rows.map((row, index) => <div className="poster-line" key={lineKey(row, index)}><b>{row[0]}</b><span>{row.slice(1).join(' · ')}</span></div>)}
+      </div>
+    )
+  }
+
+  return (
+    <div className={`passage-visual visual-table visual-${passage.visual}`}>
+      <strong>{passage.visualTitle}</strong>
+      <div className="visual-table-body">
+        {rows.map((row, index) => (
+          <div className="visual-table-row" key={lineKey(row, index)}>
+            {row.map((cell, cellIndex) => <span key={cellIndex}>{cell}</span>)}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PassageText({ passage }: { passage: Passage }) {
+  const lines = passage.body.split('\n')
+  const emailHeaders = passage.kind === 'email'
+    ? lines.filter(line => /^(From|To|Subject|Date):/i.test(line)).slice(0, 4)
+    : []
+  const body = emailHeaders.length
+    ? lines.filter(line => !emailHeaders.includes(line)).join('\n').trim()
+    : passage.body
+
+  if (emailHeaders.length) {
+    return (
+      <>
+        <div className="email-meta">
+          {emailHeaders.map(line => {
+            const [label, ...rest] = line.split(':')
+            return <div key={line}><b>{label}</b><span>{rest.join(':').trim()}</span></div>
+          })}
+        </div>
+        <div className="passage-copy">{body}</div>
+      </>
+    )
+  }
+
+  if (passage.kind === 'multi') {
+    return (
+      <div className="multi-document">
+        {passage.body.split(/\n\n+/).map((block, index) => (
+          <div className="multi-doc-section" key={index}>{block}</div>
+        ))}
+      </div>
+    )
+  }
+
+  return <div className="passage-copy">{passage.body}</div>
+}
+
+function PassageDocument({
+  passage,
+  part,
+  question,
+  selected,
+  checked,
+  onBlankClick,
+}: {
+  passage: Passage
+  part: Part
+  question: Question
+  selected: string
+  checked: boolean
+  onBlankClick?: () => void
+}) {
+  const lang = useLanguage()
+  const selectedText = question.choices.find(choice => choice.id === selected)?.text
+  return (
+    <article className={`reading-passage doc-${passage.kind}`}>
+      <div className="passage-heading">
+        <span className="doc-type">{passage.kind.toUpperCase()}</span>
+        <span className="passage-instruction">{part === 6
+          ? L(lang, 'Tap the highlighted blank to answer.', 'แตะช่องว่างที่ไฮไลต์เพื่อเลือกคำตอบ')
+          : L(lang, 'Read the document and answer from the evidence.', 'อ่านเอกสารและตอบจากหลักฐานในบทความ')}</span>
+      </div>
+      <h2>{passage.title}</h2>
+      {part === 7 && <PassageVisual passage={passage} />}
+      {part === 6
+        ? <div className="passage-copy">{passageWithActiveBlank(passage.body, question.stem, {
+            selectedText,
+            checked,
+            correct: selected === question.answer,
+            onClick: onBlankClick,
+          })}</div>
+        : <PassageText passage={passage} />}
+      {passage.sourceLabel && <small className="passage-source-label">{passage.sourceLabel}</small>}
+    </article>
+  )
+}
+
 
 function App() {
   const [view, setView] = useState<View>('home')
@@ -1142,6 +1377,7 @@ function PracticeScreen({
   const [checked, setChecked] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [reason, setReason] = useState<ErrorReason | ''>('')
+  const [part6PickerOpen, setPart6PickerOpen] = useState(false)
   const startedAt = useRef(performance.now())
 
   useEffect(() => {
@@ -1149,6 +1385,7 @@ function PracticeScreen({
     setSelected('')
     setChecked(false)
     setReason('')
+    setPart6PickerOpen(false)
     startedAt.current = performance.now()
     // reset only when pool/part changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1178,6 +1415,7 @@ function PracticeScreen({
     setChecked(false)
     setElapsed(0)
     setReason('')
+    setPart6PickerOpen(false)
     startedAt.current = performance.now()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -1212,36 +1450,79 @@ function PracticeScreen({
       </div>
 
       {passage && (
-        <article className="reading-passage">
-          <div className="passage-heading">
-            <span className="doc-type">{passage.kind.toUpperCase()}</span>
-            <span className="passage-instruction">{part === 6
-              ? L(lang, 'Choose the best option for the highlighted blank.', 'เลือกคำตอบที่ดีที่สุดสำหรับช่องว่างที่ไฮไลต์')
-              : L(lang, 'Read the document and answer from the evidence.', 'อ่านเอกสารและตอบจากหลักฐานในบทความ')}</span>
-          </div>
-          <h2>{passage.title}</h2>
-          <div className="passage-copy">{part === 6 ? passageWithActiveBlank(passage.body, question.stem) : passage.body}</div>
-        </article>
-      )}
-
-      <QuestionCard question={question} selected={selected} checked={checked} onSelect={setSelected} />
-
-      {!checked ? (
-        <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
-      ) : (
-        <FeedbackCard
+        <PassageDocument
+          passage={passage}
+          part={part}
           question={question}
           selected={selected}
-          correct={selected === question.answer}
-          elapsed={elapsed}
-          reason={reason}
-          onReason={r => {
-            setReason(r)
-            setState(current => addFeedbackToLatest(current, r))
-          }}
-          onNext={next}
-          nextLabel={L(lang, 'Next question', 'ข้อถัดไป')}
+          checked={checked}
+          onBlankClick={part === 6 ? () => setPart6PickerOpen(true) : undefined}
         />
+      )}
+
+      {part === 6 ? (
+        <>
+          <button className="part6-answer-trigger" onClick={() => setPart6PickerOpen(true)}>
+            <span>{question.stem.match(/\[(\d+)\]/)?.[0] ?? '[ ]'}</span>
+            <b>{selected
+              ? question.choices.find(choice => choice.id === selected)?.text
+              : L(lang, 'Tap the blank above to choose an answer', 'แตะช่องว่างด้านบนเพื่อเลือกคำตอบ')}</b>
+            <strong>›</strong>
+          </button>
+
+          {part6PickerOpen && (
+            <div className="answer-sheet-backdrop" role="presentation" onClick={() => setPart6PickerOpen(false)}>
+              <section className="answer-sheet" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
+                <div className="answer-sheet-head">
+                  <div>
+                    <span>{L(lang, 'Part 6 answer', 'ตอบ Part 6')}</span>
+                    <b>{question.stem}</b>
+                  </div>
+                  <button onClick={() => setPart6PickerOpen(false)} aria-label={L(lang, 'Close', 'ปิด')}>×</button>
+                </div>
+                <QuestionCard question={question} selected={selected} checked={checked} onSelect={setSelected} />
+                {!checked ? (
+                  <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
+                ) : (
+                  <FeedbackCard
+                    question={question}
+                    selected={selected}
+                    correct={selected === question.answer}
+                    elapsed={elapsed}
+                    reason={reason}
+                    onReason={r => {
+                      setReason(r)
+                      setState(current => addFeedbackToLatest(current, r))
+                    }}
+                    onNext={next}
+                    nextLabel={L(lang, 'Next blank', 'ช่องถัดไป')}
+                  />
+                )}
+              </section>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <QuestionCard question={question} selected={selected} checked={checked} onSelect={setSelected} />
+          {!checked ? (
+            <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
+          ) : (
+            <FeedbackCard
+              question={question}
+              selected={selected}
+              correct={selected === question.answer}
+              elapsed={elapsed}
+              reason={reason}
+              onReason={r => {
+                setReason(r)
+                setState(current => addFeedbackToLatest(current, r))
+              }}
+              onNext={next}
+              nextLabel={L(lang, 'Next question', 'ข้อถัดไป')}
+            />
+          )}
+        </>
       )}
     </div>
   )
@@ -1272,17 +1553,32 @@ function QuestionCard({
           const correctChoice = checked && choice.id === question.answer
           const wrongChoice = checked && selectedChoice && choice.id !== question.answer
           return (
-            <button
-              key={choice.id}
-              disabled={checked}
-              className={['choice', selectedChoice ? 'selected' : '', correctChoice ? 'correct' : '', wrongChoice ? 'wrong' : ''].join(' ')}
-              onClick={() => onSelect(choice.id)}
-            >
-              <span>{choice.id}</span>
-              <b>{choice.text}</b>
-              {correctChoice && <strong>✓</strong>}
-              {wrongChoice && <strong>×</strong>}
-            </button>
+            <div className="choice-item" key={choice.id}>
+              <button
+                disabled={checked}
+                className={['choice', selectedChoice ? 'selected' : '', correctChoice ? 'correct' : '', wrongChoice ? 'wrong' : ''].join(' ')}
+                onClick={() => onSelect(choice.id)}
+              >
+                <span>{choice.id}</span>
+                <b>{choice.text}</b>
+                {correctChoice && <strong>✓</strong>}
+                {wrongChoice && <strong>×</strong>}
+              </button>
+              {checked && selectedChoice && (
+                <div className={`inline-choice-feedback ${choice.id === question.answer ? 'correct' : 'wrong'}`} aria-live="polite">
+                  <b>{choice.id === question.answer
+                    ? L(lang, 'Why this is correct', 'ทำไมข้อนี้ถูก')
+                    : L(lang, 'Why this is wrong', 'ทำไมข้อนี้ผิด')}</b>
+                  <p>{selectedChoiceExplanation(question, selected, lang)}</p>
+                  {question.evidence && (
+                    <div className="inline-evidence">
+                      <strong>{L(lang, 'Evidence in the passage', 'หลักฐานในบทความ')}</strong>
+                      <span>“{question.evidence}”</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )
         })}
       </div>
@@ -1312,7 +1608,6 @@ function FeedbackCard({
   const lang = useLanguage()
   const answerText = question.choices.find(c => c.id === question.answer)?.text
   const courseRefs = chaptersForQuestion(question)
-  const thaiExplanation = `คำตอบ ${question.answer}. ${answerText ?? ''} ถูก เพราะข้อนี้วัดเรื่อง ${localizedSkill(question.skills[0], lang)} — ${fallbackWrongExplanation(question, lang)}`
   return (
     <section className={correct ? 'feedback-panel correct' : 'feedback-panel wrong'}>
       <div className="feedback-heading">
@@ -1324,10 +1619,11 @@ function FeedbackCard({
             : L(lang, `Correct answer: ${question.answer}. ${answerText}`, `คำตอบที่ถูก: ${question.answer}. ${answerText}`)}</small>
         </div>
       </div>
-      <div className="explain-box">
-        <p>{lang === 'th' ? thaiExplanation : question.explanation}</p>
-        {!correct && <p><b>{L(lang, 'Why your answer fails:', 'ทำไมคำตอบที่เลือกถึงผิด:')}</b> {lang === 'th' ? fallbackWrongExplanation(question, lang) : (question.whyOthers?.[selected] ?? fallbackWrongExplanation(question, lang))}</p>}
-      </div>
+      <p className="feedback-inline-note">{L(
+        lang,
+        'The full explanation is shown directly under the answer you selected.',
+        'คำอธิบายเต็มอยู่ใต้ตัวเลือกที่คุณกดแล้ว เพื่อไม่ต้องเลื่อนหา',
+      )}</p>
       {!correct && courseRefs[0] && (
         <div className="mistake-study-card">
           <div className="mistake-study-head">

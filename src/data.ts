@@ -3,6 +3,7 @@ import { extraPart5, extraPart6, extraPart7, extraPassages } from './bankV2'
 import { extraPart5V3, extraPart6V3, extraPassagesV3 } from './bankV3'
 import { extraPart5V4 } from './bankV4P5'
 import { extraPart6V4, extraPart7V4, extraPassagesV4 } from './bankV4Reading'
+import { extraPart7V5, extraPassagesV5 } from './bankV5Reading'
 
 export const skillLabels: Record<SkillId, string> = {
   'part-of-speech': 'Part of Speech',
@@ -123,8 +124,8 @@ const basePart7: Question[] = [
 
 export const part5 = [...basePart5, ...extraPart5, ...extraPart5V3, ...extraPart5V4]
 export const part6 = [...extraPart6, ...extraPart6V3, ...extraPart6V4]
-export const part7 = [...basePart7, ...extraPart7, ...extraPart7V4]
-export const passages = [...basePassages, ...extraPassages, ...extraPassagesV3, ...extraPassagesV4]
+export const part7 = [...basePart7, ...extraPart7, ...extraPart7V4, ...extraPart7V5]
+export const passages = [...basePassages, ...extraPassages, ...extraPassagesV3, ...extraPassagesV4, ...extraPassagesV5]
 export const allQuestions = [...part5, ...part6, ...part7]
 export const questionById = Object.fromEntries(allQuestions.map(q => [q.id, q]))
 export const passageById = Object.fromEntries(passages.map(p => [p.id, p]))
