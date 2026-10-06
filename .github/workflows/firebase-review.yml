@@ -1,0 +1,127 @@
+name: Firebase learner review
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".firebase-review-trigger"
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch and summarize learner data
+        shell: bash
+        run: |
+          node <<'NODE'
+          const DB = 'https://toeic-study-c4905-default-rtdb.asia-southeast1.firebasedatabase.app';
+          const URL = DB + '/users/solo.json';
+
+          const res = await fetch(URL);
+          if (!res.ok) {
+            console.log('FIREBASE_REVIEW_START');
+            console.log(JSON.stringify({ ok:false, status:res.status, statusText:res.statusText }, null, 2));
+            console.log('FIREBASE_REVIEW_END');
+            process.exit(0);
+          }
+
+          const user = await res.json();
+          const state = user?.state ?? {};
+          const attempts = Array.isArray(state.attempts) ? state.attempts : [];
+
+          const dayKey = (ts) => {
+            const parts = new Intl.DateTimeFormat('en-CA', {
+              timeZone:'Asia/Bangkok',
+              year:'numeric',
+              month:'2-digit',
+              day:'2-digit',
+            }).formatToParts(new Date(ts));
+            const o = Object.fromEntries(parts.map(p => [p.type,p.value]));
+            return `${o.year}-${o.month}-${o.day}`;
+          };
+
+          const today = dayKey(Date.now());
+          const todayAttempts = attempts.filter(a => a?.at && dayKey(a.at) === today);
+          const byPart = {};
+          for (const p of [5,6,7]) {
+            const xs = todayAttempts.filter(a => a.part === p);
+            byPart[p] = {
+              answered: xs.length,
+              correct: xs.filter(a => a.correct).length,
+              accuracy: xs.length ? Math.round(xs.filter(a => a.correct).length / xs.length * 100) : 0,
+              avgSeconds: xs.length ? Math.round(xs.reduce((s,a)=>s+(a.elapsedMs||0),0)/xs.length/1000) : 0,
+            };
+          }
+
+          const group = (keyFn) => {
+            const m = new Map();
+            for (const a of todayAttempts) {
+              for (const key of keyFn(a)) {
+                if (!key) continue;
+                const v = m.get(key) ?? { attempts:0, correct:0, totalMs:0, wrong:0 };
+                v.attempts += 1;
+                v.correct += a.correct ? 1 : 0;
+                v.wrong += a.correct ? 0 : 1;
+                v.totalMs += a.elapsedMs || 0;
+                m.set(key,v);
+              }
+            }
+            return [...m.entries()].map(([key,v]) => ({
+              key,
+              attempts:v.attempts,
+              correct:v.correct,
+              wrong:v.wrong,
+              accuracy:Math.round(v.correct/v.attempts*100),
+              avgSeconds:Math.round(v.totalMs/v.attempts/1000),
+            })).sort((a,b)=>a.accuracy-b.accuracy || b.attempts-a.attempts);
+          };
+
+          const skillStats = group(a => Array.isArray(a.skills) ? a.skills : []);
+          const ruleStats = group(a => [a.ruleId].filter(Boolean));
+
+          const wrong = todayAttempts
+            .filter(a => !a.correct)
+            .slice(0,30)
+            .map(a => ({
+              questionId:a.questionId,
+              part:a.part,
+              selected:a.selected,
+              ruleId:a.ruleId ?? null,
+              skills:a.skills ?? [],
+              elapsedSeconds:Math.round((a.elapsedMs||0)/1000),
+              errorReason:a.errorReason ?? null,
+              at:new Date(a.at).toISOString(),
+            }));
+
+          const summary = {
+            ok:true,
+            reviewedDayBangkok:today,
+            cloudMeta:user?.meta ?? null,
+            cloudDaily:user?.daily?.[today] ?? null,
+            totals:{
+              allTimeAnswered:state.totalAnswered ?? attempts.length,
+              allTimeCorrect:state.totalCorrect ?? attempts.filter(a=>a.correct).length,
+              todayAnswered:todayAttempts.length,
+              todayCorrect:todayAttempts.filter(a=>a.correct).length,
+              todayAccuracy:todayAttempts.length ? Math.round(todayAttempts.filter(a=>a.correct).length/todayAttempts.length*100) : 0,
+            },
+            byPart,
+            weakestSkillsToday:skillStats.slice(0,10),
+            weakestRulesToday:ruleStats.slice(0,12),
+            recentWrongToday:wrong,
+            serverSummary:user?.summary ? {
+              learnerTier:user.summary.learnerTier,
+              nextFocusSkill:user.summary.nextFocusSkill,
+              readinessReport:user.summary.readinessReport,
+              mistakeReasons:user.summary.mistakeReasons,
+              recentAccuracy:user.summary.totals?.recentAccuracy,
+            } : null,
+          };
+
+          console.log('FIREBASE_REVIEW_START');
+          console.log(JSON.stringify(summary, null, 2));
+          console.log('FIREBASE_REVIEW_END');
+          NODE
