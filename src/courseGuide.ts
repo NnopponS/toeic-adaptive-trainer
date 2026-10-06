@@ -172,7 +172,7 @@ export function chaptersForSkill(skill: SkillId) {
 }
 
 export function chaptersForQuestion(question: Question) {
-  const ids: number[] = []
+  const ids: number[] = [...(question.chapterIds ?? [])]
   for (const skill of question.skills) {
     for (const id of skillChapterIds[skill] ?? []) {
       if (!ids.includes(id)) ids.push(id)

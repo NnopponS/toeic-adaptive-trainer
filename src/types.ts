@@ -43,6 +43,9 @@ export interface Question {
   passageId?: string
   source?: 'core' | 'personalized'
   createdAt?: number
+  ruleId?: string
+  chapterIds?: number[]
+  targetSeconds?: number
 }
 
 export interface Passage {
@@ -78,6 +81,8 @@ export interface Attempt {
   mode?: AttemptMode
   lessonSkill?: SkillId
   difficulty?: number
+  ruleId?: string
+  chapterIds?: number[]
 }
 
 export interface LessonResult {
@@ -102,6 +107,8 @@ export interface TrainerState {
   xp: number
   studyDates: string[]
   lessonResults: Partial<Record<SkillId, LessonResult>>
+  ruleStats: Record<string, SkillState>
+  mockCompletions: number
 }
 
 export interface WorkedExample {
@@ -132,6 +139,7 @@ export interface LessonDefinition {
 export interface FirebaseQuestionBank {
   version?: number
   personalized?: Record<string, Question>
+  passages?: Record<string, Passage>
 }
 
 export type View = 'home' | 'part5' | 'part6' | 'part7' | 'mock' | 'analytics' | 'review'

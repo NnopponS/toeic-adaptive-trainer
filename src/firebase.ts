@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app'
 import { get, getDatabase, onValue, ref, set, update } from 'firebase/database'
 import { buildAgentSummary, dailyTargets, normalizeState } from './adaptive'
-import type { FirebaseQuestionBank, Question, TrainerState } from './types'
+import type { Passage, Question, TrainerState } from './types'
 
 // Firebase web configuration is intentionally client-visible. Environment
 // variables override these defaults when present, but the defaults keep
@@ -34,7 +34,7 @@ export async function loadCloudState() {
 export async function syncCloudState(state: TrainerState) {
   const safe = normalizeState(state)
   const summary = buildAgentSummary(safe)
-  const targets = dailyTargets()
+  const targets = dailyTargets(safe)
   const todayAttempts = safe.attempts.filter(attempt => {
     const d = new Date(attempt.at)
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -54,8 +54,9 @@ export async function syncCloudState(state: TrainerState) {
       updatedAt: Date.now(),
     },
     [`${base}/meta`]: {
-      schemaVersion: 3,
-      appVersion: '3.0.0',
+      schemaVersion: 4,
+      appVersion: '4.0.0',
+      adaptiveVersion: 'v6-rule-aware',
       lastSyncAt: Date.now(),
       examDate: '2026-10-17',
     },
@@ -70,21 +71,28 @@ export function watchConnection(callback: (connected: boolean) => void) {
 }
 
 export function watchPersonalizedQuestions(callback: (questions: Question[]) => void) {
-  return onValue(ref(db, 'questionBank'), snapshot => {
-    const bank = (snapshot.val() ?? {}) as FirebaseQuestionBank
-    const questions = Object.values(bank.personalized ?? {})
+  return onValue(ref(db, 'questionBank/personalized'), snapshot => {
+    const questions = Object.values((snapshot.val() ?? {}) as Record<string, Question>)
       .filter(q => q && q.id && q.part && Array.isArray(q.choices))
       .map(q => ({ ...q, source: 'personalized' as const }))
     callback(questions)
   })
 }
 
+export function watchPersonalizedPassages(callback: (passages: Passage[]) => void) {
+  return onValue(ref(db, 'questionBank/passages'), snapshot => {
+    const passages = Object.values((snapshot.val() ?? {}) as Record<string, Passage>)
+      .filter(p => p && p.id && (p.part === 6 || p.part === 7) && Array.isArray(p.questions))
+    callback(passages)
+  })
+}
+
 export async function publishQuestionBankManifest(counts: { part5: number; part6: number; part7: number }) {
   await set(ref(db, 'questionBank/meta'), {
     ...counts,
-    appBankVersion: 3,
+    appBankVersion: 4,
     updatedAt: Date.now(),
-    note: 'Core bank is bundled with the app; personalized questions under questionBank/personalized are loaded live.',
+    note: 'Core bank is bundled with the app; personalized questions and Part 6/7 passages are loaded live from Firebase.',
   })
 }
 

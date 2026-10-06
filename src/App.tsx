@@ -16,6 +16,7 @@ import {
   pickAdaptiveQuestion,
   questionsForSkill,
   recentAccuracy,
+  readinessReport,
   recordAttempt,
   skillAssessment,
   skillTier,
@@ -28,6 +29,7 @@ import {
   publishQuestionBankManifest,
   syncCloudState,
   watchConnection,
+  watchPersonalizedPassages,
   watchPersonalizedQuestions,
 } from './firebase'
 import { lessonBySkill, lessons } from './lessons'
@@ -46,6 +48,7 @@ import type {
   ErrorReason,
   LessonDefinition,
   Part,
+  Passage,
   Question,
   SkillId,
   TrainerState,
@@ -102,6 +105,77 @@ function localizedTier(tier: ReturnType<typeof learnerTier>, lang: Language) {
 function localizedSkillTierName(tier: ReturnType<typeof skillTier>, lang: Language) {
   if (lang === 'en') return tier
   return ({ Learn:'ต้องเรียน', Build:'กำลังสร้างพื้นฐาน', Practice:'ฝึกเพิ่ม', Challenge:'ระดับท้าทาย' } as Record<string,string>)[tier] ?? tier
+}
+
+function localizedGateLabel(key: string, fallback: string, lang: Language) {
+  if (lang === 'en') return fallback
+  const labels: Record<string, string> = {
+    'part5-coverage': 'หลักฐาน Part 5',
+    'part6-coverage': 'หลักฐาน Part 6',
+    'part7-coverage': 'หลักฐาน Part 7',
+    'skill-coverage': 'หัวข้อที่ประเมินแล้ว',
+    'recent-accuracy': 'ความถูกต้องล่าสุด',
+    'timing': 'ตอบทันเวลา',
+    'full-mock': 'ทำข้อสอบจำลองเต็มชุด',
+  }
+  return labels[key] ?? fallback
+}
+
+function localizedRuleId(ruleId: string, lang: Language) {
+  if (lang === 'en') return ruleId
+  const rules: Record<string, string> = {
+    'wordform.adjective-before-noun':'Adjective หน้าคำนาม',
+    'wordform.adverb-modifier':'Adverb ขยายคำ',
+    'wordform.noun-position':'ตำแหน่ง Noun',
+    'tense.present-perfect-since':'Present Perfect กับ since',
+    'tense.past-perfect-sequence':'Past Perfect และลำดับเหตุการณ์',
+    'tense.future-progressive':'Future / Future Continuous',
+    'sva.head-subject':'หาประธานตัวจริง',
+    'sva.correlative':'S–V กับ either/neither',
+    'passive.core':'Passive Voice',
+    'gerund.after-preposition':'V-ing หลัง Preposition',
+    'infinitive.pattern':'Infinitive: to + V1',
+    'preposition.time':'Preposition บอกเวลา',
+    'preposition.verb-collocation':'Verb + Preposition',
+    'connector.clause-vs-phrase':'Connector: clause vs phrase',
+    'connector.condition-purpose':'Connector: เงื่อนไข/จุดประสงค์',
+    'relative.pronouns':'Relative Pronouns',
+    'pronoun.forms':'รูป Pronouns',
+    'comparison.patterns':'รูปเปรียบเทียบ',
+    'participle.feeling':'Participles -ing/-ed',
+    'vocab.business-collocation':'คำศัพท์และวลีธุรกิจ',
+    'p6.word-form':'Part 6 ชนิดคำ',
+    'p6.connector-context':'Part 6 คำเชื่อมจากบริบท',
+    'p6.fixed-phrase':'Part 6 วลีตายตัว',
+    'p6.sentence-placement':'Part 6 วางประโยค',
+    'p6.preposition':'Part 6 Preposition',
+    'p6.verb-form':'Part 6 รูปกริยา',
+    'p6.passive-tense':'Part 6 Passive/Tense',
+    'p6.relative':'Part 6 Relative Clause',
+    'p6.if-clause':'Part 6 If-Clause',
+    'p7.detail':'Part 7 หารายละเอียด',
+    'p7.paraphrase':'Part 7 Paraphrase',
+    'p7.inference':'Part 7 การอนุมาน',
+    'p7.purpose':'Part 7 จุดประสงค์',
+    'p7.multi-text':'Part 7 เชื่อมหลายบทความ',
+  }
+  return rules[ruleId] ?? ruleId
+}
+
+function localizedNextAction(action: string, lang: Language) {
+  if (lang === 'en') return action
+  if (action.startsWith('Assess ')) {
+    const skills = action.slice(7).split(', ').map(value => thaiSkillLabels[value as SkillId] ?? value)
+    return 'เก็บข้อมูลเพิ่ม: ' + skills.join(', ')
+  }
+  if (action.startsWith('Remediate ')) {
+    const rules = action.slice(10).split(', ').map(value => localizedRuleId(value, lang))
+    return 'แก้จุดอ่อนซ้ำ: ' + rules.join(', ')
+  }
+  if (action.includes('Part 6')) return 'เพิ่มความเร็วและความแม่น Part 6'
+  if (action.includes('Part 7')) return 'เพิ่มการอ่านหาหลักฐาน Part 7'
+  if (action.includes('100-question')) return 'ทำข้อสอบ Reading จำลอง 100 ข้อแบบจับเวลา 1 ชุด'
+  return action
 }
 
 function localizedAssessmentLabel(
@@ -227,6 +301,7 @@ function App() {
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState(false)
   const [remoteQuestions, setRemoteQuestions] = useState<Question[]>([])
+  const [remotePassages, setRemotePassages] = useState<Passage[]>([])
   const [lessonSkill, setLessonSkill] = useState<SkillId | null>(null)
   const [quickPart5, setQuickPart5] = useState(false)
   const [lang, setLang] = useState<Language>(() => localStorage.getItem(LANG_STORAGE_KEY) === 'en' ? 'en' : 'th')
@@ -235,10 +310,23 @@ function App() {
     () => [...part5, ...remoteQuestions.filter(q => q.part === 5)],
     [remoteQuestions],
   )
+  const allPart6 = useMemo(
+    () => [...part6, ...remoteQuestions.filter(q => q.part === 6)],
+    [remoteQuestions],
+  )
+  const allPart7 = useMemo(
+    () => [...part7, ...remoteQuestions.filter(q => q.part === 7)],
+    [remoteQuestions],
+  )
+  const allPassageById = useMemo(
+    () => ({ ...passageById, ...Object.fromEntries(remotePassages.map(p => [p.id, p])) }),
+    [remotePassages],
+  )
 
   useEffect(() => {
     const stopConnection = watchConnection(setConnected)
     const stopQuestions = watchPersonalizedQuestions(setRemoteQuestions)
+    const stopPassages = watchPersonalizedPassages(setRemotePassages)
 
     loadCloudState()
       .then(cloud => setState(local => chooseFresher(normalizeState(local), cloud)))
@@ -249,6 +337,7 @@ function App() {
     return () => {
       stopConnection()
       stopQuestions()
+      stopPassages()
     }
   }, [])
 
@@ -316,7 +405,7 @@ function App() {
               startLesson={startLesson}
               navigate={navigate}
               startQuickPart5={startQuickPart5}
-              remoteCount={remoteQuestions.length}
+              questionCounts={{ 5: allPart5.length, 6: allPart6.length, 7: allPart7.length }}
             />
           )}
           {view === 'part5' && (
@@ -349,7 +438,8 @@ function App() {
               part={6}
               state={state}
               setState={setState}
-              pool={part6}
+              pool={allPart6}
+              passageMap={allPassageById}
               readingSwitch={part => navigate(part === 6 ? 'part6' : 'part7')}
             />
           )}
@@ -358,7 +448,8 @@ function App() {
               part={7}
               state={state}
               setState={setState}
-              pool={part7}
+              pool={allPart7}
+              passageMap={allPassageById}
               readingSwitch={part => navigate(part === 6 ? 'part6' : 'part7')}
             />
           )}
@@ -462,19 +553,19 @@ function Home({
   startLesson,
   navigate,
   startQuickPart5,
-  remoteCount,
+  questionCounts,
 }: {
   state: TrainerState
   startLesson: (skill: SkillId) => void
   navigate: (view: View) => void
   startQuickPart5: () => void
-  remoteCount: number
+  questionCounts: Record<Part, number>
 }) {
   const lang = useLanguage()
   const focus = nextFocusSkill(state)
   const focusLesson = lessonBySkill[focus] ?? lessons[0]
   const focusText = localizedLesson(focusLesson, lang)
-  const targets = dailyTargets()
+  const targets = dailyTargets(state)
   const today = attemptsToday(state)
   const todayAttempts = state.attempts.filter(a => todayKey(a.at) === todayKey(Date.now()))
   const p6done = todayAttempts.filter(a => a.part === 6).length
@@ -524,9 +615,9 @@ function Home({
       <section className="section-block">
         <SectionTitle title={L(lang, 'Practice by Part', 'ฝึกแยกตามพาร์ต')} />
         <div className="part-cards-mobile">
-          <PracticePartCard className="mint" part="5" title={L(lang, 'Grammar', 'ไวยากรณ์')} count={part5.length + remoteCount} progress={partAccuracy(state, 5)} onClick={startQuickPart5} />
-          <PracticePartCard className="sky" part="6" title={L(lang, 'Text Completion', 'เติมข้อความ')} count={part6.length} progress={partAccuracy(state, 6)} onClick={() => navigate('part6')} />
-          <PracticePartCard className="sun" part="7" title={L(lang, 'Reading', 'การอ่าน')} count={part7.length} progress={partAccuracy(state, 7)} onClick={() => navigate('part7')} />
+          <PracticePartCard className="mint" part="5" title={L(lang, 'Grammar', 'ไวยากรณ์')} count={questionCounts[5]} progress={partAccuracy(state, 5)} onClick={startQuickPart5} />
+          <PracticePartCard className="sky" part="6" title={L(lang, 'Text Completion', 'เติมข้อความ')} count={questionCounts[6]} progress={partAccuracy(state, 6)} onClick={() => navigate('part6')} />
+          <PracticePartCard className="sun" part="7" title={L(lang, 'Reading', 'การอ่าน')} count={questionCounts[7]} progress={partAccuracy(state, 7)} onClick={() => navigate('part7')} />
         </div>
       </section>
 
@@ -987,6 +1078,7 @@ function PracticeScreen({
   state,
   setState,
   pool,
+  passageMap,
   onBack,
   readingSwitch,
 }: {
@@ -994,6 +1086,7 @@ function PracticeScreen({
   state: TrainerState
   setState: StateSetter
   pool: Question[]
+  passageMap?: Record<string, Passage>
   onBack?: () => void
   readingSwitch?: (part: 6 | 7) => void
 }) {
@@ -1015,10 +1108,10 @@ function PracticeScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [part, pool])
 
-  const passage = question?.passageId ? passageById[question.passageId] : undefined
+  const passage = question?.passageId ? (passageMap ?? passageById)[question.passageId] : undefined
   if (!question) return <div className="screen"><div className="empty-state">{L(lang, 'No questions available.', 'ยังไม่มีโจทย์ในชุดนี้')}</div></div>
 
-  const targets = dailyTargets()
+  const targets = dailyTargets(state)
   const partTarget = part === 5 ? targets.part5 : part === 6 ? targets.part6 : targets.part7
   const partDone = todayPartCount(state, part)
 
@@ -1311,7 +1404,11 @@ function MockTest({ setState }: { setState: StateSetter }) {
     if (!selected) return
     const elapsed = performance.now() - questionStarted.current
     if (selected === q.answer) setCorrectCount(v => v + 1)
-    setState(current => recordAttempt(current, q, selected, elapsed, { mode: 'mock' }))
+    setState(current => {
+      const nextState = recordAttempt(current, q, selected, elapsed, { mode: 'mock' })
+      if (index >= questions.length - 1) nextState.mockCompletions += 1
+      return nextState
+    })
     if (index >= questions.length - 1) {
       setFinished(true)
       return
@@ -1354,6 +1451,7 @@ function Analytics({
   const recentMistakes = state.attempts.filter(a => !a.correct).slice(0, 6)
   const trend = improvement(state)
   const series = dailyAccuracySeries(state)
+  const readinessData = readinessReport(state)
 
   return (
     <div className="screen analytics-screen">
@@ -1370,6 +1468,36 @@ function Analytics({
             ? L(lang, `Next focus: ${skillLabels[nextFocusSkill(state)]}`, `หัวข้อถัดไปที่ควรเน้น: ${localizedSkill(nextFocusSkill(state), lang)}`)
             : L(lang, 'Your weak points and review plan will appear here.', 'จุดอ่อนและแผนทบทวนจะปรากฏตรงนี้หลังเริ่มฝึก')}</small>
         </div>
+      </section>
+
+      <section className="readiness-card">
+        <div className="readiness-head">
+          <div>
+            <span>{L(lang, 'EXAM READINESS', 'ความพร้อมก่อนสอบ')}</span>
+            <h2>{readinessData.score}%</h2>
+          </div>
+          <b>{L(lang, 'Evidence', 'ข้อมูลที่เก็บแล้ว')} {readinessData.evidenceCoverage}%</b>
+        </div>
+        <Progress value={readinessData.score} />
+        <p>{L(
+          lang,
+          'This is a training-readiness score, not a guaranteed TOEIC result. Reach the gates below to remove blind spots before exam day.',
+          'คะแนนนี้คือความพร้อมจากข้อมูลการฝึก ไม่ใช่การรับประกันคะแนน TOEIC เป้าหมายคือทำ Gate ด้านล่างให้ครบเพื่อลดจุดบอดก่อนวันสอบ',
+        )}</p>
+        <div className="readiness-gates">
+          {readinessData.gates.map(gate => (
+            <div className={gate.passed ? 'readiness-gate passed' : 'readiness-gate'} key={gate.key}>
+              <span>{gate.passed ? '✓' : '○'}</span>
+              <div><b>{localizedGateLabel(gate.key, gate.label, lang)}</b><small>{gate.current}/{gate.target}</small></div>
+            </div>
+          ))}
+        </div>
+        {!!readinessData.nextActions.length && (
+          <div className="readiness-next">
+            <strong>{L(lang, 'Next best actions', 'สิ่งที่ควรทำต่อ')}</strong>
+            {readinessData.nextActions.slice(0, 3).map(action => <span key={action}>• {localizedNextAction(action, lang)}</span>)}
+          </div>
+        )}
       </section>
 
       <SectionTitle title={L(lang, 'Skill Mastery', 'ความแม่นแต่ละหัวข้อ')} />
