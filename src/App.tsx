@@ -1607,6 +1607,7 @@ function FeedbackCard({
 }) {
   const lang = useLanguage()
   const answerText = question.choices.find(c => c.id === question.answer)?.text
+  const selectedText = question.choices.find(c => c.id === selected)?.text
   const courseRefs = chaptersForQuestion(question)
   return (
     <section className={correct ? 'feedback-panel correct' : 'feedback-panel wrong'}>
@@ -1616,7 +1617,11 @@ function FeedbackCard({
           <b>{correct ? L(lang, 'Correct!', 'ถูกต้อง!') : L(lang, 'Not quite right!', 'ยังไม่ถูก')}</b>
           <small>{correct
             ? L(lang, `Nice pattern recognition · ${formatTime(elapsed)}`, `จับรูปแบบได้ดี · ${formatTime(elapsed)}`)
-            : L(lang, `Correct answer: ${question.answer}. ${answerText}`, `คำตอบที่ถูก: ${question.answer}. ${answerText}`)}</small>
+            : L(
+                lang,
+                `You chose ${selected}. ${selectedText} · Correct: ${question.answer}. ${answerText}`,
+                `คุณเลือก ${selected}. ${selectedText} · คำตอบที่ถูก: ${question.answer}. ${answerText}`,
+              )}</small>
         </div>
       </div>
       <p className="feedback-inline-note">{L(
