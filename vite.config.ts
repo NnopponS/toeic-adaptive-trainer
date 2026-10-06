@@ -31,6 +31,7 @@ function learnerProgressPlugin(): Plugin {
             raw += chunk
             if (raw.length > 4_000_000) throw new Error('Progress payload too large')
           }
+
           const payload = JSON.parse(raw)
           await fs.mkdir(dataDir, { recursive: true })
           await fs.writeFile(progressFile, JSON.stringify(payload, null, 2), 'utf8')
@@ -87,6 +88,9 @@ Use this file plus learner-progress.json when extending the bank. Prefer new que
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // GitHub Pages hosts this repository under /toeic-adaptive-trainer/.
+  // Local development remains rooted at /.
+  base: command === 'build' ? '/toeic-adaptive-trainer/' : '/',
   plugins: [react(), learnerProgressPlugin()],
-})
+}))

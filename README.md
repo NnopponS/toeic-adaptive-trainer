@@ -40,7 +40,7 @@ Personalized questions can be added live under:
 
 `/questionBank/personalized/`
 
-The Firebase web configuration has production-safe client defaults in `src/firebase.ts`, so GitHub -> Netlify deployment works without manually copying Vite environment variables. These values are public Firebase web-app identifiers, not server credentials.
+The Firebase web configuration has production-safe client defaults in `src/firebase.ts`, so GitHub Pages deployment works without manually copying Vite environment variables. These values are public Firebase web-app identifiers, not server credentials.
 
 > Important: the current Realtime Database is in test mode. That is convenient for development, but a publicly deployed site should eventually use Firebase Authentication and restrictive RTDB rules.
 
@@ -59,12 +59,12 @@ npm run build
 npm run lint
 ```
 
-## Netlify
+## GitHub Pages
 
-The repository includes `netlify.toml`:
+The repository deploys automatically with `.github/workflows/deploy-pages.yml` whenever `main` is pushed.
 
-- Build command: `npm run build`
-- Publish directory: `dist`
-- SPA fallback: `/* -> /index.html`
+Production URL:
 
-Connect the GitHub repository to Netlify and deploy from the `main` branch.
+`https://nnoppons.github.io/toeic-adaptive-trainer/`
+
+The production Vite build uses the project-site base path `/toeic-adaptive-trainer/`, and the PWA manifest/service worker use the same scope.
