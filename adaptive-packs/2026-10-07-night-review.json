@@ -737,5 +737,6 @@
       ],
       "targetSeconds": 30
     }
-  ]
+  ],
+  "publishRetry": 1
 }
