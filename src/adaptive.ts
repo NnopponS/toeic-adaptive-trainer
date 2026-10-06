@@ -234,11 +234,15 @@ export function readiness(state: TrainerState) {
   const speed = timed.length
     ? timed.filter(a => a.elapsedMs <= (a.part === 5 ? 25_000 : a.part === 6 ? 45_000 : 75_000)).length / timed.length * 100
     : 0
-  return Math.round(clamp(acc * 0.52 + mastery * 0.33 + speed * 0.15))
+  const raw = clamp(acc * 0.52 + mastery * 0.33 + speed * 0.15)
+  const evidence = Math.min(1, s.totalAnswered / 40)
+  return Math.round(raw * (0.55 + evidence * 0.45))
 }
 
 export function learnerTier(state: TrainerState): LearnerTier {
-  const score = readiness(state)
+  const s = normalizeState(state)
+  if (s.totalAnswered < 20) return 'Calibrating'
+  const score = readiness(s)
   if (score < 45) return 'Foundation'
   if (score < 60) return 'Developing'
   if (score < 72) return 'Building'

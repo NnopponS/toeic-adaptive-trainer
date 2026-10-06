@@ -77,6 +77,29 @@ function todayKey(timestamp: number) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 }
 
+function todayPartCount(state: TrainerState, part: Part) {
+  const today = todayKey(Date.now())
+  return state.attempts.filter(a => a.part === part && todayKey(a.at) === today).length
+}
+
+function greetingLabel() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Morning study plan'
+  if (hour < 18) return 'Today’s study plan'
+  return 'Evening study plan'
+}
+
+function passageWithActiveBlank(body: string, stem: string) {
+  const blank = stem.match(/\[(\d+)\]/)?.[1]
+  const pieces = body.split(/(\[\d+\]\s*_____)/g)
+  return pieces.map((piece, index) => {
+    const match = piece.match(/\[(\d+)\]/)
+    if (!match) return <span key={index}>{piece}</span>
+    const active = match[1] === blank
+    return <mark key={index} className={active ? 'passage-blank active' : 'passage-blank'}>{piece}</mark>
+  })
+}
+
 function fallbackWrongExplanation(question: Question) {
   const skill = question.skills[0]
   const messages: Partial<Record<SkillId, string>> = {
@@ -290,21 +313,28 @@ function AppHeader({
 function BottomNav({ view, navigate }: { view: View; navigate: (view: View) => void }) {
   return (
     <nav className="bottom-nav" aria-label="Main navigation">
-      <NavButton active={view === 'home'} label="Home" icon="H" onClick={() => navigate('home')} />
-      <NavButton active={view === 'part5'} label="Learn" icon="L" onClick={() => navigate('part5')} />
-      <NavButton active={view === 'part6' || view === 'part7'} label="Practice" icon="P" onClick={() => navigate('part6')} />
-      <NavButton active={view === 'analytics'} label="Progress" icon="A" onClick={() => navigate('analytics')} />
+      <NavButton active={view === 'home'} label="Home" icon="home" onClick={() => navigate('home')} />
+      <NavButton active={view === 'part5'} label="Learn" icon="learn" onClick={() => navigate('part5')} />
+      <NavButton active={view === 'part6' || view === 'part7'} label="Practice" icon="practice" onClick={() => navigate('part6')} />
+      <NavButton active={view === 'analytics'} label="Progress" icon="progress" onClick={() => navigate('analytics')} />
     </nav>
   )
 }
 
-function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: string; onClick: () => void }) {
+function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: 'home' | 'learn' | 'practice' | 'progress'; onClick: () => void }) {
   return (
     <button className={active ? 'nav-button active' : 'nav-button'} onClick={onClick}>
-      <span>{icon}</span>
+      <NavIcon kind={icon} />
       <b>{label}</b>
     </button>
   )
+}
+
+function NavIcon({ kind }: { kind: 'home' | 'learn' | 'practice' | 'progress' }) {
+  if (kind === 'home') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3l8.5 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-5v-6h-4v6H5a1.5 1.5 0 0 1-1.5-1.5z" /></svg>
+  if (kind === 'learn') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11a2 2 0 0 1 2 2v15a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 20.5zM20 5.5A2.5 2.5 0 0 0 17.5 3H13a2 2 0 0 0-2 2v15a2 2 0 0 1 2-2h4.5a2.5 2.5 0 0 1 2.5 2.5z" /></svg>
+  if (kind === 'practice') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8.5 9.5l2 2 5-5M8.5 15.5h7" /></svg>
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11h3v9zm5.5 0V5h3v15zm5.5 0v-7h3v7z" /></svg>
 }
 
 function Home({
@@ -333,9 +363,9 @@ function Home({
     <div className="screen home-screen">
       <section className="welcome">
         <div>
-          <span className="hello">Good morning!</span>
+          <span className="hello">{greetingLabel()}</span>
           <h1>TOEIC Reading Coach</h1>
-          <p>Small steps, stronger patterns, faster answers.</p>
+          <p>{state.totalAnswered ? `${state.totalAnswered} questions completed · ${learnerTier(state)} level` : 'Start with a short diagnostic and build your plan from real results.'}</p>
         </div>
         <Mascot size={94} />
       </section>
@@ -408,8 +438,8 @@ function Home({
       </section>
 
       <section className="sync-grid">
-        <InfoTile title="Firebase sync" text="Progress and mistakes are saved to your Realtime Database." icon="DB" />
-        <InfoTile title="Personalized bank" text={remoteCount ? `${remoteCount} live questions added for you.` : 'Ready for daily AI-generated question updates.'} icon="AI" />
+        <InfoTile title="Cloud progress" text="Answers, timing, mastery, and mistakes are synced to Firebase." icon="cloud" />
+        <InfoTile title="Personalized questions" text={remoteCount ? `${remoteCount} extra questions are loaded from your private bank.` : 'Your live Firebase question bank is ready for future personalized sets.'} icon="spark" />
       </section>
 
       <button className="mock-banner" onClick={() => navigate('mock')}>
@@ -504,10 +534,14 @@ function TaskCard({
   )
 }
 
-function InfoTile({ title, text, icon }: { title: string; text: string; icon: string }) {
+function InfoTile({ title, text, icon }: { title: string; text: string; icon: 'cloud' | 'spark' }) {
   return (
     <div className="info-tile">
-      <span>{icon}</span>
+      <span className="info-icon" aria-hidden="true">
+        {icon === 'cloud'
+          ? <svg viewBox="0 0 24 24"><path d="M7.5 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.6 8.6 4.5 4.5 0 0 0 7.5 18zM9 14l2 2 4-4" /></svg>
+          : <svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1L6.5 8.5l4.1-1.4zM18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z" /></svg>}
+      </span>
       <div><b>{title}</b><small>{text}</small></div>
     </div>
   )
@@ -807,6 +841,10 @@ function PracticeScreen({
   const passage = question?.passageId ? passageById[question.passageId] : undefined
   if (!question) return <div className="screen"><div className="empty-state">No questions available.</div></div>
 
+  const targets = dailyTargets()
+  const partTarget = part === 5 ? targets.part5 : part === 6 ? targets.part6 : targets.part7
+  const partDone = todayPartCount(state, part)
+
   const submit = () => {
     if (!selected || checked) return
     const ms = performance.now() - startedAt.current
@@ -828,12 +866,12 @@ function PracticeScreen({
   return (
     <div className="screen practice-screen">
       <div className="practice-toolbar">
-        {onBack ? <button className="round-back" onClick={onBack}>‹</button> : <span />}
+        {onBack ? <button className="round-back" onClick={onBack} aria-label="Back">‹</button> : <span />}
         <div>
-          <b>Part {part}: {part === 5 ? 'Grammar' : part === 6 ? 'Text Completion' : 'Reading'}</b>
-          <small>Adaptive · Level {question.difficulty}/5</small>
+          <b>Part {part}: {part === 5 ? 'Incomplete Sentences' : part === 6 ? 'Text Completion' : 'Reading Comprehension'}</b>
+          <small>Adaptive practice · Difficulty {question.difficulty}/5</small>
         </div>
-        <span className="timer-chip">⏱</span>
+        <span className="practice-part-tag">P{part}</span>
       </div>
 
       {readingSwitch && (
@@ -844,15 +882,18 @@ function PracticeScreen({
       )}
 
       <div className="practice-progress">
-        <Progress value={attemptsToday(state) / Math.max(1, dailyTargets().total) * 100} />
-        <span>{attemptsToday(state)}/{dailyTargets().total} today</span>
+        <Progress value={partDone / Math.max(1, partTarget) * 100} />
+        <span>{partDone}/{partTarget} Part {part} today</span>
       </div>
 
       {passage && (
         <article className="reading-passage">
-          <span className="doc-type">{passage.kind.toUpperCase()}</span>
+          <div className="passage-heading">
+            <span className="doc-type">{passage.kind.toUpperCase()}</span>
+            <span className="passage-instruction">{part === 6 ? 'Choose the best option for the highlighted blank.' : 'Read the document and answer from the evidence.'}</span>
+          </div>
           <h2>{passage.title}</h2>
-          <div>{passage.body}</div>
+          <div className="passage-copy">{part === 6 ? passageWithActiveBlank(passage.body, question.stem) : passage.body}</div>
         </article>
       )}
 
@@ -893,7 +934,7 @@ function QuestionCard({
   return (
     <section className="mobile-question-card">
       <div className="question-badges">
-        <span>TOEIC-style</span>
+        <span className="question-skill">{question.skills.slice(0, 2).map(skill => skillLabels[skill]).join(' · ')}</span>
         <span className="difficulty-badge">{['','Easy','Easy+','Medium','Hard','Challenge'][question.difficulty]}</span>
       </div>
       <h2>{question.stem}</h2>
@@ -971,10 +1012,12 @@ function FeedbackCard({
           </div>
         </div>
       )}
-      <div className="ai-hint">
-        <Mascot size={42} />
-        <div><b>Coach hint</b><p>{fallbackWrongExplanation(question)}</p></div>
-      </div>
+      {!correct && (
+        <div className="rule-note">
+          <b>Rule to remember</b>
+          <p>{fallbackWrongExplanation(question)}</p>
+        </div>
+      )}
       <button className="big-next" onClick={onNext}>{nextLabel} <span>›</span></button>
     </section>
   )
@@ -1111,21 +1154,15 @@ function Analytics({
 
   return (
     <div className="screen analytics-screen">
-      <div className="profile-title"><h1>My Progress</h1><span>⚙</span></div>
+      <div className="profile-title"><h1>My Progress</h1><span>{state.totalAnswered} answered</span></div>
       <section className="profile-card">
         <Mascot size={72} />
         <div className="profile-copy">
-          <b>Study Explorer</b>
-          <span>Lv. {level} · {state.xp} XP</span>
+          <b>{learnerTier(state)} reading level</b>
+          <span>Level {level} · {state.xp} XP</span>
           <Progress value={(state.xp % 500) / 500 * 100} />
-          <small>Next level: {Math.max(0, nextLevel - state.xp)} XP</small>
+          <small>{Math.max(0, nextLevel - state.xp)} XP to the next level</small>
         </div>
-      </section>
-
-      <section className="quote-card">
-        <span>“</span>
-        <p>Consistent practice today builds faster recognition on test day.</p>
-        <Mascot size={62} />
       </section>
 
       <SectionTitle title="Skill Mastery" />
@@ -1175,8 +1212,8 @@ function Analytics({
           <Mascot size={68} />
         </div>
         <div className="cloud-features">
-          <InfoTile title={connected ? 'Firebase live' : 'Offline backup'} text={connected ? 'Progress is synced to Realtime Database.' : 'Local progress will sync when connection returns.'} icon="DB" />
-          <InfoTile title="Personalized questions" text={personalizedCount ? `${personalizedCount} custom questions loaded live.` : 'Firebase bank is ready for your next custom batch.'} icon="AI" />
+          <InfoTile title={connected ? 'Cloud sync active' : 'Offline backup'} text={connected ? 'Your latest progress is stored in Firebase.' : 'Your device keeps a local copy until Firebase reconnects.'} icon="cloud" />
+          <InfoTile title="Personalized questions" text={personalizedCount ? `${personalizedCount} custom questions loaded from Firebase.` : 'No custom questions yet. Core practice remains available.'} icon="spark" />
         </div>
       </section>
     </div>

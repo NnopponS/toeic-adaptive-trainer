@@ -1,4 +1,4 @@
-import type { Question, SkillId } from './types'
+import type { Passage, Question, SkillId } from './types'
 
 const c = (a: string, b: string, c: string, d: string) => [
   { id: 'A', text: a }, { id: 'B', text: b }, { id: 'C', text: c }, { id: 'D', text: d },
@@ -108,3 +108,52 @@ export const extraPart5V3: Question[] = seeds.map((seed, index) => ({
   explanation: seed[5],
   source: 'core',
 }))
+
+export const extraPassagesV3: Passage[] = [
+  {
+    id: 'v3-p6-09',
+    part: 6,
+    kind: 'email',
+    title: 'Customer Support Office Move',
+    body: `To: Customer Support Staff
+From: Operations
+Subject: Fourth-floor relocation
+
+The Customer Support Department will move to the fourth floor next month. The move is scheduled to [1] _____ on November 3.
+
+To minimize disruption, employees should pack personal items before leaving on Friday. [2] _____, the IT team will transfer computers and telephone equipment over the weekend.
+
+[3] _____
+
+Normal customer-support operations will resume at 8:30 A.M. on Monday. Please contact Operations if you require special [4] _____ during the move.`,
+    questions: ['v3-p6-09-q1','v3-p6-09-q2','v3-p6-09-q3','v3-p6-09-q4'],
+  },
+  {
+    id: 'v3-p6-10',
+    part: 6,
+    kind: 'notice',
+    title: 'Professional Development Seminar',
+    body: `PROFESSIONAL DEVELOPMENT SEMINAR
+
+Employees interested in attending the November leadership seminar should [1] _____ the online registration form by October 22.
+
+The seminar will focus on delegation, meeting management, and giving constructive feedback. [2] _____, participants will complete two small-group exercises based on workplace scenarios.
+
+[3] _____
+
+Because space is limited, registrations will be accepted in the order they are received. A confirmation message will be sent once a place has been [4] _____.`,
+    questions: ['v3-p6-10-q1','v3-p6-10-q2','v3-p6-10-q3','v3-p6-10-q4'],
+  },
+]
+
+export const extraPart6V3: Question[] = [
+  { id:'v3-p6-09-q1', part:6, passageId:'v3-p6-09', stem:'Blank [1]', choices:c('begin','began','beginning','begins'), answer:'A', skills:['verb-tense','context'], difficulty:2, explanation:'After “is scheduled to,” the base form of the verb is required: “to begin.”' },
+  { id:'v3-p6-09-q2', part:6, passageId:'v3-p6-09', stem:'Blank [2]', choices:c('Meanwhile','However','Otherwise','For example'), answer:'A', skills:['context','conjunction'], difficulty:2, explanation:'“Meanwhile” correctly introduces another activity happening during the same relocation period.' },
+  { id:'v3-p6-09-q3', part:6, passageId:'v3-p6-09', stem:'Blank [3]', choices:c('Employees should take their laptops home unless instructed otherwise.','The company cafeteria introduced a new breakfast menu.','Several customers requested printed catalogs last month.','The parking garage closes at midnight.'), answer:'A', skills:['sentence-placement','context'], difficulty:3, explanation:'The surrounding paragraph gives practical instructions for the office move, so the laptop instruction fits the topic and sequence.' },
+  { id:'v3-p6-09-q4', part:6, passageId:'v3-p6-09', stem:'Blank [4]', choices:c('arrange','arranged','arrangements','arranging'), answer:'C', skills:['part-of-speech','collocation'], difficulty:2, explanation:'The fixed expression is “special arrangements,” so a plural noun is required.' },
+
+  { id:'v3-p6-10-q1', part:6, passageId:'v3-p6-10', stem:'Blank [1]', choices:c('complete','completed','completion','completely'), answer:'A', skills:['verb-tense','part-of-speech'], difficulty:1, explanation:'After “should,” use the base verb “complete.”' },
+  { id:'v3-p6-10-q2', part:6, passageId:'v3-p6-10', stem:'Blank [2]', choices:c('In addition','Instead','Nevertheless','As a result of'), answer:'A', skills:['context','conjunction'], difficulty:2, explanation:'The group exercises are an additional part of the seminar, so “In addition” fits.' },
+  { id:'v3-p6-10-q3', part:6, passageId:'v3-p6-10', stem:'Blank [3]', choices:c('The program is designed for employees who currently supervise others or expect to do so soon.','The main office was renovated during the summer.','Parking permits are issued by the security department.','The cafeteria serves lunch until 2:00 P.M.'), answer:'A', skills:['sentence-placement','context'], difficulty:3, explanation:'The sentence describes the intended participants, which logically belongs with the seminar description and registration information.' },
+  { id:'v3-p6-10-q4', part:6, passageId:'v3-p6-10', stem:'Blank [4]', choices:c('reserve','reserved','reservation','reserving'), answer:'B', skills:['passive','part-of-speech'], difficulty:2, explanation:'The present perfect passive structure is “has been reserved,” requiring the past participle “reserved.”' },
+]

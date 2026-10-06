@@ -2,13 +2,14 @@
   "name": "TOEIC Reading Coach",
   "short_name": "TOEIC Coach",
   "description": "Adaptive TOEIC Reading practice with guided grammar lessons and personalized review.",
-  "start_url": "/",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#fbfdff",
   "theme_color": "#16bd77",
   "icons": [
     {
-      "src": "/app-icon.svg",
+      "src": "app-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

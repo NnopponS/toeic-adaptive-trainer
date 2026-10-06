@@ -1,7 +1,10 @@
-const CACHE = 'toeic-coach-v3'
+const CACHE = 'toeic-coach-v4-pages'
+const SCOPE_URL = new URL(self.registration.scope)
+const BASE_PATH = SCOPE_URL.pathname.endsWith('/') ? SCOPE_URL.pathname : `${SCOPE_URL.pathname}/`
+const APP_SHELL = [BASE_PATH, `${BASE_PATH}manifest.webmanifest`, `${BASE_PATH}app-icon.svg`]
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/', '/manifest.webmanifest', '/app-icon.svg'])))
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)))
   self.skipWaiting()
 })
 
@@ -15,25 +18,29 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return
   const url = new URL(event.request.url)
-  if (url.origin !== self.location.origin) return
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE_PATH)) return
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          const copy = response.clone()
-          caches.open(CACHE).then(cache => cache.put('/', copy))
+          if (response.ok) {
+            const copy = response.clone()
+            caches.open(CACHE).then(cache => cache.put(BASE_PATH, copy))
+          }
           return response
         })
-        .catch(() => caches.match('/'))
+        .catch(() => caches.match(BASE_PATH))
     )
     return
   }
 
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-      const copy = response.clone()
-      caches.open(CACHE).then(cache => cache.put(event.request, copy))
+      if (response.ok) {
+        const copy = response.clone()
+        caches.open(CACHE).then(cache => cache.put(event.request, copy))
+      }
       return response
     }))
   )

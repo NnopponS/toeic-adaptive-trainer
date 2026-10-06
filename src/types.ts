@@ -23,7 +23,7 @@ export type SkillId =
 
 export type ErrorReason = 'grammar' | 'vocabulary' | 'misread' | 'rushed' | 'guess'
 export type AttemptMode = 'adaptive' | 'mastery' | 'mock' | 'review'
-export type LearnerTier = 'Foundation' | 'Developing' | 'Building' | 'Strong' | 'Exam Ready'
+export type LearnerTier = 'Calibrating' | 'Foundation' | 'Developing' | 'Building' | 'Strong' | 'Exam Ready'
 
 export interface Choice {
   id: string

@@ -1,6 +1,6 @@
 import type { Passage, Question, SkillId } from './types'
 import { extraPart5, extraPart6, extraPart7, extraPassages } from './bankV2'
-import { extraPart5V3 } from './bankV3'
+import { extraPart5V3, extraPart6V3, extraPassagesV3 } from './bankV3'
 
 export const skillLabels: Record<SkillId, string> = {
   'part-of-speech': 'Part of Speech',
@@ -62,16 +62,6 @@ const basePart5: Question[] = [
 ]
 
 const basePassages: Passage[] = [
-  { id:'p6-01', part:6, kind:'email', title:'Office Renovation Update', body:`To: All Staff
-From: Facilities Department
-Subject: Third-floor renovation
-
-Renovation work on the third floor will begin next Monday. Employees who normally work in that area will be temporarily reassigned to meeting rooms on the second floor. Please remove all personal items from your desks by Friday afternoon.
-
-The work is expected to last approximately two weeks. During this period, access to the third floor will be restricted for safety reasons. We appreciate your cooperation and will provide another update if the schedule changes.`, questions:['p6-01-q1','p6-01-q2','p6-01-q3','p6-01-q4']},
-  { id:'p6-02', part:6, kind:'notice', title:'Customer Service Training', body:`All new customer service representatives are required to attend a two-day training session on November 12 and 13. The program will cover product knowledge, complaint handling, and the updated return policy.
-
-Participants should report to Training Room B by 8:45 A.M. each day. Lunch will be provided. Employees with dietary restrictions should contact Human Resources no later than November 7 so that appropriate arrangements can be made.`, questions:['p6-02-q1','p6-02-q2','p6-02-q3','p6-02-q4']},
   { id:'p7-01', part:7, kind:'email', title:'Email: Delivery Delay', body:`From: lena.cho@brightline.example
 To: marco.rossi@northbay.example
 Subject: Order NB-1842
@@ -114,17 +104,6 @@ TODAY'S SCHEDULE
 2:00–3:00   Website review`, questions:['p7-03-q1','p7-03-q2','p7-03-q3','p7-03-q4']},
 ]
 
-const basePart6: Question[] = [
-  { id:'p6-01-q1', part:6, passageId:'p6-01', stem:'Employees on the third floor will be _____ reassigned during the renovation.', choices:c('temporary','temporarily','temporariness','temporaries'), answer:'B', skills:['part-of-speech','context'], difficulty:2, explanation:'The blank modifies “reassigned,” so the adverb “temporarily” is required.' },
-  { id:'p6-01-q2', part:6, passageId:'p6-01', stem:'When should employees clear personal items from their desks?', choices:c('By Friday afternoon','Next Monday morning','After two weeks','When the second floor closes'), answer:'A', skills:['detail','context'], difficulty:1, explanation:'The notice explicitly says to remove all personal items by Friday afternoon.' },
-  { id:'p6-01-q3', part:6, passageId:'p6-01', stem:'Why will access to the third floor be restricted?', choices:c('To reduce noise','For safety reasons','To prepare meeting rooms','Because the elevator is broken'), answer:'B', skills:['detail','paraphrase'], difficulty:1, explanation:'The passage directly states that access will be restricted for safety reasons.' },
-  { id:'p6-01-q4', part:6, passageId:'p6-01', stem:'Which sentence best fits the end of the message?', choices:c('Employees may use the cafeteria as usual.','The company recently hired three designers.','A revised schedule will be shared if necessary.','The renovation was completed last year.'), answer:'C', skills:['sentence-placement','context'], difficulty:3, explanation:'The final sentence discusses providing another update if the schedule changes. Choice C restates that idea naturally.' },
-  { id:'p6-02-q1', part:6, passageId:'p6-02', stem:'The training program _____ product knowledge and complaint handling.', choices:c('covers','cover','covering','coverage'), answer:'A', skills:['subject-verb','context'], difficulty:1, explanation:'The singular subject “program” takes the singular verb “covers.”' },
-  { id:'p6-02-q2', part:6, passageId:'p6-02', stem:'What are participants instructed to do by 8:45 A.M.?', choices:c('Contact Human Resources','Report to Training Room B','Order lunch','Read the return policy'), answer:'B', skills:['detail'], difficulty:1, explanation:'Participants should report to Training Room B by 8:45 A.M.' },
-  { id:'p6-02-q3', part:6, passageId:'p6-02', stem:'Who should contact Human Resources?', choices:c('All supervisors','People who need special meal arrangements','Employees who miss the first day','Anyone who wants digital materials'), answer:'B', skills:['inference','paraphrase'], difficulty:2, explanation:'Employees with dietary restrictions need to contact HR, which means people needing special meal arrangements.' },
-  { id:'p6-02-q4', part:6, passageId:'p6-02', stem:'The phrase “no later than November 7” is closest in meaning to _____.', choices:c('exactly on November 7','after November 7','by November 7','before November begins'), answer:'C', skills:['paraphrase','context'], difficulty:1, explanation:'“No later than” means “by” a deadline.' },
-]
-
 const basePart7: Question[] = [
   { id:'p7-01-q1', part:7, passageId:'p7-01', stem:'Why is the shipment leaving later than planned?', choices:c('The carrier changed its route.','A part requires inspection.','The customer changed the order.','The warehouse is closed.'), answer:'B', skills:['detail','paraphrase'], difficulty:2, explanation:'A replacement part arrived and the quality team needs time to inspect it before packing.' },
   { id:'p7-01-q2', part:7, passageId:'p7-01', stem:'When is the order expected to arrive?', choices:c('Thursday morning','Friday afternoon','Monday afternoon','Tuesday morning'), answer:'C', skills:['detail'], difficulty:1, explanation:'The email says the shipment should reach the office by Monday afternoon.' },
@@ -141,9 +120,9 @@ const basePart7: Question[] = [
 ]
 
 export const part5 = [...basePart5, ...extraPart5, ...extraPart5V3]
-export const part6 = [...basePart6, ...extraPart6]
+export const part6 = [...extraPart6, ...extraPart6V3]
 export const part7 = [...basePart7, ...extraPart7]
-export const passages = [...basePassages, ...extraPassages]
+export const passages = [...basePassages, ...extraPassages, ...extraPassagesV3]
 export const allQuestions = [...part5, ...part6, ...part7]
 export const questionById = Object.fromEntries(allQuestions.map(q => [q.id, q]))
 export const passageById = Object.fromEntries(passages.map(p => [p.id, p]))
