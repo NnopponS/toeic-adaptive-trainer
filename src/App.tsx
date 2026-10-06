@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import './App.css'
 import {
   addFeedbackToLatest,
@@ -17,6 +17,7 @@ import {
   questionsForSkill,
   recentAccuracy,
   recordAttempt,
+  skillAssessment,
   skillTier,
   studyStreak,
   weakestSkills,
@@ -30,6 +31,17 @@ import {
   watchPersonalizedQuestions,
 } from './firebase'
 import { lessonBySkill, lessons } from './lessons'
+import { chaptersForQuestion, chaptersForSkill, readingCourseChapters } from './courseGuide'
+import {
+  LANG_STORAGE_KEY,
+  L,
+  thaiChapterTips,
+  thaiChapterTitles,
+  thaiExamples,
+  thaiLessonMeta,
+  thaiSkillLabels,
+  type Language,
+} from './i18n'
 import type {
   ErrorReason,
   LessonDefinition,
@@ -43,6 +55,64 @@ import type {
 const STORAGE_KEY = 'toeic-adaptive-trainer-v3'
 const LEGACY_STORAGE_KEY = 'toeic-adaptive-trainer-v1'
 type StateSetter = Dispatch<SetStateAction<TrainerState>>
+
+const LanguageContext = createContext<Language>('th')
+const useLanguage = () => useContext(LanguageContext)
+
+function localizedSkill(skill: SkillId, lang: Language) {
+  return lang === 'th' ? thaiSkillLabels[skill] : skillLabels[skill]
+}
+
+function localizedLesson(lesson: LessonDefinition, lang: Language) {
+  const th = thaiLessonMeta[lesson.skill]
+  if (lang === 'en' || !th) return {
+    title: lesson.title,
+    shortTitle: lesson.shortTitle,
+    summary: lesson.summary,
+    strategy: lesson.strategy,
+  }
+  return th
+}
+
+function localizedExample(example: LessonDefinition['workedExamples'][number], lang: Language) {
+  return lang === 'th' ? (thaiExamples[example.id] ?? example) : example
+}
+
+function localizedChapterTitle(id: number, title: string, lang: Language) {
+  return lang === 'th' ? (thaiChapterTitles[id] ?? title) : title
+}
+
+function localizedChapterTips(id: number, fallback: string[], lang: Language) {
+  return lang === 'th' ? (thaiChapterTips[id] ?? fallback) : fallback
+}
+
+function localizedTier(tier: ReturnType<typeof learnerTier>, lang: Language) {
+  if (lang === 'en') return tier
+  const map: Record<ReturnType<typeof learnerTier>, string> = {
+    Calibrating: 'กำลังประเมินระดับ',
+    Foundation: 'พื้นฐาน',
+    Developing: 'กำลังพัฒนา',
+    Building: 'กำลังสร้างความแม่น',
+    Strong: 'แข็งแรง',
+    'Exam Ready': 'พร้อมสอบ',
+  }
+  return map[tier]
+}
+
+function localizedSkillTierName(tier: ReturnType<typeof skillTier>, lang: Language) {
+  if (lang === 'en') return tier
+  return ({ Learn:'ต้องเรียน', Build:'กำลังสร้างพื้นฐาน', Practice:'ฝึกเพิ่ม', Challenge:'ระดับท้าทาย' } as Record<string,string>)[tier] ?? tier
+}
+
+function localizedAssessmentLabel(
+  assessment: ReturnType<typeof skillAssessment>,
+  lang: Language,
+) {
+  if (lang === 'en') return assessment.label
+  if (!assessment.attempts) return 'ยังไม่ได้ประเมิน'
+  if (assessment.value === null) return `กำลังประเมิน ${assessment.attempts}/3`
+  return `ความแม่น ${assessment.value}%`
+}
 
 function loadLocalState() {
   try {
@@ -82,11 +152,11 @@ function todayPartCount(state: TrainerState, part: Part) {
   return state.attempts.filter(a => a.part === part && todayKey(a.at) === today).length
 }
 
-function greetingLabel() {
+function greetingLabel(lang: Language) {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Morning study plan'
-  if (hour < 18) return 'Today’s study plan'
-  return 'Evening study plan'
+  if (hour < 12) return L(lang, 'Morning study plan', 'แผนฝึกช่วงเช้า')
+  if (hour < 18) return L(lang, 'Today’s study plan', 'แผนฝึกวันนี้')
+  return L(lang, 'Evening study plan', 'แผนฝึกช่วงเย็น')
 }
 
 function passageWithActiveBlank(body: string, stem: string) {
@@ -100,9 +170,9 @@ function passageWithActiveBlank(body: string, stem: string) {
   })
 }
 
-function fallbackWrongExplanation(question: Question) {
+function fallbackWrongExplanation(question: Question, lang: Language) {
   const skill = question.skills[0]
-  const messages: Partial<Record<SkillId, string>> = {
+  const en: Partial<Record<SkillId, string>> = {
     'part-of-speech': 'Identify the word class before meaning. Check what sits directly before and after the blank: noun positions, adjective positions, and adverb positions have strong structural clues.',
     'verb-tense': 'Use the time signal and event sequence first. Decide present/past/future, then simple/continuous/perfect, and only then compare the verb forms.',
     'subject-verb': 'Find the true head subject and ignore distracting nouns in prepositional phrases. The verb must agree with that head subject.',
@@ -123,7 +193,30 @@ function fallbackWrongExplanation(question: Question) {
     'main-idea': 'The best answer must cover the overall purpose of the whole text, not one narrow detail.',
     'multi-text': 'Track which fact comes from which document, then combine only the facts needed by the question.',
   }
-  return messages[skill] ?? 'Re-check the grammar pattern, meaning, and context before comparing the answer choices again.'
+  const th: Partial<Record<SkillId, string>> = {
+    'part-of-speech': 'หาชนิดคำก่อนดูความหมาย ดูคำหน้า–หลังช่องว่างว่าโครงสร้างต้องการ noun, adjective หรือ adverb แล้วค่อยตัดตัวเลือก',
+    'verb-tense': 'หาคำบอกเวลาและลำดับเหตุการณ์ก่อน แยก Present/Past/Future แล้วค่อยดู Simple/Continuous/Perfect',
+    'subject-verb': 'หาประธานตัวจริงและตัดวลีบุพบทออกในใจ กริยาต้องสอดคล้องกับ head subject ไม่ใช่คำนามที่อยู่ใกล้ช่องว่าง',
+    passive: 'ถามว่าประธานเป็นผู้ทำหรือผู้ถูกกระทำ ถ้าถูกกระทำให้ใช้รูปของ be + V3 ให้ตรงกับ tense',
+    preposition: 'ดูว่าเป็นความสัมพันธ์เวลา/สถานที่หรือ fixed phrase และจำ verb/adjective + preposition เป็นชุดเดียว',
+    conjunction: 'หาความสัมพันธ์ก่อนว่าเป็นเหตุผล ขัดแย้ง เงื่อนไข จุดประสงค์ หรือเวลา แล้วเลือก connector ให้ตรงโครงสร้าง',
+    'relative-clause': 'ดูทั้งคำนามที่ถูกขยายและหน้าที่ใน clause ว่าเป็นคน สิ่งของ สถานที่ ความเป็นเจ้าของ ประธาน หรือกรรม',
+    pronoun: 'เช็กว่าช่องว่างต้องการ subject, object, possessive adjective, possessive pronoun หรือ reflexive',
+    comparison: 'มองคำสัญญาณ เช่น than, as…as, twice as และ of the three เพื่อแยก comparative/equality/superlative',
+    vocabulary: 'คำที่เลือกไม่เข้าความหมายหรือการใช้ตามธรรมชาติ ให้ดูคำรอบข้างและ collocation ที่ใช้จริงในบริบทธุรกิจ',
+    collocation: 'ข้อนี้เป็น fixed combination ให้จำทั้งวลีเป็นก้อนเดียว ไม่แปลทีละคำ',
+    context: 'อ่านหนึ่งประโยคก่อนและหลังช่องว่าง แล้วตาม topic, เวลา, reference words และความสัมพันธ์ของใจความ',
+    'sentence-placement': 'ประโยคที่แทรกต้องเชื่อมได้ทั้งด้านหน้าและด้านหลังผ่านหัวข้อ reference words และลำดับเหตุการณ์',
+    detail: 'กลับไปหาหลักฐานตรง ๆ เช่น คน วันที่ ตัวเลข การกระทำ หรือเงื่อนไข แล้วตอบจากบรรทัดนั้น',
+    inference: 'เลือกเฉพาะสิ่งที่ข้อความสนับสนุนอย่างชัดเจน คำตอบที่ “เป็นไปได้” แต่ไม่มีหลักฐานพอยังไม่พอ',
+    purpose: 'ถามว่าผู้เขียนสร้างข้อความนี้เพื่ออะไร ไม่ใช่แค่ประโยคใดประโยคหนึ่งพูดว่าอะไร',
+    paraphrase: 'โจทย์กับ passage มักใช้คนละคำแต่ความหมายเดียวกัน ให้หา synonym/paraphrase แทนการหา exact word',
+    'main-idea': 'คำตอบต้องครอบคลุมจุดประสงค์หลักของทั้งบท ไม่ใช่รายละเอียดเล็ก ๆ จุดเดียว',
+    'multi-text': 'แยกว่า facts มาจากเอกสารไหน แล้วค่อยรวมเฉพาะข้อมูลที่คำถามต้องการ',
+  }
+  return lang === 'th'
+    ? (th[skill] ?? 'ทบทวนรูปแบบไวยากรณ์ ความหมาย และบริบทรอบช่องว่างก่อนเทียบตัวเลือกอีกครั้ง')
+    : (en[skill] ?? 'Re-check the grammar pattern, meaning, and context before comparing the answer choices again.')
 }
 
 function App() {
@@ -136,6 +229,7 @@ function App() {
   const [remoteQuestions, setRemoteQuestions] = useState<Question[]>([])
   const [lessonSkill, setLessonSkill] = useState<SkillId | null>(null)
   const [quickPart5, setQuickPart5] = useState(false)
+  const [lang, setLang] = useState<Language>(() => localStorage.getItem(LANG_STORAGE_KEY) === 'en' ? 'en' : 'th')
 
   const allPart5 = useMemo(
     () => [...part5, ...remoteQuestions.filter(q => q.part === 5)],
@@ -157,6 +251,11 @@ function App() {
       stopQuestions()
     }
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem(LANG_STORAGE_KEY, lang)
+    document.documentElement.lang = lang
+  }, [lang])
 
   useEffect(() => {
     const normalized = normalizeState(state)
@@ -197,15 +296,18 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
-      <div className="mobile-frame">
-        <AppHeader
-          connected={connected}
-          syncing={syncing}
-          syncError={syncError}
-          state={state}
-          onHome={() => navigate('home')}
-        />
+    <LanguageContext.Provider value={lang}>
+      <div className="app-shell">
+        <div className="mobile-frame">
+          <AppHeader
+            connected={connected}
+            syncing={syncing}
+            syncError={syncError}
+            state={state}
+            onHome={() => navigate('home')}
+            lang={lang}
+            setLang={setLang}
+          />
 
         <main className="app-main">
           {view === 'home' && (
@@ -272,9 +374,10 @@ function App() {
           )}
         </main>
 
-        <BottomNav view={view} navigate={navigate} />
+          <BottomNav view={view} navigate={navigate} />
+        </div>
       </div>
-    </div>
+    </LanguageContext.Provider>
   )
 }
 
@@ -284,12 +387,16 @@ function AppHeader({
   syncError,
   state,
   onHome,
+  lang,
+  setLang,
 }: {
   connected: boolean
   syncing: boolean
   syncError: boolean
   state: TrainerState
   onHome: () => void
+  lang: Language
+  setLang: (lang: Language) => void
 }) {
   return (
     <header className="app-header">
@@ -297,24 +404,39 @@ function AppHeader({
         <Mascot size={38} />
         <span>
           <b>TOEIC Coach</b>
-          <small>{state.totalAnswered ? `${state.totalAnswered} answered · ${learnerTier(state)}` : 'Ready to start your first set'}</small>
+          <small>{state.totalAnswered
+            ? L(lang, `${state.totalAnswered} answered · ${learnerTier(state)}`, `ทำแล้ว ${state.totalAnswered} ข้อ · ${localizedTier(learnerTier(state), lang)}`)
+            : L(lang, 'Ready to start your first set', 'พร้อมเริ่มชุดแรก')}</small>
         </span>
       </button>
-      <div className={`cloud-state ${connected ? 'online' : ''}`}>
-        <span />
-        {syncing ? 'Saving' : syncError ? 'Sync issue' : connected ? 'Synced' : 'Offline'}
+      <div className="header-actions">
+        <div className="language-toggle" aria-label={L(lang, 'Language', 'ภาษา')}>
+          <button className={lang === 'th' ? 'active' : ''} onClick={() => setLang('th')}>TH</button>
+          <button className={lang === 'en' ? 'active' : ''} onClick={() => setLang('en')}>EN</button>
+        </div>
+        <div className={`cloud-state ${connected ? 'online' : ''}`}>
+          <span />
+          {syncing
+            ? L(lang, 'Saving', 'กำลังบันทึก')
+            : syncError
+              ? L(lang, 'Sync issue', 'ซิงก์มีปัญหา')
+              : connected
+                ? L(lang, 'Synced', 'ซิงก์แล้ว')
+                : L(lang, 'Offline', 'ออฟไลน์')}
+        </div>
       </div>
     </header>
   )
 }
 
 function BottomNav({ view, navigate }: { view: View; navigate: (view: View) => void }) {
+  const lang = useLanguage()
   return (
-    <nav className="bottom-nav" aria-label="Main navigation">
-      <NavButton active={view === 'home'} label="Home" icon="home" onClick={() => navigate('home')} />
-      <NavButton active={view === 'part5'} label="Learn" icon="learn" onClick={() => navigate('part5')} />
-      <NavButton active={view === 'part6' || view === 'part7'} label="Practice" icon="practice" onClick={() => navigate('part6')} />
-      <NavButton active={view === 'analytics'} label="Progress" icon="progress" onClick={() => navigate('analytics')} />
+    <nav className="bottom-nav" aria-label={L(lang, 'Main navigation', 'เมนูหลัก')}>
+      <NavButton active={view === 'home'} label={L(lang, 'Home', 'หน้าหลัก')} icon="home" onClick={() => navigate('home')} />
+      <NavButton active={view === 'part5'} label={L(lang, 'Learn', 'เรียน')} icon="learn" onClick={() => navigate('part5')} />
+      <NavButton active={view === 'part6' || view === 'part7'} label={L(lang, 'Practice', 'ฝึก')} icon="practice" onClick={() => navigate('part6')} />
+      <NavButton active={view === 'analytics'} label={L(lang, 'Progress', 'ผลลัพธ์')} icon="progress" onClick={() => navigate('analytics')} />
     </nav>
   )
 }
@@ -348,96 +470,103 @@ function Home({
   startQuickPart5: () => void
   remoteCount: number
 }) {
+  const lang = useLanguage()
   const focus = nextFocusSkill(state)
   const focusLesson = lessonBySkill[focus] ?? lessons[0]
+  const focusText = localizedLesson(focusLesson, lang)
   const targets = dailyTargets()
   const today = attemptsToday(state)
   const todayAttempts = state.attempts.filter(a => todayKey(a.at) === todayKey(Date.now()))
   const p6done = todayAttempts.filter(a => a.part === 6).length
   const p7done = todayAttempts.filter(a => a.part === 7).length
   const weak = weakestSkills(state, 3)
+  const focusAssessment = skillAssessment(state, focus)
 
   return (
     <div className="screen home-screen">
       <section className="welcome">
         <div>
-          <span className="hello">{greetingLabel()}</span>
+          <span className="hello">{greetingLabel(lang)}</span>
           <h1>TOEIC Reading Coach</h1>
-          <p>{state.totalAnswered ? `${state.totalAnswered} questions completed · ${learnerTier(state)} level` : 'Start with a short diagnostic and build your plan from real results.'}</p>
+          <p>{state.totalAnswered
+            ? L(lang, `${state.totalAnswered} questions completed · ${learnerTier(state)} level`, `ทำแล้ว ${state.totalAnswered} ข้อ · ระดับ ${localizedTier(learnerTier(state), lang)}`)
+            : L(lang, 'Start with a short diagnostic and build your plan from real results.', 'เริ่มจากการประเมินสั้น ๆ แล้วให้ระบบสร้างแผนจากผลจริงของคุณ')}</p>
         </div>
         <Mascot size={94} />
       </section>
 
       <section className="stat-row">
-        <StatBox value={studyStreak(state)} label="day streak" accent="orange" />
-        <StatBox value={`${Math.min(100, Math.round(today / Math.max(1, targets.total) * 100))}%`} label="daily goal" accent="green" ring />
-        <StatBox value={daysToExam()} label="days left" accent="blue" />
+        <StatBox value={studyStreak(state)} label={L(lang, 'day streak', 'วันต่อเนื่อง')} accent="orange" />
+        <StatBox value={`${Math.min(100, Math.round(today / Math.max(1, targets.total) * 100))}%`} label={L(lang, 'daily goal', 'เป้าหมายวันนี้')} accent="green" ring />
+        <StatBox value={daysToExam()} label={L(lang, 'days left', 'วันก่อนสอบ')} accent="blue" />
       </section>
 
       <button className="continue-button" onClick={() => startLesson(focusLesson.skill)}>
         <span className="play-dot">▶</span>
         <span>
-          <b>Continue personalized lesson</b>
-          <small>{focusLesson.shortTitle} · 5 examples + 10 practice</small>
+          <b>{L(lang, 'Continue personalized lesson', 'เรียนต่อจากบทที่เหมาะกับคุณ')}</b>
+          <small>{focusText.shortTitle} · {L(lang, '5 examples + 10 practice', 'ตัวอย่าง 5 ข้อ + ฝึกจริง 10 ข้อ')}</small>
         </span>
         <strong>›</strong>
       </button>
 
       <section className="section-block">
-        <SectionTitle title="Your Learning Path" action="See all" onAction={() => navigate('analytics')} />
+        <SectionTitle title={L(lang, 'Your Learning Path', 'เส้นทางการเรียนของคุณ')} action={L(lang, 'See all', 'ดูทั้งหมด')} onAction={() => navigate('analytics')} />
         <div className="learning-path">
-          <PathNode done={partAccuracy(state, 5) >= 75} active label="Part 5" sub="Grammar" />
+          <PathNode done={partAccuracy(state, 5) >= 75} active label="Part 5" sub={L(lang, 'Grammar', 'ไวยากรณ์')} />
           <PathLine />
-          <PathNode done={partAccuracy(state, 6) >= 75} active={partAccuracy(state, 5) >= 65} label="Part 6" sub="Text Completion" />
+          <PathNode done={partAccuracy(state, 6) >= 75} active={partAccuracy(state, 5) >= 65} label="Part 6" sub={L(lang, 'Text Completion', 'เติมข้อความ')} />
           <PathLine />
-          <PathNode done={partAccuracy(state, 7) >= 75} active={partAccuracy(state, 6) >= 60} label="Part 7" sub="Reading" />
+          <PathNode done={partAccuracy(state, 7) >= 75} active={partAccuracy(state, 6) >= 60} label="Part 7" sub={L(lang, 'Reading', 'การอ่าน')} />
         </div>
       </section>
 
       <section className="section-block">
-        <SectionTitle title="Practice by Part" />
+        <SectionTitle title={L(lang, 'Practice by Part', 'ฝึกแยกตามพาร์ต')} />
         <div className="part-cards-mobile">
-          <PracticePartCard className="mint" part="5" title="Grammar" count={part5.length + remoteCount} progress={partAccuracy(state, 5)} onClick={startQuickPart5} />
-          <PracticePartCard className="sky" part="6" title="Text Completion" count={part6.length} progress={partAccuracy(state, 6)} onClick={() => navigate('part6')} />
-          <PracticePartCard className="sun" part="7" title="Reading" count={part7.length} progress={partAccuracy(state, 7)} onClick={() => navigate('part7')} />
+          <PracticePartCard className="mint" part="5" title={L(lang, 'Grammar', 'ไวยากรณ์')} count={part5.length + remoteCount} progress={partAccuracy(state, 5)} onClick={startQuickPart5} />
+          <PracticePartCard className="sky" part="6" title={L(lang, 'Text Completion', 'เติมข้อความ')} count={part6.length} progress={partAccuracy(state, 6)} onClick={() => navigate('part6')} />
+          <PracticePartCard className="sun" part="7" title={L(lang, 'Reading', 'การอ่าน')} count={part7.length} progress={partAccuracy(state, 7)} onClick={() => navigate('part7')} />
         </div>
       </section>
 
       <section className="section-block">
         <div className="adaptive-heading">
           <div>
-            <span className="tiny-label">ADAPTIVE PLAN TODAY</span>
-            <h2>3 tasks for your level</h2>
+            <span className="tiny-label">{L(lang, 'ADAPTIVE PLAN TODAY', 'แผน ADAPTIVE วันนี้')}</span>
+            <h2>{L(lang, '3 tasks for your level', '3 งานที่เหมาะกับระดับคุณ')}</h2>
           </div>
-          <span className="tier-pill">{state.totalAnswered ? learnerTier(state) : 'Start here'}</span>
+          <span className="tier-pill">{state.totalAnswered ? localizedTier(learnerTier(state), lang) : L(lang, 'Start here', 'เริ่มตรงนี้')}</span>
         </div>
         <div className="task-stack">
           <TaskCard
             icon="T"
-            title={`Learn: ${focusLesson.shortTitle}`}
-            subtitle="5 worked examples + mastery check"
-            value={Math.round(state.skills[focus]?.mastery ?? 50)}
-            right={`${Math.round(state.skills[focus]?.mastery ?? 50)}%`}
+            title={L(lang, `Learn: ${focusLesson.shortTitle}`, `เรียน: ${focusText.shortTitle}`)}
+            subtitle={L(lang, '5 worked examples + mastery check', 'ตัวอย่างอธิบาย 5 ข้อ + แบบวัดความแม่น')}
+            value={focusAssessment.value ?? Math.min(100, focusAssessment.attempts / 3 * 100)}
+            right={focusAssessment.value !== null ? `${focusAssessment.value}%` : focusAssessment.attempts ? `${focusAssessment.attempts}/3` : L(lang, 'New', 'ใหม่')}
             onClick={() => startLesson(focus)}
           />
-          <TaskCard icon="6" title="Part 6 speed set" subtitle={`${targets.part6} questions today`} value={p6done / targets.part6 * 100} right={`${Math.min(p6done, targets.part6)}/${targets.part6}`} onClick={() => navigate('part6')} />
-          <TaskCard icon="7" title="Part 7 evidence reading" subtitle={`${targets.part7} questions today`} value={p7done / targets.part7 * 100} right={`${Math.min(p7done, targets.part7)}/${targets.part7}`} onClick={() => navigate('part7')} />
+          <TaskCard icon="6" title={L(lang, 'Part 6 speed set', 'Part 6 ฝึกทำให้เร็ว')} subtitle={L(lang, `${targets.part6} questions today`, `วันนี้ ${targets.part6} ข้อ`)} value={p6done / targets.part6 * 100} right={`${Math.min(p6done, targets.part6)}/${targets.part6}`} onClick={() => navigate('part6')} />
+          <TaskCard icon="7" title={L(lang, 'Part 7 evidence reading', 'Part 7 อ่านหาหลักฐาน')} subtitle={L(lang, `${targets.part7} questions today`, `วันนี้ ${targets.part7} ข้อ`)} value={p7done / targets.part7 * 100} right={`${Math.min(p7done, targets.part7)}/${targets.part7}`} onClick={() => navigate('part7')} />
         </div>
       </section>
 
       <section className="focus-card">
         <div className="focus-copy">
-          <span className="tiny-label">YOUR CURRENT PRIORITY</span>
-          <h2>{focusLesson.title}</h2>
-          <p>{weak.length ? `Your weakest measured skill is currently ${skillLabels[focus]}. We will teach the pattern before testing it again.` : 'Start here to build your first diagnostic profile.'}</p>
-          <button onClick={() => startLesson(focus)}>Start focused lesson</button>
+          <span className="tiny-label">{L(lang, 'YOUR CURRENT PRIORITY', 'สิ่งที่ควรเน้นตอนนี้')}</span>
+          <h2>{focusText.title}</h2>
+          <p>{weak.length
+            ? L(lang, `Your weakest measured skill is currently ${skillLabels[focus]}. We will teach the pattern before testing it again.`, `จุดที่อ่อนที่สุดที่วัดได้ตอนนี้คือ ${localizedSkill(focus, lang)} ระบบจะสอน pattern ก่อนแล้วค่อยให้ทำซ้ำ`)
+            : L(lang, 'Start here to build your first diagnostic profile.', 'เริ่มตรงนี้เพื่อสร้างโปรไฟล์ระดับจริงของคุณ')}</p>
+          <button onClick={() => startLesson(focus)}>{L(lang, 'Start focused lesson', 'เริ่มบทเรียนเฉพาะจุด')}</button>
         </div>
         <Mascot size={88} />
       </section>
 
       <button className="mock-banner" onClick={() => navigate('mock')}>
-        <span><b>75-minute Reading Simulation</b><small>30 Part 5 · 16 Part 6 · 54 Part 7</small></span>
-        <strong>Start ›</strong>
+        <span><b>{L(lang, '75-minute Reading Simulation', 'จำลองสอบ Reading 75 นาที')}</b><small>30 Part 5 · 16 Part 6 · 54 Part 7</small></span>
+        <strong>{L(lang, 'Start', 'เริ่ม')} ›</strong>
       </button>
 
       <div className="home-spacer" />
@@ -492,11 +621,12 @@ function PracticePartCard({
   progress: number
   onClick: () => void
 }) {
+  const lang = useLanguage()
   return (
     <button className={`practice-part-card ${className}`} onClick={onClick}>
       <span className="part-mini-icon">{part}</span>
       <b>Part {part}<br />{title}</b>
-      <small>{count} questions</small>
+      <small>{count} {L(lang, 'questions', 'ข้อ')}</small>
       <Progress value={progress} />
       <strong>›</strong>
     </button>
@@ -536,56 +666,63 @@ function Part5Hub({
   startLesson: (skill: SkillId) => void
   startQuick: () => void
 }) {
+  const lang = useLanguage()
   const focus = nextFocusSkill(state)
   const due = new Set(dueLessonSkills(state))
+  const overallMastery = averagePart5Mastery(state)
   const sorted = [...lessons].sort((a, b) => {
     if (a.skill === focus) return -1
     if (b.skill === focus) return 1
-    return (state.skills[a.skill]?.mastery ?? 50) - (state.skills[b.skill]?.mastery ?? 50)
+    const aScore = skillAssessment(state, a.skill).value ?? -1
+    const bScore = skillAssessment(state, b.skill).value ?? -1
+    return aScore - bScore
   })
 
   return (
     <div className="screen learn-screen">
       <div className="screen-intro">
-        <span className="tiny-label">PART 5 · LEARN BEFORE YOU TEST</span>
-        <h1>Fix the pattern, then prove it.</h1>
-        <p>Every focused lesson gives you 5 fully explained examples first, followed by a 10-question mastery check.</p>
+        <span className="tiny-label">{L(lang, 'PART 5 · LEARN BEFORE YOU TEST', 'PART 5 · เรียนให้เข้าใจก่อนทำจริง')}</span>
+        <h1>{L(lang, 'Fix the pattern, then prove it.', 'แก้จุดอ่อนให้เข้าใจก่อน แล้วค่อยพิสูจน์ด้วยโจทย์จริง')}</h1>
+        <p>{L(lang, 'Every focused lesson gives you 5 fully explained examples first, followed by a 10-question mastery check.', 'แต่ละบทจะสอนด้วยตัวอย่างอธิบายละเอียด 5 ข้อก่อน แล้วให้ทำแบบวัดความแม่น 10 ข้อ')}</p>
       </div>
 
       <div className="level-card">
         <div>
-          <span>Current Part 5 level</span>
-          <strong>{skillTier(averagePart5Mastery(state))}</strong>
-          <small>{partAccuracy(state, 5)}% measured accuracy</small>
+          <span>{L(lang, 'Current Part 5 level', 'ระดับ Part 5 ตอนนี้')}</span>
+          <strong>{overallMastery === null ? L(lang, 'Not assessed yet', 'ยังไม่ได้ประเมิน') : localizedSkillTierName(skillTier(overallMastery), lang)}</strong>
+          <small>{overallMastery === null ? L(lang, 'Do at least 3 questions in a skill before mastery is shown.', 'ทำอย่างน้อย 3 ข้อในหัวข้อนั้นก่อน ระบบจึงจะแสดงค่าความแม่น') : L(lang, `${partAccuracy(state, 5)}% measured accuracy`, `ความถูกต้องที่วัดได้ ${partAccuracy(state, 5)}%`)}</small>
         </div>
-        <div className="level-orbit"><span>{Math.round(averagePart5Mastery(state))}%</span></div>
+        <div className={overallMastery === null ? 'level-orbit unassessed' : 'level-orbit'}><span>{overallMastery === null ? '—' : `${Math.round(overallMastery)}%`}</span></div>
       </div>
 
       <button className="quick-drill" onClick={startQuick}>
         <span className="quick-icon">⚡</span>
-        <span><b>Quick adaptive drill</b><small>Jump straight into mixed Part 5 questions</small></span>
+        <span><b>{L(lang, 'Quick adaptive drill', 'ฝึกด่วนแบบ Adaptive')}</b><small>{L(lang, 'Jump straight into mixed Part 5 questions', 'เข้าโจทย์ Part 5 แบบผสมทันที')}</small></span>
         <strong>›</strong>
       </button>
 
-      <SectionTitle title="Recommended lessons" />
+      <SectionTitle title={L(lang, 'Recommended lessons', 'บทเรียนที่แนะนำ')} />
       <div className="lesson-list">
         {sorted.map(lesson => {
-          const mastery = Math.round(state.skills[lesson.skill]?.mastery ?? 50)
+          const assessment = skillAssessment(state, lesson.skill)
           const result = state.lessonResults[lesson.skill]
+          const chapter = chaptersForSkill(lesson.skill)[0]
+          const lessonText = localizedLesson(lesson, lang)
           return (
             <button className={lesson.skill === focus ? 'lesson-card recommended' : 'lesson-card'} key={lesson.skill} onClick={() => startLesson(lesson.skill)}>
               <span className="lesson-icon">{lesson.icon}</span>
               <div className="lesson-card-copy">
                 <div className="lesson-title-line">
-                  <b>{lesson.shortTitle}</b>
-                  {lesson.skill === focus && <span>Recommended</span>}
-                  {due.has(lesson.skill) && <span className="due">Review due</span>}
+                  <b>{lessonText.shortTitle}</b>
+                  {lesson.skill === focus && <span>{L(lang, 'Recommended', 'แนะนำ')}</span>}
+                  {due.has(lesson.skill) && <span className="due">{L(lang, 'Review due', 'ถึงเวลาทบทวน')}</span>}
                 </div>
-                <small>{lesson.summary}</small>
-                <Progress value={mastery} />
+                {chapter && <span className="course-ref-mini">{L(lang, 'Chapter', 'บทที่')} {chapter.id} · {localizedChapterTitle(chapter.id, chapter.title, lang)}</span>}
+                <small>{lessonText.summary}</small>
+                <Progress value={assessment.value ?? Math.min(100, assessment.attempts / 3 * 100)} />
                 <div className="lesson-meta">
-                  <span>{mastery}% mastery</span>
-                  <span>{result ? `Best check ${result.bestScore}%` : 'Not completed yet'}</span>
+                  <span>{localizedAssessmentLabel(assessment, lang)}</span>
+                  <span>{result ? L(lang, `Best check ${result.bestScore}%`, `คะแนนดีที่สุด ${result.bestScore}%`) : L(lang, 'Not completed yet', 'ยังไม่เคยทำจบบท')}</span>
                 </div>
               </div>
               <strong>›</strong>
@@ -593,14 +730,53 @@ function Part5Hub({
           )
         })}
       </div>
+
+      <CourseMemoryBank />
     </div>
   )
 }
 
 function averagePart5Mastery(state: TrainerState) {
   const p5Skills: SkillId[] = ['part-of-speech','verb-tense','subject-verb','passive','preposition','conjunction','relative-clause','pronoun','comparison','vocabulary','collocation']
-  const values = p5Skills.map(skill => state.skills[skill]?.mastery).filter((n): n is number => typeof n === 'number')
-  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 50
+  const values = p5Skills
+    .map(skill => skillAssessment(state, skill))
+    .filter(item => item.value !== null)
+    .map(item => item.value as number)
+  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null
+}
+
+function CourseMemoryBank() {
+  const lang = useLanguage()
+  const grammar = readingCourseChapters.filter(chapter => chapter.id <= 21)
+  const reading = readingCourseChapters.filter(chapter => chapter.id >= 26)
+
+  const renderChapter = (chapter: (typeof readingCourseChapters)[number]) => (
+    <details className="course-chapter" key={chapter.id}>
+      <summary>
+        <span>{L(lang, 'Chapter', 'บทที่')} {chapter.id}</span>
+        <b>{localizedChapterTitle(chapter.id, chapter.title, lang)}</b>
+        <strong>＋</strong>
+      </summary>
+      <div className="course-chapter-body">
+        <small>{lang === 'th' ? `บทที่ ${chapter.id} · ${localizedChapterTitle(chapter.id, chapter.title, lang)}` : chapter.sections.join(' · ')}</small>
+        <h4>{L(lang, 'Memorize these', 'ต้องท่องจำ')}</h4>
+        <ul>{localizedChapterTips(chapter.id, chapter.memorize, lang).map(item => <li key={item}>{item}</li>)}</ul>
+        {chapter.coachTip && <p className="coach-tip">{L(lang, chapter.coachTip, 'บทนี้มีเนื้อหาค่อนข้างกว้าง ระบบจะพาคุณกลับมาทบทวนเมื่อพบว่าพลาดคำศัพท์หรือรูปแบบที่เกี่ยวข้อง')}</p>}
+        <span className="source-file">{L(lang, 'Source', 'อ้างอิงจาก')}: {chapter.file}</span>
+      </div>
+    </details>
+  )
+
+  return (
+    <section className="course-memory-bank">
+      <SectionTitle title={L(lang, 'Your course memory bank', 'คลังสรุปจากบทเรียนจริงของคุณ')} />
+      <p className="course-memory-intro">{L(lang, 'Summaries from the material you actually study in ', 'สรุปจากไฟล์ที่คุณเรียนจริงใน ')}<b>content-TOEIC/TOEIC</b>{L(lang, '. Use it to review only the rules worth memorizing.', ' ใช้ทบทวนเฉพาะกฎที่ต้องจำ โดยไม่ต้องไล่เปิดทุก PDF')}</p>
+      <h3>{L(lang, 'Grammar chapters', 'บทไวยากรณ์')}</h3>
+      <div className="course-chapter-list">{grammar.map(renderChapter)}</div>
+      <h3>{L(lang, 'Reading chapters', 'บท Reading')}</h3>
+      <div className="course-chapter-list">{reading.map(renderChapter)}</div>
+    </section>
+  )
 }
 
 function LessonSession({
@@ -616,6 +792,8 @@ function LessonSession({
   pool: Question[]
   onExit: () => void
 }) {
+  const lang = useLanguage()
+  const lessonText = localizedLesson(lesson, lang)
   const [phase, setPhase] = useState<'examples' | 'practice' | 'result'>('examples')
   const [exampleIndex, setExampleIndex] = useState(0)
   const [practiceQuestions] = useState(() => questionsForSkill(state, pool, lesson.skill, lesson.practiceCount))
@@ -626,6 +804,7 @@ function LessonSession({
   const [times, setTimes] = useState<number[]>([])
   const [reason, setReasonState] = useState<ErrorReason | ''>('')
   const startedAt = useRef(performance.now())
+  const courseRefs = chaptersForSkill(lesson.skill)
 
   const resetLesson = () => {
     setPhase('examples')
@@ -642,16 +821,29 @@ function LessonSession({
 
   if (phase === 'examples') {
     const example = lesson.workedExamples[exampleIndex]
+    const exampleText = localizedExample(example, lang)
     return (
       <div className="screen lesson-screen">
-        <LessonTopBar label={lesson.shortTitle} step={exampleIndex + 1} total={lesson.workedExamples.length} onBack={onExit} mode="Learn" />
+        <LessonTopBar label={lessonText.shortTitle} step={exampleIndex + 1} total={lesson.workedExamples.length} onBack={onExit} mode={L(lang, 'Learn', 'เรียน')} />
         <div className="lesson-hero">
           <span className="lesson-big-icon">{lesson.icon}</span>
-          <div><span className="tiny-label">WORKED EXAMPLE {exampleIndex + 1}/5</span><h1>{lesson.title}</h1></div>
+          <div><span className="tiny-label">{L(lang, 'WORKED EXAMPLE', 'ตัวอย่างสอน')} {exampleIndex + 1}/5</span><h1>{lessonText.title}</h1></div>
         </div>
-        <div className="strategy-strip"><b>Strategy:</b> {lesson.strategy[exampleIndex % lesson.strategy.length]}</div>
+        <div className="strategy-strip"><b>{L(lang, 'Strategy:', 'วิธีคิด:')}</b> {lessonText.strategy[exampleIndex % lessonText.strategy.length]}</div>
+        {courseRefs[0] && (
+          <section className="lesson-course-note">
+            <div className="lesson-course-head">
+              <span>{L(lang, 'YOUR COURSE', 'อ้างอิงจากบทที่คุณเรียนจริง')}</span>
+              <b>{L(lang, 'Chapter', 'บทที่')} {courseRefs[0].id} · {localizedChapterTitle(courseRefs[0].id, courseRefs[0].title, lang)}</b>
+            </div>
+            <div className="lesson-course-memory">
+              <strong>{L(lang, 'Memorize', 'ต้องท่องจำ')}</strong>
+              <ul>{localizedChapterTips(courseRefs[0].id, courseRefs[0].memorize, lang).slice(0, 3).map(item => <li key={item}>{item}</li>)}</ul>
+            </div>
+          </section>
+        )}
         <section className="worked-card">
-          <span className="difficulty-pill">Level {example.difficulty}</span>
+          <span className="difficulty-pill">{L(lang, 'Level', 'ระดับ')} {example.difficulty}</span>
           <h2>{example.stem}</h2>
           <div className="choices worked">
             {example.choices.map(choice => (
@@ -662,10 +854,10 @@ function LessonSession({
           </div>
         </section>
         <section className="teaching-card">
-          <div className="teach-row"><span className="teach-icon clue">1</span><div><b>Spot the clue</b><p>{example.clue}</p></div></div>
-          <div className="teach-row"><span className="teach-icon rule">2</span><div><b>Apply the rule</b><p>{example.rule}</p></div></div>
-          <div className="teach-row"><span className="teach-icon why">3</span><div><b>Why this answer</b><p>{example.explanation}</p></div></div>
-          <div className="trap-box"><b>Common trap</b><p>{example.trap}</p></div>
+          <div className="teach-row"><span className="teach-icon clue">1</span><div><b>{L(lang, 'Spot the clue', 'จับจุดสังเกต')}</b><p>{exampleText.clue}</p></div></div>
+          <div className="teach-row"><span className="teach-icon rule">2</span><div><b>{L(lang, 'Apply the rule', 'ใช้กฎนี้')}</b><p>{exampleText.rule}</p></div></div>
+          <div className="teach-row"><span className="teach-icon why">3</span><div><b>{L(lang, 'Why this answer', 'ทำไมข้อนี้ตอบแบบนี้')}</b><p>{exampleText.explanation}</p></div></div>
+          <div className="trap-box"><b>{L(lang, 'Common trap', 'กับดักที่พบบ่อย')}</b><p>{exampleText.trap}</p></div>
         </section>
         <button className="big-next" onClick={() => {
           if (exampleIndex < lesson.workedExamples.length - 1) {
@@ -675,7 +867,9 @@ function LessonSession({
             startedAt.current = performance.now()
           }
         }}>
-          {exampleIndex < lesson.workedExamples.length - 1 ? 'Next example' : `Start ${practiceQuestions.length}-question mastery check`} <span>›</span>
+          {exampleIndex < lesson.workedExamples.length - 1
+            ? L(lang, 'Next example', 'ตัวอย่างถัดไป')
+            : L(lang, `Start ${practiceQuestions.length}-question mastery check`, `เริ่มทำจริง ${practiceQuestions.length} ข้อ`)} <span>›</span>
         </button>
       </div>
     )
@@ -688,18 +882,20 @@ function LessonSession({
     return (
       <div className="screen result-screen">
         <div className={passed ? 'result-badge pass' : 'result-badge retry'}>{passed ? '✓' : '↻'}</div>
-        <span className="tiny-label">{passed ? 'MASTERY CHECK PASSED' : 'ONE MORE ROUND WILL HELP'}</span>
-        <h1>{score}/{practiceQuestions.length} correct</h1>
-        <p>{passed ? `Nice. ${lesson.shortTitle} is moving toward automatic recognition.` : `Review the examples again. Your next ${lesson.shortTitle} set will stay near this level before becoming harder.`}</p>
+        <span className="tiny-label">{passed ? L(lang, 'MASTERY CHECK PASSED', 'ผ่านแบบวัดความแม่นแล้ว') : L(lang, 'ONE MORE ROUND WILL HELP', 'ทวนอีกหนึ่งรอบจะช่วยให้แม่นขึ้น')}</span>
+        <h1>{score}/{practiceQuestions.length} {L(lang, 'correct', 'ข้อถูก')}</h1>
+        <p>{passed
+          ? L(lang, `Nice. ${lesson.shortTitle} is moving toward automatic recognition.`, `ดีมาก ${lessonText.shortTitle} เริ่มตอบได้เป็นอัตโนมัติมากขึ้นแล้ว`)
+          : L(lang, `Review the examples again. Your next ${lesson.shortTitle} set will stay near this level before becoming harder.`, `กลับไปทวนตัวอย่างอีกครั้ง ชุดถัดไปของ ${lessonText.shortTitle} จะยังอยู่ใกล้ระดับนี้ก่อนค่อยยากขึ้น`)}</p>
         <div className="result-stats">
-          <div><span>Score</span><b>{percent}%</b></div>
-          <div><span>Avg time</span><b>{avg}s</b></div>
-          <div><span>XP earned</span><b>+{Math.max(10, score * 4)}</b></div>
+          <div><span>{L(lang, 'Score', 'คะแนน')}</span><b>{percent}%</b></div>
+          <div><span>{L(lang, 'Avg time', 'เวลาเฉลี่ย')}</span><b>{avg}s</b></div>
+          <div><span>{L(lang, 'XP earned', 'XP ที่ได้')}</span><b>+{Math.max(10, score * 4)}</b></div>
         </div>
         <Progress value={percent} />
         <div className="result-actions">
-          {!passed && <button className="secondary-action" onClick={resetLesson}>Repeat lesson</button>}
-          <button className="primary-action" onClick={onExit}>Back to lessons</button>
+          {!passed && <button className="secondary-action" onClick={resetLesson}>{L(lang, 'Repeat lesson', 'เรียนบทนี้ซ้ำ')}</button>}
+          <button className="primary-action" onClick={onExit}>{L(lang, 'Back to lessons', 'กลับไปหน้าบทเรียน')}</button>
         </div>
       </div>
     )
@@ -709,8 +905,8 @@ function LessonSession({
   if (!question) {
     return (
       <div className="screen lesson-screen">
-        <button className="back-link" onClick={onExit}>‹ Back</button>
-        <div className="empty-state">Not enough questions are tagged for this skill yet. The personalized bank can add more from Firebase.</div>
+        <button className="back-link" onClick={onExit}>‹ {L(lang, 'Back', 'กลับ')}</button>
+        <div className="empty-state">{L(lang, 'Not enough questions are tagged for this skill yet. The personalized bank can add more from Firebase.', 'ตอนนี้ยังมีโจทย์ที่แท็กหัวข้อนี้ไม่พอ ระบบสามารถเพิ่มโจทย์เฉพาะจุดจาก Firebase ได้ภายหลัง')}</div>
       </div>
     )
   }
@@ -744,10 +940,10 @@ function LessonSession({
 
   return (
     <div className="screen lesson-screen">
-      <LessonTopBar label={lesson.shortTitle} step={practiceIndex + 1} total={practiceQuestions.length} onBack={onExit} mode="Practice" />
+      <LessonTopBar label={lessonText.shortTitle} step={practiceIndex + 1} total={practiceQuestions.length} onBack={onExit} mode={L(lang, 'Practice', 'ทำจริง')} />
       <div className="mastery-banner">
-        <span>Mastery check</span>
-        <b>{score} correct</b>
+        <span>{L(lang, 'Mastery check', 'แบบวัดความแม่น')}</span>
+        <b>{score} {L(lang, 'correct', 'ข้อถูก')}</b>
       </div>
       <QuestionCard
         question={question}
@@ -756,7 +952,7 @@ function LessonSession({
         onSelect={setSelected}
       />
       {!checked ? (
-        <button className="big-next" disabled={!selected} onClick={submit}>Check answer <span>›</span></button>
+        <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
       ) : (
         <FeedbackCard
           question={question}
@@ -769,7 +965,7 @@ function LessonSession({
             setState(current => addFeedbackToLatest(current, r))
           }}
           onNext={next}
-          nextLabel={practiceIndex === practiceQuestions.length - 1 ? 'See result' : 'Next question'}
+          nextLabel={practiceIndex === practiceQuestions.length - 1 ? L(lang, 'See result', 'ดูผลลัพธ์') : L(lang, 'Next question', 'ข้อถัดไป')}
         />
       )}
     </div>
@@ -801,6 +997,7 @@ function PracticeScreen({
   onBack?: () => void
   readingSwitch?: (part: 6 | 7) => void
 }) {
+  const lang = useLanguage()
   const [question, setQuestion] = useState<Question>(() => pickAdaptiveQuestion(state, pool))
   const [selected, setSelected] = useState('')
   const [checked, setChecked] = useState(false)
@@ -819,7 +1016,7 @@ function PracticeScreen({
   }, [part, pool])
 
   const passage = question?.passageId ? passageById[question.passageId] : undefined
-  if (!question) return <div className="screen"><div className="empty-state">No questions available.</div></div>
+  if (!question) return <div className="screen"><div className="empty-state">{L(lang, 'No questions available.', 'ยังไม่มีโจทย์ในชุดนี้')}</div></div>
 
   const targets = dailyTargets()
   const partTarget = part === 5 ? targets.part5 : part === 6 ? targets.part6 : targets.part7
@@ -846,10 +1043,14 @@ function PracticeScreen({
   return (
     <div className="screen practice-screen">
       <div className="practice-toolbar">
-        {onBack ? <button className="round-back" onClick={onBack} aria-label="Back">‹</button> : <span />}
+        {onBack ? <button className="round-back" onClick={onBack} aria-label={L(lang, 'Back', 'กลับ')}>‹</button> : <span />}
         <div>
-          <b>Part {part}: {part === 5 ? 'Incomplete Sentences' : part === 6 ? 'Text Completion' : 'Reading Comprehension'}</b>
-          <small>{question.skills.slice(0, 2).map(skill => skillLabels[skill]).join(' · ')}</small>
+          <b>Part {part}: {part === 5
+            ? L(lang, 'Incomplete Sentences', 'เติมคำในประโยค')
+            : part === 6
+              ? L(lang, 'Text Completion', 'เติมข้อความ')
+              : L(lang, 'Reading Comprehension', 'อ่านจับใจความ')}</b>
+          <small>{question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ')}</small>
         </div>
         <span className="practice-part-tag">P{part}</span>
       </div>
@@ -863,14 +1064,16 @@ function PracticeScreen({
 
       <div className="practice-progress">
         <Progress value={partDone / Math.max(1, partTarget) * 100} />
-        <span>{partDone}/{partTarget} Part {part} today</span>
+        <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}</span>
       </div>
 
       {passage && (
         <article className="reading-passage">
           <div className="passage-heading">
             <span className="doc-type">{passage.kind.toUpperCase()}</span>
-            <span className="passage-instruction">{part === 6 ? 'Choose the best option for the highlighted blank.' : 'Read the document and answer from the evidence.'}</span>
+            <span className="passage-instruction">{part === 6
+              ? L(lang, 'Choose the best option for the highlighted blank.', 'เลือกคำตอบที่ดีที่สุดสำหรับช่องว่างที่ไฮไลต์')
+              : L(lang, 'Read the document and answer from the evidence.', 'อ่านเอกสารและตอบจากหลักฐานในบทความ')}</span>
           </div>
           <h2>{passage.title}</h2>
           <div className="passage-copy">{part === 6 ? passageWithActiveBlank(passage.body, question.stem) : passage.body}</div>
@@ -880,7 +1083,7 @@ function PracticeScreen({
       <QuestionCard question={question} selected={selected} checked={checked} onSelect={setSelected} />
 
       {!checked ? (
-        <button className="big-next" disabled={!selected} onClick={submit}>Check answer <span>›</span></button>
+        <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
       ) : (
         <FeedbackCard
           question={question}
@@ -893,7 +1096,7 @@ function PracticeScreen({
             setState(current => addFeedbackToLatest(current, r))
           }}
           onNext={next}
-          nextLabel="Next question"
+          nextLabel={L(lang, 'Next question', 'ข้อถัดไป')}
         />
       )}
     </div>
@@ -911,11 +1114,12 @@ function QuestionCard({
   checked: boolean
   onSelect: (id: string) => void
 }) {
+  const lang = useLanguage()
   return (
     <section className="mobile-question-card">
       <div className="question-badges">
-        <span className="question-skill">{question.skills.slice(0, 2).map(skill => skillLabels[skill]).join(' · ')}</span>
-        <span className="difficulty-badge">Level {question.difficulty}</span>
+        <span className="question-skill">{question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ')}</span>
+        <span className="difficulty-badge">{L(lang, 'Level', 'ระดับ')} {question.difficulty}</span>
       </div>
       <h2>{question.stem}</h2>
       <div className="choices">
@@ -961,31 +1165,54 @@ function FeedbackCard({
   onNext: () => void
   nextLabel: string
 }) {
+  const lang = useLanguage()
   const answerText = question.choices.find(c => c.id === question.answer)?.text
+  const courseRefs = chaptersForQuestion(question)
+  const thaiExplanation = `คำตอบ ${question.answer}. ${answerText ?? ''} ถูก เพราะข้อนี้วัดเรื่อง ${localizedSkill(question.skills[0], lang)} — ${fallbackWrongExplanation(question, lang)}`
   return (
     <section className={correct ? 'feedback-panel correct' : 'feedback-panel wrong'}>
       <div className="feedback-heading">
         <span>{correct ? '✓' : '×'}</span>
         <div>
-          <b>{correct ? 'Correct!' : 'Not quite right!'}</b>
-          <small>{correct ? `Nice pattern recognition · ${formatTime(elapsed)}` : `Correct answer: ${question.answer}. ${answerText}`}</small>
+          <b>{correct ? L(lang, 'Correct!', 'ถูกต้อง!') : L(lang, 'Not quite right!', 'ยังไม่ถูก')}</b>
+          <small>{correct
+            ? L(lang, `Nice pattern recognition · ${formatTime(elapsed)}`, `จับรูปแบบได้ดี · ${formatTime(elapsed)}`)
+            : L(lang, `Correct answer: ${question.answer}. ${answerText}`, `คำตอบที่ถูก: ${question.answer}. ${answerText}`)}</small>
         </div>
       </div>
       <div className="explain-box">
-        <p>{question.explanation}</p>
-        {!correct && <p><b>Why your answer fails:</b> {question.whyOthers?.[selected] ?? fallbackWrongExplanation(question)}</p>}
+        <p>{lang === 'th' ? thaiExplanation : question.explanation}</p>
+        {!correct && <p><b>{L(lang, 'Why your answer fails:', 'ทำไมคำตอบที่เลือกถึงผิด:')}</b> {lang === 'th' ? fallbackWrongExplanation(question, lang) : (question.whyOthers?.[selected] ?? fallbackWrongExplanation(question, lang))}</p>}
       </div>
+      {!correct && courseRefs[0] && (
+        <div className="mistake-study-card">
+          <div className="mistake-study-head">
+            <span>{L(lang, 'Review this chapter', 'กลับไปอ่านบทนี้')}</span>
+            <b>{L(lang, 'Chapter', 'บทที่')} {courseRefs[0].id} · {localizedChapterTitle(courseRefs[0].id, courseRefs[0].title, lang)}</b>
+          </div>
+          <p className="mistake-study-section">{lang === 'th' ? `บทที่ ${courseRefs[0].id} · ${localizedChapterTitle(courseRefs[0].id, courseRefs[0].title, lang)}` : courseRefs[0].sections.join(' · ')}</p>
+          <strong>{L(lang, 'What to memorize next', 'สิ่งที่ต้องท่องจำเพิ่ม')}</strong>
+          <ul>{localizedChapterTips(courseRefs[0].id, courseRefs[0].memorize, lang).slice(0, 4).map(item => <li key={item}>{item}</li>)}</ul>
+          {courseRefs.length > 1 && (
+            <div className="related-chapters">
+              <span>{L(lang, 'Related:', 'บทที่เกี่ยวข้อง:')}</span>
+              {courseRefs.slice(1, 4).map(chapter => <b key={chapter.id}>{L(lang, 'Ch.', 'บท')} {chapter.id} {localizedChapterTitle(chapter.id, chapter.title, lang)}</b>)}
+            </div>
+          )}
+          <small>{L(lang, 'Source', 'อ้างอิงจาก')}: content-TOEIC/TOEIC/{courseRefs[0].file}</small>
+        </div>
+      )}
       {!correct && (
         <div className="reason-picker">
-          <b>Why did you miss it?</b>
-          <small>This trains your next personalized set.</small>
+          <b>{L(lang, 'Why did you miss it?', 'พลาดเพราะอะไร?')}</b>
+          <small>{L(lang, 'This trains your next personalized set.', 'ข้อมูลนี้จะช่วยให้ชุดถัดไปเลือกโจทย์ได้ตรงจุดมากขึ้น')}</small>
           <div>
             {([
-              ['grammar','Grammar'],
-              ['vocabulary','Vocabulary'],
-              ['misread','Misread'],
-              ['rushed','Rushed'],
-              ['guess','Guessed'],
+              ['grammar',L(lang, 'Grammar', 'ไวยากรณ์')],
+              ['vocabulary',L(lang, 'Vocabulary', 'คำศัพท์')],
+              ['misread',L(lang, 'Misread', 'อ่านพลาด')],
+              ['rushed',L(lang, 'Rushed', 'รีบเกินไป')],
+              ['guess',L(lang, 'Guessed', 'เดา')],
             ] as [ErrorReason,string][]).map(([id, label]) => (
               <button key={id} className={reason === id ? 'active' : ''} onClick={() => onReason(id)}>{label}</button>
             ))}
@@ -994,8 +1221,8 @@ function FeedbackCard({
       )}
       {!correct && (
         <div className="rule-note">
-          <b>Rule to remember</b>
-          <p>{fallbackWrongExplanation(question)}</p>
+          <b>{L(lang, 'Rule to remember', 'กฎที่ต้องจำ')}</b>
+          <p>{fallbackWrongExplanation(question, lang)}</p>
         </div>
       )}
       <button className="big-next" onClick={onNext}>{nextLabel} <span>›</span></button>
@@ -1004,6 +1231,7 @@ function FeedbackCard({
 }
 
 function MockTest({ setState }: { setState: StateSetter }) {
+  const lang = useLanguage()
   const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
   const [questions, setQuestions] = useState<Question[]>([])
@@ -1047,15 +1275,15 @@ function MockTest({ setState }: { setState: StateSetter }) {
     return (
       <div className="screen mock-screen">
         <div className="mock-mascot"><Mascot size={110} /></div>
-        <span className="tiny-label">FULL READING SIMULATION</span>
-        <h1>100 questions<br />75 minutes</h1>
-        <p>Use this after targeted practice to test pacing under exam-like pressure. No instant explanations until the end.</p>
+        <span className="tiny-label">{L(lang, 'FULL READING SIMULATION', 'จำลองสอบ READING เต็มชุด')}</span>
+        <h1>100 {L(lang, 'questions', 'ข้อ')}<br />75 {L(lang, 'minutes', 'นาที')}</h1>
+        <p>{L(lang, 'Use this after targeted practice to test pacing under exam-like pressure. No instant explanations until the end.', 'ใช้หลังจากฝึกเฉพาะจุดแล้ว เพื่อทดสอบการแบ่งเวลาแบบใกล้เคียงข้อสอบจริง โดยจะไม่เฉลยทันทีจนกว่าจะทำจบ')}</p>
         <div className="mock-counts">
           <div><b>30</b><span>Part 5</span></div>
           <div><b>16</b><span>Part 6</span></div>
           <div><b>54</b><span>Part 7</span></div>
         </div>
-        <button className="big-next" onClick={start}>Start simulation <span>›</span></button>
+        <button className="big-next" onClick={start}>{L(lang, 'Start simulation', 'เริ่มจำลองสอบ')} <span>›</span></button>
       </div>
     )
   }
@@ -1065,11 +1293,11 @@ function MockTest({ setState }: { setState: StateSetter }) {
     return (
       <div className="screen result-screen">
         <div className="result-badge pass">✓</div>
-        <span className="tiny-label">SIMULATION COMPLETE</span>
-        <h1>{correctCount}/100 correct</h1>
+        <span className="tiny-label">{L(lang, 'SIMULATION COMPLETE', 'ทำชุดจำลองเสร็จแล้ว')}</span>
+        <h1>{correctCount}/100 {L(lang, 'correct', 'ข้อถูก')}</h1>
         <Progress value={percent} />
-        <p>All responses were added to your adaptive learner model and synced to Firebase.</p>
-        <button className="primary-action" onClick={start}>Try another simulation</button>
+        <p>{L(lang, 'All responses were added to your adaptive learner model and synced to Firebase.', 'คำตอบทั้งหมดถูกนำไปอัปเดตโมเดล Adaptive ของคุณและซิงก์กับ Firebase แล้ว')}</p>
+        <button className="primary-action" onClick={start}>{L(lang, 'Try another simulation', 'ทำชุดจำลองอีกครั้ง')}</button>
       </div>
     )
   }
@@ -1103,8 +1331,8 @@ function MockTest({ setState }: { setState: StateSetter }) {
       </div>
       {passage && <article className="reading-passage"><span className="doc-type">PART {q.part}</span><h2>{passage.title}</h2><div>{passage.body}</div></article>}
       <QuestionCard question={q} selected={selected} checked={false} onSelect={setSelected} />
-      <button className="big-next" disabled={!selected} onClick={next}>{index === 99 ? 'Finish' : 'Next'} <span>›</span></button>
-      <small className="mock-note">No answer feedback during simulation.</small>
+      <button className="big-next" disabled={!selected} onClick={next}>{index === 99 ? L(lang, 'Finish', 'ส่งคำตอบ') : L(lang, 'Next', 'ข้อถัดไป')} <span>›</span></button>
+      <small className="mock-note">{L(lang, 'No answer feedback during simulation.', 'โหมดจำลองสอบจะยังไม่เฉลยระหว่างทำ')}</small>
     </div>
   )
 }
@@ -1116,6 +1344,7 @@ function Analytics({
   state: TrainerState
   startLesson: (skill: SkillId) => void
 }) {
+  const lang = useLanguage()
   const skills = useMemo(() => (
     Object.entries(state.skills)
       .map(([id, skill]) => ({ id: id as SkillId, ...skill! }))
@@ -1128,45 +1357,49 @@ function Analytics({
 
   return (
     <div className="screen analytics-screen">
-      <div className="profile-title"><h1>My Progress</h1><span>{state.totalAnswered} answered</span></div>
+      <div className="profile-title"><h1>{L(lang, 'My Progress', 'ความก้าวหน้าของฉัน')}</h1><span>{state.totalAnswered} {L(lang, 'answered', 'ข้อที่ทำแล้ว')}</span></div>
       <section className="profile-card">
         <Mascot size={72} />
         <div className="profile-copy">
-          <b>{state.totalAnswered ? learnerTier(state) : 'No learning data yet'}</b>
-          <span>{state.totalAnswered ? `${recentAccuracy(state)}% recent accuracy · ${studyStreak(state)} day streak` : 'Complete your first practice set to create your profile.'}</span>
+          <b>{state.totalAnswered ? localizedTier(learnerTier(state), lang) : L(lang, 'No learning data yet', 'ยังไม่มีข้อมูลการเรียน')}</b>
+          <span>{state.totalAnswered
+            ? L(lang, `${recentAccuracy(state)}% recent accuracy · ${studyStreak(state)} day streak`, `ความถูกต้องล่าสุด ${recentAccuracy(state)}% · ต่อเนื่อง ${studyStreak(state)} วัน`)
+            : L(lang, 'Complete your first practice set to create your profile.', 'ทำชุดแรกให้เสร็จเพื่อสร้างโปรไฟล์ระดับของคุณ')}</span>
           <Progress value={state.totalAnswered ? recentAccuracy(state) : 0} />
-          <small>{state.totalAnswered ? `Next focus: ${skillLabels[nextFocusSkill(state)]}` : 'Your weak points and review plan will appear here.'}</small>
+          <small>{state.totalAnswered
+            ? L(lang, `Next focus: ${skillLabels[nextFocusSkill(state)]}`, `หัวข้อถัดไปที่ควรเน้น: ${localizedSkill(nextFocusSkill(state), lang)}`)
+            : L(lang, 'Your weak points and review plan will appear here.', 'จุดอ่อนและแผนทบทวนจะปรากฏตรงนี้หลังเริ่มฝึก')}</small>
         </div>
       </section>
 
-      <SectionTitle title="Skill Mastery" />
+      <SectionTitle title={L(lang, 'Skill Mastery', 'ความแม่นแต่ละหัวข้อ')} />
       <section className="mastery-list">
         {skills.length ? skills.slice(0, 10).map(skill => (
           <button key={skill.id} onClick={() => lessonBySkill[skill.id] && startLesson(skill.id)}>
             <span className="skill-icon">{lessonBySkill[skill.id]?.icon ?? '•'}</span>
-            <div><b>{skillLabels[skill.id]}</b><Progress value={skill.mastery} /></div>
+            <div><b>{localizedSkill(skill.id, lang)}</b><Progress value={skill.mastery} /></div>
             <strong>{Math.round(skill.mastery)}%</strong>
           </button>
-        )) : <div className="empty-state">Complete a few questions to build your skill map.</div>}
+        )) : <div className="empty-state">{L(lang, 'Complete a few questions to build your skill map.', 'ทำโจทย์สักเล็กน้อยก่อน เพื่อให้ระบบสร้างแผนที่ทักษะของคุณ')}</div>}
       </section>
 
       <section className="chart-card">
-        <div className="chart-title"><div><h2>Recent Accuracy</h2><small>Last 14 days</small></div><span>{recentAccuracy(state)}% <b>{trend.delta >= 0 ? '+' : ''}{trend.delta}</b></span></div>
+        <div className="chart-title"><div><h2>{L(lang, 'Recent Accuracy', 'ความถูกต้องล่าสุด')}</h2><small>{L(lang, 'Last 14 days', '14 วันที่ผ่านมา')}</small></div><span>{recentAccuracy(state)}% <b>{trend.delta >= 0 ? '+' : ''}{trend.delta}</b></span></div>
         <AccuracyChart values={series} />
       </section>
 
-      <SectionTitle title="Weak Points" />
+      <SectionTitle title={L(lang, 'Weak Points', 'จุดที่ยังอ่อน')} />
       <section className="weak-list-mobile">
         {weak.length ? weak.map(skill => (
           <button key={skill.id} onClick={() => lessonBySkill[skill.id] && startLesson(skill.id)}>
-            <span>{skillLabels[skill.id]}</span>
+            <span>{localizedSkill(skill.id, lang)}</span>
             <Progress value={skill.mastery} />
             <b>{Math.round(skill.mastery)}%</b>
           </button>
-        )) : <div className="empty-state">No weak-point data yet.</div>}
+        )) : <div className="empty-state">{L(lang, 'No weak-point data yet.', 'ยังไม่มีข้อมูลจุดอ่อน')}</div>}
       </section>
 
-      <SectionTitle title="Recent Mistakes" />
+      <SectionTitle title={L(lang, 'Recent Mistakes', 'ข้อที่พลาดล่าสุด')} />
       <section className="mistake-list">
         {recentMistakes.length ? recentMistakes.map((attempt, i) => (
           <button
@@ -1174,10 +1407,10 @@ function Analytics({
             onClick={() => lessonBySkill[attempt.skills[0]] && startLesson(attempt.skills[0])}
           >
             <span className="mistake-icon">×</span>
-            <div><b>Part {attempt.part} · {attempt.skills.map(s => skillLabels[s]).join(' / ')}</b><small>{attempt.errorReason ? `Reason: ${attempt.errorReason} · ` : ''}{Math.round(attempt.elapsedMs / 1000)}s</small></div>
-            <strong>{lessonBySkill[attempt.skills[0]] ? 'Review' : 'Saved'}</strong>
+            <div><b>Part {attempt.part} · {attempt.skills.map(s => localizedSkill(s, lang)).join(' / ')}</b><small>{attempt.errorReason ? `${L(lang, 'Reason', 'สาเหตุ')}: ${attempt.errorReason} · ` : ''}{Math.round(attempt.elapsedMs / 1000)}s</small></div>
+            <strong>{lessonBySkill[attempt.skills[0]] ? L(lang, 'Review', 'ทบทวน') : L(lang, 'Saved', 'บันทึกแล้ว')}</strong>
           </button>
-        )) : <div className="empty-state">No mistakes yet.</div>}
+        )) : <div className="empty-state">{L(lang, 'No mistakes yet.', 'ยังไม่มีข้อที่พลาด')}</div>}
       </section>
 
     </div>
@@ -1185,16 +1418,23 @@ function Analytics({
 }
 
 function ReviewDue({ state, startLesson }: { state: TrainerState; startLesson: (skill: SkillId) => void }) {
+  const lang = useLanguage()
   const due = dueLessonSkills(state)
   return (
     <div className="screen learn-screen">
-      <div className="screen-intro"><span className="tiny-label">SPACED REVIEW</span><h1>Keep weak patterns from fading.</h1><p>Lessons reappear after 1–3 days depending on your mastery-check score.</p></div>
+      <div className="screen-intro">
+        <span className="tiny-label">{L(lang, 'SPACED REVIEW', 'ทบทวนแบบเว้นระยะ')}</span>
+        <h1>{L(lang, 'Keep weak patterns from fading.', 'ทวนจุดที่ยังอ่อนก่อนจะลืม')}</h1>
+        <p>{L(lang, 'Lessons reappear after 1–3 days depending on your mastery-check score.', 'บทเรียนจะกลับมาให้ทวนอีกใน 1–3 วัน ตามคะแนนแบบวัดความแม่นของคุณ')}</p>
+      </div>
       <div className="lesson-list">
         {due.length ? due.map(skill => {
           const lesson = lessonBySkill[skill]
           if (!lesson) return null
-          return <button className="lesson-card recommended" key={skill} onClick={() => startLesson(skill)}><span className="lesson-icon">{lesson.icon}</span><div className="lesson-card-copy"><b>{lesson.title}</b><small>Review due now</small><Progress value={state.skills[skill]?.mastery ?? 50} /></div><strong>›</strong></button>
-        }) : <div className="empty-state">Nothing is due right now. Keep practicing and the review queue will schedule itself.</div>}
+          const assessment = skillAssessment(state, skill)
+          const lessonText = localizedLesson(lesson, lang)
+          return <button className="lesson-card recommended" key={skill} onClick={() => startLesson(skill)}><span className="lesson-icon">{lesson.icon}</span><div className="lesson-card-copy"><b>{lessonText.title}</b><small>{L(lang, 'Review due now', 'ถึงเวลาทบทวนแล้ว')} · {localizedAssessmentLabel(assessment, lang)}</small><Progress value={assessment.value ?? Math.min(100, assessment.attempts / 3 * 100)} /></div><strong>›</strong></button>
+        }) : <div className="empty-state">{L(lang, 'Nothing is due right now. Keep practicing and the review queue will schedule itself.', 'ตอนนี้ยังไม่มีบทที่ถึงเวลาทบทวน ฝึกต่อไปแล้วระบบจะจัดคิวทบทวนให้เอง')}</div>}
       </div>
     </div>
   )

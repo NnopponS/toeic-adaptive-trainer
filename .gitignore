@@ -16,8 +16,10 @@ dist-ssr
 data/learner-progress.json
 data/learner-summary.md
 
-# Local TOEIC reference PDFs are for style calibration only; do not publish them.
+# Local TOEIC reference PDFs/materials are private study sources; do not publish them.
 example-toeic/
+content-TOEIC/
+.project/local/
 
 # Editor directories and files
 .vscode/*

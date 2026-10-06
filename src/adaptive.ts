@@ -205,6 +205,13 @@ export function avgTimeForSkill(s: SkillState) {
   return s.attempts ? Math.round(s.totalMs / s.attempts / 1000) : 0
 }
 
+export function skillAssessment(state: TrainerState, skill: SkillId) {
+  const value = normalizeState(state).skills[skill]
+  if (!value?.attempts) return { value: null as number | null, label: 'Not assessed', attempts: 0 }
+  if (value.attempts < 3) return { value: null as number | null, label: `Calibrating ${value.attempts}/3`, attempts: value.attempts }
+  return { value: Math.round(value.mastery), label: `${Math.round(value.mastery)}% mastery`, attempts: value.attempts }
+}
+
 function windowAccuracy(items: TrainerState['attempts']) {
   if (!items.length) return 0
   return Math.round(items.filter(a => a.correct).length / items.length * 100)
