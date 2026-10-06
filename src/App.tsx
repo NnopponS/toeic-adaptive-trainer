@@ -1073,6 +1073,51 @@ function LessonTopBar({ label, step, total, onBack, mode }: { label: string; ste
   )
 }
 
+function firstQuestionOfPickedPassage(
+  state: TrainerState,
+  pool: Question[],
+  map: Record<string, Passage>,
+  excludePassageId?: string,
+) {
+  const candidates = excludePassageId
+    ? pool.filter(q => q.passageId !== excludePassageId)
+    : pool
+  const picked = pickAdaptiveQuestion(state, candidates.length ? candidates : pool)
+  if (!picked.passageId) return picked
+  const passage = map[picked.passageId]
+  const firstId = passage?.questions.find(id => pool.some(q => q.id === id))
+  return pool.find(q => q.id === firstId) ?? picked
+}
+
+function nextQuestionInSamePassage(
+  question: Question,
+  pool: Question[],
+  map: Record<string, Passage>,
+) {
+  if (!question.passageId) return undefined
+  const ids = map[question.passageId]?.questions ?? []
+  const current = ids.indexOf(question.id)
+  if (current < 0) return undefined
+  for (let i = current + 1; i < ids.length; i += 1) {
+    const next = pool.find(q => q.id === ids[i])
+    if (next) return next
+  }
+  return undefined
+}
+
+if (import.meta.env.DEV) {
+  const samplePassage = Object.values(passageById).find(p => p.part === 6 && p.questions.length > 1)
+  if (samplePassage) {
+    const samplePool = part6.filter(q => samplePassage.questions.includes(q.id))
+    const first = firstQuestionOfPickedPassage(emptyState(), samplePool, passageById)
+    const second = nextQuestionInSamePassage(first, samplePool, passageById)
+    console.assert(
+      first.id === samplePassage.questions[0] && second?.id === samplePassage.questions[1],
+      'Part 6/7 passage sequencing self-check failed',
+    )
+  }
+}
+
 function PracticeScreen({
   part,
   state,
@@ -1091,7 +1136,8 @@ function PracticeScreen({
   readingSwitch?: (part: 6 | 7) => void
 }) {
   const lang = useLanguage()
-  const [question, setQuestion] = useState<Question>(() => pickAdaptiveQuestion(state, pool))
+  const activePassageMap = passageMap ?? passageById
+  const [question, setQuestion] = useState<Question>(() => firstQuestionOfPickedPassage(state, pool, activePassageMap))
   const [selected, setSelected] = useState('')
   const [checked, setChecked] = useState(false)
   const [elapsed, setElapsed] = useState(0)
@@ -1099,7 +1145,7 @@ function PracticeScreen({
   const startedAt = useRef(performance.now())
 
   useEffect(() => {
-    setQuestion(pickAdaptiveQuestion(state, pool))
+    setQuestion(firstQuestionOfPickedPassage(state, pool, activePassageMap))
     setSelected('')
     setChecked(false)
     setReason('')
@@ -1108,7 +1154,9 @@ function PracticeScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [part, pool])
 
-  const passage = question?.passageId ? (passageMap ?? passageById)[question.passageId] : undefined
+  const passage = question?.passageId ? activePassageMap[question.passageId] : undefined
+  const passageQuestionIds = passage?.questions.filter(id => pool.some(q => q.id === id)) ?? []
+  const passageQuestionIndex = passageQuestionIds.indexOf(question.id)
   if (!question) return <div className="screen"><div className="empty-state">{L(lang, 'No questions available.', 'ยังไม่มีโจทย์ในชุดนี้')}</div></div>
 
   const targets = dailyTargets(state)
@@ -1124,7 +1172,8 @@ function PracticeScreen({
   }
 
   const next = () => {
-    setQuestion(pickAdaptiveQuestion(state, pool, question.id))
+    const sequential = nextQuestionInSamePassage(question, pool, activePassageMap)
+    setQuestion(sequential ?? firstQuestionOfPickedPassage(state, pool, activePassageMap, question.passageId))
     setSelected('')
     setChecked(false)
     setElapsed(0)
@@ -1143,7 +1192,9 @@ function PracticeScreen({
             : part === 6
               ? L(lang, 'Text Completion', 'เติมข้อความ')
               : L(lang, 'Reading Comprehension', 'อ่านจับใจความ')}</b>
-          <small>{question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ')}</small>
+          <small>{passageQuestionIndex >= 0
+            ? `${L(lang, 'Question', 'ข้อย่อย')} ${passageQuestionIndex + 1}/${passageQuestionIds.length} · `
+            : ''}{question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ')}</small>
         </div>
         <span className="practice-part-tag">P{part}</span>
       </div>
@@ -1336,7 +1387,30 @@ function MockTest({ setState }: { setState: StateSetter }) {
 
   const makeTest = () => {
     const shuffle = <T,>(items: T[]) => [...items].sort(() => Math.random() - 0.5)
-    return [...shuffle(part5).slice(0, 30), ...shuffle(part6).slice(0, 16), ...shuffle(part7).slice(0, 54)]
+    const orderedReadingSample = (items: Question[], target: number) => {
+      const byId = new Map(items.map(q => [q.id, q]))
+      const groups = shuffle(
+        Object.values(passageById)
+          .map(passage => passage.questions.map(id => byId.get(id)).filter((q): q is Question => Boolean(q)))
+          .filter(group => group.length),
+      )
+      const selected: Question[] = []
+      for (const group of groups) {
+        if (selected.length >= target) break
+        selected.push(...group.slice(0, target - selected.length))
+      }
+      if (selected.length < target) {
+        const used = new Set(selected.map(q => q.id))
+        selected.push(...shuffle(items.filter(q => !used.has(q.id))).slice(0, target - selected.length))
+      }
+      return selected
+    }
+
+    return [
+      ...shuffle(part5).slice(0, 30),
+      ...orderedReadingSample(part6, 16),
+      ...orderedReadingSample(part7, 54),
+    ]
   }
 
   const start = () => {
