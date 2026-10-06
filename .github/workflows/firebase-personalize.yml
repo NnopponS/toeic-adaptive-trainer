@@ -18,8 +18,8 @@ jobs:
         shell: bash
         run: |
           node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
+          const fs = await import('node:fs');
+          const path = await import('node:path');
           const DB = 'https://toeic-study-c4905-default-rtdb.asia-southeast1.firebasedatabase.app';
           const dir = path.join(process.cwd(), 'adaptive-packs');
           const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort() : [];
