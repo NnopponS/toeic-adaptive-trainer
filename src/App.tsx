@@ -358,19 +358,323 @@ function localizedQuestionExplanation(question: Question, lang: Language) {
   return byRule[question.ruleId ?? ''] ?? fallbackWrongExplanation(question, lang)
 }
 
+type AnalysisTone = 'subject' | 'verb' | 'clue' | 'blank' | 'object' | 'modifier'
+
+type AnalysisSegment = {
+  text: string
+  label: string
+  tone: AnalysisTone
+}
+
+type QuestionAnalysis = {
+  needed: string
+  memory: string
+  steps: string[]
+  segments: AnalysisSegment[]
+}
+
+const choiceLexicon: Record<string, { pos: string; en: string; th: string }> = {
+  as: { pos:'connector', en:'used in equality patterns such as as ... as and twice as ... as', th:'ใช้ในโครงสร้างเท่ากัน เช่น as ... as และ twice as ... as' },
+  than: { pos:'connector', en:'used after a comparative: larger than / more efficient than', th:'ใช้หลัง comparative เช่น larger than / more efficient than' },
+  like: { pos:'preposition', en:'means similar to; it does not complete the as ... as pattern', th:'แปลว่า “เหมือน” แต่ไม่ได้ใช้ปิดโครงสร้าง as ... as' },
+  from: { pos:'preposition', en:'means from/origin; common in different from, not in as ... as', th:'แปลว่า “จาก” และพบใน different from ไม่ใช่โครงสร้าง as ... as' },
+  efficient: { pos:'adjective', en:'describes a noun: an efficient system', th:'adjective ใช้ขยายคำนาม เช่น an efficient system' },
+  efficiently: { pos:'adverb', en:'modifies a verb/adjective: work efficiently', th:'adverb ใช้ขยายกริยา/คุณศัพท์ เช่น work efficiently' },
+  efficiency: { pos:'noun', en:'a noun meaning the state of being efficient', th:'noun หมายถึง “ประสิทธิภาพ”' },
+  efficiencies: { pos:'plural noun', en:'plural noun; refers to efficiencies or savings', th:'คำนามพหูพจน์ ใช้พูดถึงประสิทธิภาพ/ความคุ้มหลายด้าน' },
+  conduct: { pos:'verb', en:'conduct a survey = carry out a survey', th:'verb: conduct a survey = ดำเนินการสำรวจ' },
+  construct: { pos:'verb', en:'construct = build something physical or structural', th:'verb: construct = ก่อสร้าง/สร้างสิ่งหรือโครงสร้าง' },
+  contain: { pos:'verb', en:'contain = hold or include something', th:'verb: contain = บรรจุ/ประกอบด้วย' },
+  contact: { pos:'verb', en:'contact = communicate with a person or organization', th:'verb: contact = ติดต่อบุคคลหรือหน่วยงาน' },
+  is: { pos:'singular verb', en:'finite singular form of be', th:'กริยา be สำหรับประธานเอกพจน์' },
+  are: { pos:'plural verb', en:'finite plural form of be', th:'กริยา be สำหรับประธานพหูพจน์' },
+  has: { pos:'singular auxiliary', en:'singular auxiliary for he/she/it or a singular head subject', th:'กริยาช่วยสำหรับประธานเอกพจน์' },
+  have: { pos:'plural/base auxiliary', en:'used with plural subjects or I/you/we/they', th:'กริยาช่วยที่ใช้กับประธานพหูพจน์ หรือ I/you/we/they' },
+  be: { pos:'base verb', en:'bare infinitive; it needs a modal/to or another structure', th:'กริยารูป base form ต้องมี modal/to หรือโครงสร้างรองรับ' },
+}
+
+function inferWordClass(word: string) {
+  const value = word.toLowerCase().replace(/[^a-z-]/g, '')
+  const known = choiceLexicon[value]
+  if (known) return known.pos
+  if (value.endsWith('ly')) return 'adverb'
+  if (/(tion|sion|ment|ness|ity|ance|ence|ship|ism|ure)$/.test(value)) return 'noun'
+  if (/(ous|ful|less|ive|able|ible|al|ic|ary|ory)$/.test(value)) return 'adjective'
+  if (/(ing|ed)$/.test(value)) return 'verb/participle'
+  return 'word/form'
+}
+
+function stemAroundBlank(stem: string) {
+  const match = stem.match(/_{3,}/)
+  if (!match || match.index === undefined) return { before: stem, after: '' }
+  return {
+    before: stem.slice(0, match.index).trim(),
+    after: stem.slice(match.index + match[0].length).trim(),
+  }
+}
+
+function splitSubjectAux(before: string) {
+  const m = before.match(/^(.+?)\s+(is|are|was|were|has|have|had|will|would|can|could|should|must|may|might)\s*(.*)$/i)
+  return m ? { subject:m[1].trim(), aux:m[2].trim(), middle:m[3].trim() } : null
+}
+
+function buildQuestionAnalysis(question: Question, lang: Language): QuestionAnalysis {
+  const rule = question.ruleId ?? question.skills[0]
+  const { before, after } = stemAroundBlank(question.stem)
+  const explanation = question.explanation.toLowerCase()
+  const segments: AnalysisSegment[] = []
+  const steps: string[] = []
+  let needed = localizedQuestionExplanation(question, lang)
+  let memory = localizedQuestionExplanation(question, lang)
+
+  const addDefault = () => {
+    if (before) segments.push({ text:before, label:L(lang,'before the blank','ส่วนก่อนช่องว่าง'), tone:'modifier' })
+    segments.push({ text:'_____', label:L(lang,'missing part','สิ่งที่ขาด'), tone:'blank' })
+    if (after) segments.push({ text:after, label:L(lang,'after the blank','ส่วนหลังช่องว่าง'), tone:'object' })
+  }
+
+  if (rule === 'comparison.patterns' || rule === 'comparison') {
+    const aux = splitSubjectAux(before)
+    if (aux) {
+      segments.push({ text:aux.subject, label:L(lang,'true subject','ประธานแท้'), tone:'subject' })
+      segments.push({ text:aux.aux, label:L(lang,'main/linking verb','กริยาหลัก/กริยาเชื่อม'), tone:'verb' })
+      if (aux.middle) segments.push({ text:aux.middle, label:L(lang,'comparison signal','คำสัญญาณเปรียบเทียบ'), tone:'clue' })
+    } else {
+      segments.push({ text:before, label:L(lang,'comparison structure','โครงสร้างเปรียบเทียบ'), tone:'clue' })
+    }
+    segments.push({ text:'_____', label:L(lang,'comparison connector','คำเชื่อมที่ขาด'), tone:'blank' })
+    if (after) segments.push({ text:after, label:L(lang,'comparison target','สิ่งที่นำมาเปรียบเทียบ'), tone:'object' })
+
+    if (/twice\s+as|three times\s+as|half\s+as|as\s+\w+/i.test(before)) {
+      needed = L(lang, 'the second “as” that closes the equality/multiplier pattern', 'คำว่า “as” ตัวที่สองเพื่อปิดโครงสร้างการเปรียบเทียบแบบเท่ากัน/หลายเท่า')
+      memory = L(lang, 'Multiplier + as + adjective/adverb + as + comparison target', 'จำเป็นสูตร: จำนวนเท่า + as + adjective/adverb + as + สิ่งที่เปรียบเทียบ')
+      steps.push(
+        L(lang, 'Spot “twice as / as ...” before the blank.', 'เห็น “twice as / as ...” ก่อนช่องว่าง'),
+        L(lang, 'This is not a normal comparative with “than”; it is the as ... as pattern.', 'นี่ไม่ใช่ comparative ปกติที่ใช้ than แต่เป็นโครงสร้าง as ... as'),
+        L(lang, 'Close the pattern with “as”.', 'จึงต้องปิดโครงสร้างด้วย “as”'),
+      )
+    } else {
+      needed = L(lang, 'the connector required by the comparison pattern', 'คำเชื่อมที่ตรงกับรูปแบบการเปรียบเทียบ')
+      steps.push(
+        L(lang, 'Find the comparison signal (more/-er, as...as, most, less).', 'หาคำสัญญาณเปรียบเทียบ เช่น more/-er, as...as, most, less'),
+        L(lang, 'Match the connector to that pattern.', 'จับคู่ connector ให้ตรงสูตร'),
+        L(lang, 'Then check meaning.', 'ค่อยตรวจความหมายอีกครั้ง'),
+      )
+    }
+  } else if (rule === 'subject-verb' || question.skills.includes('subject-verb')) {
+    const lower = before.toLowerCase()
+    if (lower.includes(' neither ') || lower.startsWith('neither ') || lower.includes(' either ') || lower.startsWith('either ')) {
+      const pieces = before.split(/\b(?:nor|or)\b/i)
+      const left = pieces[0]?.trim()
+      const near = pieces[1]?.trim()
+      if (left) segments.push({ text:left, label:L(lang,'first subject','ประธานชุดแรก'), tone:'subject' })
+      if (near) segments.push({ text:near, label:L(lang,'nearest subject controls agreement','ประธานที่อยู่ใกล้กริยาที่สุด'), tone:'clue' })
+      segments.push({ text:'_____', label:L(lang,'finite verb','กริยาที่ต้องผัน'), tone:'blank' })
+      if (after) segments.push({ text:after, label:L(lang,'complement','ส่วนเติมเต็ม'), tone:'object' })
+      needed = L(lang, 'a verb that agrees with the nearer subject', 'กริยาที่สอดคล้องกับประธานที่อยู่ใกล้กริยามากที่สุด')
+      memory = L(lang, 'With either...or / neither...nor, TOEIC normally makes the verb agree with the nearer subject.', 'either...or / neither...nor ให้กริยาสอดคล้องกับประธานตัวที่อยู่ใกล้กริยาที่สุด')
+    } else {
+      const ofIndex = lower.indexOf(' of ')
+      const head = ofIndex >= 0 ? before.slice(0, ofIndex).trim() : before.trim()
+      const modifier = ofIndex >= 0 ? before.slice(ofIndex).trim() : ''
+      segments.push({ text:head, label:L(lang,'head subject','ประธานแท้ (head subject)'), tone:'subject' })
+      if (modifier) segments.push({ text:modifier, label:L(lang,'modifier — ignore for agreement','ส่วนขยาย ไม่ใช้ตัดสินเอก/พหูพจน์'), tone:'modifier' })
+      segments.push({ text:'_____', label:L(lang,'verb that must agree with the head subject','กริยาที่ต้องผันตามประธานแท้'), tone:'blank' })
+      if (after) segments.push({ text:after, label:L(lang,'complement','ส่วนเติมเต็ม'), tone:'object' })
+      const singular = /singular|“each”|head subject is “one”|head subject “the number”|head subject is singular|“a list”/i.test(question.explanation)
+      needed = singular
+        ? L(lang, 'a singular finite verb', 'กริยารูปเอกพจน์')
+        : L(lang, 'the finite verb that agrees with the head subject', 'กริยาที่ตรงกับจำนวนของประธานแท้')
+      memory = L(lang, 'Cross out “of + noun” mentally. The noun nearest the blank is often a TOEIC trap.', 'เวลาเจอ “of + noun” ให้ขีดทิ้งในใจ แล้วผันกริยาตาม head subject ไม่ใช่คำนามที่อยู่ใกล้ช่องว่าง')
+    }
+    steps.push(
+      L(lang, 'Find the head subject.', 'หา head subject / ประธานแท้'),
+      L(lang, 'Ignore prepositional phrases and distracting nouns.', 'ตัดวลีขยาย เช่น of + noun ออกจากการตัดสิน'),
+      L(lang, 'Choose the verb form that agrees with that subject.', 'เลือกกริยาเอกพจน์/พหูพจน์ให้ตรงประธานแท้'),
+    )
+  } else if (rule === 'vocab.business-collocation' || rule === 'vocabulary' || rule === 'collocation' || question.skills.includes('collocation')) {
+    const aux = splitSubjectAux(before)
+    if (aux) {
+      segments.push({ text:aux.subject, label:L(lang,'subject','ประธาน'), tone:'subject' })
+      segments.push({ text:aux.aux, label:L(lang,'modal/auxiliary','modal / กริยาช่วย'), tone:'verb' })
+      if (aux.middle) segments.push({ text:aux.middle, label:L(lang,'context','บริบท'), tone:'modifier' })
+    } else if (before) {
+      segments.push({ text:before, label:L(lang,'context before the verb','บริบทก่อนกริยา'), tone:'subject' })
+    }
+    segments.push({ text:'_____', label:L(lang,'base verb + correct collocation','V1 ที่ต้องจับคู่กับกรรมให้เป็นธรรมชาติ'), tone:'blank' })
+    if (after) segments.push({ text:after, label:L(lang,'object / collocation partner','กรรม / คำที่ต้องจับคู่กับกริยา'), tone:'object' })
+    needed = L(lang, 'a grammatically valid base verb whose meaning forms the natural business collocation', 'กริยา V1 ที่ถูกทั้งไวยากรณ์และจับคู่กับคำนามด้านหลังได้เป็น collocation ธรรมชาติ')
+    memory = L(lang, 'If all choices are the same word class, grammar cannot decide the answer. Switch to meaning + collocation.', 'ถ้าตัวเลือกเป็นชนิดคำเดียวกันหมด ไวยากรณ์ตัดไม่ได้ ต้องเปลี่ยนไปดู “ความหมาย + collocation”')
+    steps.push(
+      L(lang, 'Use the modal/verb pattern to identify the required form (for example, will + V1).', 'ใช้โครงสร้างก่อน เช่น will + V1 เพื่อเช็กว่ารูปคำถูก'),
+      L(lang, 'Notice that several choices may all be verbs.', 'สังเกตว่าหลายตัวเลือกอาจเป็น verb ถูกไวยากรณ์เหมือนกัน'),
+      L(lang, 'Choose the verb that naturally goes with the object.', 'เลือก verb ที่ใช้คู่กับกรรมด้านหลังจริง ๆ'),
+    )
+  } else if (rule.startsWith('wordform.') || rule === 'part-of-speech' || question.skills.includes('part-of-speech')) {
+    let form = explanation.includes('adverb') ? 'adverb'
+      : explanation.includes('adjective') ? 'adjective'
+        : explanation.includes('noun') ? 'noun'
+          : explanation.includes('base verb') ? 'base verb'
+            : 'required word class'
+    const aux = splitSubjectAux(before)
+    if (aux) {
+      segments.push({ text:aux.subject, label:L(lang,'subject','ประธาน'), tone:'subject' })
+      segments.push({ text:aux.aux, label:L(lang,'verb/auxiliary','กริยา/กริยาช่วย'), tone:'verb' })
+      if (aux.middle) segments.push({ text:aux.middle, label:L(lang,'word being modified / signal','คำที่ถูกขยาย / จุดสังเกต'), tone:'clue' })
+    } else if (before) {
+      segments.push({ text:before, label:L(lang,'structure before the blank','โครงสร้างก่อนช่องว่าง'), tone:'clue' })
+    }
+    segments.push({ text:'_____', label:L(lang, `needs ${form}`, `ต้องเป็น ${form}`), tone:'blank' })
+    if (after) segments.push({ text:after, label:L(lang,'word after the blank','คำหลังช่องว่าง'), tone:'object' })
+    needed = lang === 'th' ? `คำชนิด ${form}` : form
+    memory = form === 'adverb'
+      ? L(lang, 'Adverbs commonly modify verbs/adjectives; many end in -ly. Ask “what does the blank modify?” before translating.', 'adverb ใช้ขยาย verb/adjective เป็นหลัก หลายคำลงท้าย -ly ให้ถามก่อนว่า “ช่องว่างกำลังขยายคำไหน” แล้วค่อยแปล')
+      : form === 'adjective'
+        ? L(lang, 'Adjectives describe nouns and often appear directly before a noun or after a linking verb.', 'adjective ใช้ขยาย noun มักอยู่หน้าคำนามหรือหลัง linking verb')
+        : form === 'noun'
+          ? L(lang, 'Nouns commonly follow articles/possessives and can serve as subjects or objects.', 'noun มักอยู่หลัง article/possessive และทำหน้าที่เป็นประธานหรือกรรม')
+          : localizedQuestionExplanation(question, lang)
+    steps.push(
+      L(lang, 'Ignore meaning for a moment and locate the blank’s grammatical job.', 'พักเรื่องความหมายก่อน แล้วหาหน้าที่ไวยากรณ์ของช่องว่าง'),
+      L(lang, `The sentence needs a ${form} here.`, `ตำแหน่งนี้ต้องการ ${form}`),
+      L(lang, 'Eliminate choices with the wrong word class, then check meaning.', 'ตัดตัวเลือกที่ชนิดคำผิดก่อน แล้วค่อยเช็กความหมาย'),
+    )
+  } else if (rule === 'tense.present-perfect-since' || (question.skills.includes('verb-tense') && /since/i.test(question.stem))) {
+    addDefault()
+    needed = L(lang, 'present perfect: has/have + past participle (V3)', 'Present Perfect: has/have + V3')
+    memory = L(lang, 'since + starting point → present perfect when the time period continues to now', 'since + จุดเริ่มต้น → ใช้ Present Perfect เมื่อช่วงเวลายังเชื่อมถึงปัจจุบัน')
+    steps.push(
+      L(lang, 'Find the signal “since”.', 'หาคำสัญญาณ “since”'),
+      L(lang, 'Check that the period continues to the present.', 'เช็กว่าช่วงเวลายังเชื่อมกับปัจจุบัน'),
+      L(lang, 'Use has/have + V3.', 'ใช้ has/have + V3'),
+    )
+  } else if (rule === 'passive.core' || question.skills.includes('passive')) {
+    addDefault()
+    needed = L(lang, 'the correct tense of BE + past participle (V3)', 'BE ที่ผันตาม tense + V3')
+    memory = L(lang, 'If the subject receives the action, build the verb as BE + V3.', 'ถ้าประธานเป็นผู้ถูกกระทำ ให้สร้างกริยาเป็น BE + V3')
+    steps.push(
+      L(lang, 'Identify the subject.', 'หา subject'),
+      L(lang, 'Ask whether it performs or receives the action.', 'ถามว่าประธานทำเองหรือถูกกระทำ'),
+      L(lang, 'If it receives the action, choose BE + V3 with the correct tense.', 'ถ้าถูกกระทำ ใช้ BE + V3 และผัน BE ให้ตรง tense'),
+    )
+  } else {
+    addDefault()
+    steps.push(
+      L(lang, 'Identify the grammar pattern around the blank.', 'หาโครงสร้างไวยากรณ์รอบช่องว่าง'),
+      L(lang, 'Use the strongest signal word or structure.', 'ใช้คำสัญญาณหรือโครงสร้างที่ชัดที่สุด'),
+      L(lang, 'Then compare meaning and collocation.', 'ค่อยเทียบความหมายและ collocation'),
+    )
+  }
+
+  return { needed, memory, steps, segments }
+}
+
+function explainChoice(question: Question, choiceId: string, analysis: QuestionAnalysis, lang: Language) {
+  const choice = question.choices.find(c => c.id === choiceId)
+  if (!choice) return ''
+  const word = choice.text.toLowerCase()
+  const correct = choice.id === question.answer
+  const lex = choiceLexicon[word]
+  const rule = question.ruleId ?? question.skills[0]
+  const specific = question.whyOthers?.[choice.id]
+
+  if (correct) {
+    const base = localizedQuestionExplanation(question, lang)
+    return lang === 'th'
+      ? `✓ ถูก — ${lex ? lex.th + ' และ ' : ''}${base}`
+      : `✓ Correct — ${lex ? lex.en + '. ' : ''}${question.explanation}`
+  }
+
+  if (specific && lang === 'en') return `✗ ${specific}`
+
+  if (rule === 'comparison.patterns' || rule === 'comparison') {
+    if (lex) return lang === 'th'
+      ? `✗ ${lex.pos}: ${lex.th} จึงไม่ตรง pattern ที่โจทย์ต้องการ`
+      : `✗ ${lex.pos}: ${lex.en}; it does not match this comparison pattern.`
+  }
+
+  if (rule.startsWith('wordform.') || rule === 'part-of-speech' || question.skills.includes('part-of-speech')) {
+    const pos = inferWordClass(choice.text)
+    return lang === 'th'
+      ? `✗ “${choice.text}” เป็น ${pos} แต่ช่องนี้ต้องการ ${analysis.needed}`
+      : `✗ “${choice.text}” is ${pos}, but this blank needs ${analysis.needed}.`
+  }
+
+  if (rule === 'subject-verb' || question.skills.includes('subject-verb')) {
+    const pos = inferWordClass(choice.text)
+    return lang === 'th'
+      ? `✗ “${choice.text}” เป็น ${pos}; รูปกริยานี้ไม่สอดคล้องกับประธานแท้ที่วิเคราะห์ไว้ด้านบน`
+      : `✗ “${choice.text}” is ${pos}; it does not agree with the head subject identified above.`
+  }
+
+  if (lex) return lang === 'th'
+    ? `✗ ${lex.pos}: ${lex.th} แต่ความหมาย/คำที่ใช้คู่กันไม่เข้ากับประโยคนี้`
+    : `✗ ${lex.pos}: ${lex.en}, but its meaning/collocation does not fit this sentence.`
+
+  return lang === 'th'
+    ? `✗ “${choice.text}” ไม่ตรงทั้งรูปแบบที่ต้องการ (${analysis.needed}) หรือความหมาย/collocation ของประโยคนี้`
+    : `✗ “${choice.text}” does not satisfy the required pattern (${analysis.needed}) or the sentence’s meaning/collocation.`
+}
+
+function DetailedAnswerAnalysis({ question, selected }: { question: Question; selected: string }) {
+  const lang = useLanguage()
+  const analysis = buildQuestionAnalysis(question, lang)
+  return (
+    <div className="deep-answer-analysis">
+      <div className="analysis-section">
+        <strong>{L(lang, 'Sentence map', 'แยกโครงสร้างประโยค')}</strong>
+        <div className="syntax-map">
+          {analysis.segments.map((segment, index) => (
+            <span className={`syntax-token ${segment.tone}`} key={`${segment.text}-${index}`}>
+              <b>{segment.text}</b>
+              <small>{segment.label}</small>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="analysis-needed">
+        <span>{L(lang, 'What is missing?', 'ช่องว่างต้องการอะไร?')}</span>
+        <b>{analysis.needed}</b>
+      </div>
+
+      <div className="analysis-section">
+        <strong>{L(lang, 'How to decide', 'วิธีคิดทีละขั้น')}</strong>
+        <ol>{analysis.steps.map(step => <li key={step}>{step}</li>)}</ol>
+      </div>
+
+      <div className="analysis-section">
+        <strong>{L(lang, 'Compare every choice', 'เทียบตัวเลือกทุกข้อ')}</strong>
+        <div className="choice-breakdown">
+          {question.choices.map(choice => (
+            <div className={choice.id === question.answer ? 'choice-explain correct' : choice.id === selected ? 'choice-explain selected-wrong' : 'choice-explain'} key={choice.id}>
+              <b>{choice.id}. {choice.text}</b>
+              <span>{explainChoice(question, choice.id, analysis, lang)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="analysis-memory">
+        <strong>{L(lang, 'Memorize this', 'จำสูตรนี้')}</strong>
+        <p>{analysis.memory}</p>
+      </div>
+    </div>
+  )
+}
+
 function selectedChoiceExplanation(question: Question, selected: string, lang: Language) {
   const selectedText = question.choices.find(c => c.id === selected)?.text ?? ''
   const answerText = question.choices.find(c => c.id === question.answer)?.text ?? ''
   const correct = selected === question.answer
-  const rule = localizedQuestionExplanation(question, lang)
   if (correct) {
-    return lang === 'th' ? `ถูก เพราะ ${rule}` : `Correct. ${question.explanation}`
+    return lang === 'th'
+      ? `ถูก — ${localizedQuestionExplanation(question, lang)}`
+      : `Correct. ${question.explanation}`
   }
-  const specific = lang === 'en' ? question.whyOthers?.[selected] : undefined
-  const whyWrong = specific ?? fallbackWrongExplanation(question, lang)
   return lang === 'th'
-    ? `ตัวเลือก ${selected}. ${selectedText} ไม่ใช่คำตอบ เพราะ ${whyWrong} คำตอบที่ถูกคือ ${question.answer}. ${answerText} — ${rule}`
-    : `Choice ${selected}. ${selectedText} is not correct. ${whyWrong} The correct answer is ${question.answer}. ${answerText}. ${question.explanation}`
+    ? `คุณเลือก ${selected}. ${selectedText} แต่คำตอบคือ ${question.answer}. ${answerText}`
+    : `You chose ${selected}. ${selectedText}; the correct answer is ${question.answer}. ${answerText}.`
 }
 
 function lineKey(row: string[], index: number) {
@@ -590,7 +894,10 @@ function App() {
     const timer = window.setTimeout(() => {
       syncCloudState(normalized)
         .then(() => setSyncError(false))
-        .catch(() => setSyncError(true))
+        .catch(error => {
+          console.error('Firebase sync failed', error)
+          setSyncError(true)
+        })
         .finally(() => setSyncing(false))
     }, 350)
     return () => window.clearTimeout(timer)
@@ -675,6 +982,7 @@ function App() {
               setState={setState}
               pool={allPart6}
               passageMap={allPassageById}
+              onBack={() => navigate('home')}
               readingSwitch={part => navigate(part === 6 ? 'part6' : 'part7')}
             />
           )}
@@ -685,6 +993,7 @@ function App() {
               setState={setState}
               pool={allPart7}
               passageMap={allPassageById}
+              onBack={() => navigate('home')}
               readingSwitch={part => navigate(part === 6 ? 'part6' : 'part7')}
             />
           )}
@@ -740,7 +1049,7 @@ function AppHeader({
           <button className={lang === 'th' ? 'active' : ''} onClick={() => setLang('th')}>TH</button>
           <button className={lang === 'en' ? 'active' : ''} onClick={() => setLang('en')}>EN</button>
         </div>
-        <div className={`cloud-state ${connected ? 'online' : ''}`}>
+        <div className={`cloud-state ${syncError ? 'error' : connected ? 'online' : ''}`}>
           <span />
           {syncing
             ? L(lang, 'Saving', 'กำลังบันทึก')
@@ -1353,6 +1662,47 @@ if (import.meta.env.DEV) {
   }
 }
 
+function DailyPartComplete({
+  part,
+  done,
+  target,
+  onExit,
+  onExtra,
+}: {
+  part: Part
+  done: number
+  target: number
+  onExit?: () => void
+  onExtra: () => void
+}) {
+  const lang = useLanguage()
+  return (
+    <div className="screen practice-screen">
+      <section className="daily-part-complete">
+        <span className="complete-check">✓</span>
+        <small>{L(lang, 'DAILY TARGET COMPLETE', 'ครบเป้าหมายวันนี้แล้ว')}</small>
+        <h1>{L(lang, `Part ${part} is done for today`, `Part ${part} วันนี้พอแล้ว`)}</h1>
+        <p>{L(
+          lang,
+          `You completed ${done} questions. Today’s adaptive target was ${target}. The trainer will not keep feeding questions automatically after the target.`,
+          `คุณทำแล้ว ${done} ข้อ เป้าหมาย Adaptive วันนี้คือ ${target} ข้อ ระบบจะหยุดสุ่มโจทย์ต่ออัตโนมัติเมื่อครบเป้า`,
+        )}</p>
+        {done > target && (
+          <div className="over-target-note">{L(
+            lang,
+            `You went ${done - target} questions beyond the target. Those answers still count in your learning data.`,
+            `วันนี้คุณทำเกินเป้ามา ${done - target} ข้อ ข้อมูลทั้งหมดที่ทำเกินยังถูกเก็บไว้ใช้วิเคราะห์เหมือนเดิม`,
+          )}</div>
+        )}
+        <div className="daily-complete-actions">
+          {onExit && <button className="big-next" onClick={onExit}>{L(lang, 'Finish for now', 'จบการฝึกตอนนี้')} <span>✓</span></button>}
+          <button className="secondary-action" onClick={onExtra}>{L(lang, 'Optional extra practice', 'ฝึกเพิ่มแบบสมัครใจ')}</button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 function PracticeScreen({
   part,
   state,
@@ -1378,6 +1728,7 @@ function PracticeScreen({
   const [elapsed, setElapsed] = useState(0)
   const [reason, setReason] = useState<ErrorReason | ''>('')
   const [part6PickerOpen, setPart6PickerOpen] = useState(false)
+  const [extraPractice, setExtraPractice] = useState(false)
   const startedAt = useRef(performance.now())
 
   useEffect(() => {
@@ -1386,6 +1737,7 @@ function PracticeScreen({
     setChecked(false)
     setReason('')
     setPart6PickerOpen(false)
+    setExtraPractice(false)
     startedAt.current = performance.now()
     // reset only when pool/part changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1399,6 +1751,9 @@ function PracticeScreen({
   const targets = dailyTargets(state)
   const partTarget = part === 5 ? targets.part5 : part === 6 ? targets.part6 : targets.part7
   const partDone = todayPartCount(state, part)
+  const passageBoundary = part === 5 || !passage || passageQuestionIndex >= passageQuestionIds.length - 1
+  const goalReached = partDone >= partTarget
+  const showDailyComplete = goalReached && !extraPractice && !checked
 
   const submit = () => {
     if (!selected || checked) return
@@ -1409,6 +1764,16 @@ function PracticeScreen({
   }
 
   const next = () => {
+    if (!extraPractice && goalReached && passageBoundary) {
+      setSelected('')
+      setChecked(false)
+      setElapsed(0)
+      setReason('')
+      setPart6PickerOpen(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
     const sequential = nextQuestionInSamePassage(question, pool, activePassageMap)
     setQuestion(sequential ?? firstQuestionOfPickedPassage(state, pool, activePassageMap, question.passageId))
     setSelected('')
@@ -1418,6 +1783,21 @@ function PracticeScreen({
     setPart6PickerOpen(false)
     startedAt.current = performance.now()
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (showDailyComplete) {
+    return (
+      <DailyPartComplete
+        part={part}
+        done={partDone}
+        target={partTarget}
+        onExit={onBack}
+        onExtra={() => {
+          setExtraPractice(true)
+          startedAt.current = performance.now()
+        }}
+      />
+    )
   }
 
   return (
@@ -1446,7 +1826,7 @@ function PracticeScreen({
 
       <div className="practice-progress">
         <Progress value={partDone / Math.max(1, partTarget) * 100} />
-        <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}</span>
+        <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}{extraPractice ? L(lang, ' · extra', ' · ฝึกเพิ่ม') : ''}</span>
       </div>
 
       {passage && (
@@ -1495,7 +1875,9 @@ function PracticeScreen({
                       setState(current => addFeedbackToLatest(current, r))
                     }}
                     onNext={next}
-                    nextLabel={L(lang, 'Next blank', 'ช่องถัดไป')}
+                    nextLabel={!extraPractice && goalReached && passageBoundary
+                      ? L(lang, 'Finish today’s target', 'จบตามเป้าหมายวันนี้')
+                      : L(lang, 'Next blank', 'ช่องถัดไป')}
                   />
                 )}
               </section>
@@ -1519,7 +1901,9 @@ function PracticeScreen({
                 setState(current => addFeedbackToLatest(current, r))
               }}
               onNext={next}
-              nextLabel={L(lang, 'Next question', 'ข้อถัดไป')}
+              nextLabel={!extraPractice && goalReached && passageBoundary
+                ? L(lang, 'Finish today’s target', 'จบตามเป้าหมายวันนี้')
+                : L(lang, 'Next question', 'ข้อถัดไป')}
             />
           )}
         </>
@@ -1569,7 +1953,10 @@ function QuestionCard({
                   <b>{choice.id === question.answer
                     ? L(lang, 'Why this is correct', 'ทำไมข้อนี้ถูก')
                     : L(lang, 'Why this is wrong', 'ทำไมข้อนี้ผิด')}</b>
-                  <p>{selectedChoiceExplanation(question, selected, lang)}</p>
+                  <p className="answer-result-summary">{selectedChoiceExplanation(question, selected, lang)}</p>
+                  {choice.id !== question.answer && question.part <= 6 && (
+                    <DetailedAnswerAnalysis question={question} selected={selected} />
+                  )}
                   {question.evidence && (
                     <div className="inline-evidence">
                       <strong>{L(lang, 'Evidence in the passage', 'หลักฐานในบทความ')}</strong>

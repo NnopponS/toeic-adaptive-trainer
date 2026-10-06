@@ -1,0 +1,56 @@
+name: Publish adaptive question packs
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "adaptive-packs/**"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish personalized questions to Firebase
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const DB = 'https://toeic-study-c4905-default-rtdb.asia-southeast1.firebasedatabase.app';
+          const dir = path.join(process.cwd(), 'adaptive-packs');
+          const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort() : [];
+          const questions = {};
+
+          for (const file of files) {
+            const pack = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+            for (const q of pack.questions ?? []) {
+              if (!q.id || !q.part || !Array.isArray(q.choices)) throw new Error('Invalid question in ' + file);
+              questions[q.id] = { ...q, source:'personalized', createdAt:q.createdAt ?? Date.now() };
+            }
+          }
+
+          const res = await fetch(DB + '/questionBank/personalized.json', {
+            method:'PATCH',
+            headers:{'content-type':'application/json'},
+            body:JSON.stringify(questions),
+          });
+          if (!res.ok) throw new Error('Firebase publish failed: ' + res.status + ' ' + await res.text());
+
+          const meta = await fetch(DB + '/questionBank/meta.json', {
+            method:'PATCH',
+            headers:{'content-type':'application/json'},
+            body:JSON.stringify({
+              personalizedCount:Object.keys(questions).length,
+              personalizedUpdatedAt:Date.now(),
+              personalizedPackFiles:files.length,
+            }),
+          });
+          if (!meta.ok) throw new Error('Firebase meta update failed: ' + meta.status + ' ' + await meta.text());
+
+          console.log('Published personalized questions:', Object.keys(questions).length);
+          console.log('Pack files:', files.join(', '));
+          NODE

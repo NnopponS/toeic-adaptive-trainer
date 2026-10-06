@@ -1,0 +1,741 @@
+{
+  "createdAt": "2026-10-07T01:55:00+07:00",
+  "reason": "Today's observed errors: subject-verb head subject from Firebase, plus comparison and word-form/adverb traps visible in learner screenshots. Includes a small collocation set because the current session reached that topic.",
+  "questions": [
+    {
+      "id": "adaptive-20261007-sva-01",
+      "part": 5,
+      "stem": "A list of approved vendors _____ posted on the procurement portal.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "are"
+        },
+        {
+          "id": "B",
+          "text": "is"
+        },
+        {
+          "id": "C",
+          "text": "have"
+        },
+        {
+          "id": "D",
+          "text": "be"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "subject-verb"
+      ],
+      "difficulty": 2,
+      "explanation": "The head subject is singular “A list.” The phrase “of approved vendors” only modifies “list,” so the singular verb “is” is required.",
+      "explanationTh": "ประธานแท้คือ “A list” ซึ่งเป็นเอกพจน์ ส่วน “of approved vendors” เป็นเพียงวลีขยาย จึงต้องใช้กริยาเอกพจน์ “is”",
+      "whyOthers": {
+        "A": "“are” agrees with a plural subject, but the head subject is “A list.”",
+        "C": "“have” is both the wrong verb and plural/base agreement here.",
+        "D": "“be” is a base form and cannot stand alone as the finite verb here."
+      },
+      "ruleId": "sva.head-subject",
+      "chapterIds": [
+        10
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-sva-02",
+      "part": 5,
+      "stem": "The quality of the replacement parts _____ improved since last month.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "have"
+        },
+        {
+          "id": "B",
+          "text": "has"
+        },
+        {
+          "id": "C",
+          "text": "are"
+        },
+        {
+          "id": "D",
+          "text": "were"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "subject-verb",
+        "verb-tense"
+      ],
+      "difficulty": 3,
+      "explanation": "The head subject is singular “The quality,” not the plural noun “parts.” “Since last month” also calls for present perfect, so “has improved” is correct.",
+      "explanationTh": "ประธานแท้คือ “The quality” เป็นเอกพจน์ ไม่ใช่ “parts” และ since last month ต้องใช้ Present Perfect จึงเป็น “has improved”",
+      "ruleId": "sva.head-subject",
+      "chapterIds": [
+        10,
+        11
+      ],
+      "targetSeconds": 30
+    },
+    {
+      "id": "adaptive-20261007-sva-03",
+      "part": 5,
+      "stem": "Each of the new interns _____ a security badge on the first day.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "receive"
+        },
+        {
+          "id": "B",
+          "text": "receives"
+        },
+        {
+          "id": "C",
+          "text": "receiving"
+        },
+        {
+          "id": "D",
+          "text": "have received"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "subject-verb"
+      ],
+      "difficulty": 2,
+      "explanation": "“Each” is the head subject and is singular, so the simple-present verb must be “receives.”",
+      "explanationTh": "head subject คือ “Each” ซึ่งเป็นเอกพจน์เสมอ แม้ interns จะเป็นพหูพจน์ จึงใช้ receives",
+      "ruleId": "sva.head-subject",
+      "chapterIds": [
+        10
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-sva-04",
+      "part": 5,
+      "stem": "Neither the supervisor nor the technicians _____ available this afternoon.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "is"
+        },
+        {
+          "id": "B",
+          "text": "are"
+        },
+        {
+          "id": "C",
+          "text": "was"
+        },
+        {
+          "id": "D",
+          "text": "be"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "subject-verb"
+      ],
+      "difficulty": 3,
+      "explanation": "With neither...nor, the verb agrees with the nearer subject. “Technicians” is plural, so “are” is correct.",
+      "explanationTh": "neither...nor ให้กริยาตามประธานที่อยู่ใกล้ที่สุด ซึ่งคือ technicians (พหูพจน์) จึงใช้ are",
+      "ruleId": "sva.correlative",
+      "chapterIds": [
+        10,
+        19
+      ],
+      "targetSeconds": 30
+    },
+    {
+      "id": "adaptive-20261007-sva-05",
+      "part": 5,
+      "stem": "The number of customer complaints _____ decreased this quarter.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "have"
+        },
+        {
+          "id": "B",
+          "text": "has"
+        },
+        {
+          "id": "C",
+          "text": "are"
+        },
+        {
+          "id": "D",
+          "text": "were"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "subject-verb",
+        "verb-tense"
+      ],
+      "difficulty": 3,
+      "explanation": "“The number” is singular, so use “has.” The present-perfect form “has decreased” also fits the current-quarter context.",
+      "explanationTh": "คำที่เป็นประธานแท้คือ “The number” ซึ่งเป็นเอกพจน์ จึงใช้ has และได้ Present Perfect “has decreased”",
+      "ruleId": "sva.head-subject",
+      "chapterIds": [
+        10,
+        11
+      ],
+      "targetSeconds": 30
+    },
+    {
+      "id": "adaptive-20261007-comp-01",
+      "part": 5,
+      "stem": "The new warehouse is nearly twice as large _____ the company’s previous facility.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "than"
+        },
+        {
+          "id": "B",
+          "text": "as"
+        },
+        {
+          "id": "C",
+          "text": "like"
+        },
+        {
+          "id": "D",
+          "text": "from"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "comparison"
+      ],
+      "difficulty": 2,
+      "explanation": "The multiplier pattern is “twice as + adjective + as.” Therefore “twice as large as” is required.",
+      "explanationTh": "สูตรหลายเท่าคือ “twice as + adjective + as” ดังนั้นต้องเป็น “twice as large as” ไม่ใช้ than",
+      "whyOthers": {
+        "A": "“than” belongs to a comparative such as “larger than,” not “twice as large than.”",
+        "C": "“like” expresses similarity but does not close the as...as pattern.",
+        "D": "“from” is used in phrases such as “different from,” not this equality pattern."
+      },
+      "ruleId": "comparison.patterns",
+      "chapterIds": [
+        18
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-comp-02",
+      "part": 5,
+      "stem": "The upgraded model is considerably more reliable _____ the older version.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "as"
+        },
+        {
+          "id": "B",
+          "text": "than"
+        },
+        {
+          "id": "C",
+          "text": "from"
+        },
+        {
+          "id": "D",
+          "text": "like"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "comparison"
+      ],
+      "difficulty": 2,
+      "explanation": "“More reliable” is a comparative, and comparatives are followed by “than.”",
+      "explanationTh": "มีรูป comparative “more reliable” จึงต้องตามด้วย than",
+      "ruleId": "comparison.patterns",
+      "chapterIds": [
+        18
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-comp-03",
+      "part": 5,
+      "stem": "The online option is not as expensive _____ the printed package.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "than"
+        },
+        {
+          "id": "B",
+          "text": "as"
+        },
+        {
+          "id": "C",
+          "text": "from"
+        },
+        {
+          "id": "D",
+          "text": "like"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "comparison"
+      ],
+      "difficulty": 2,
+      "explanation": "The equality pattern is “not as + adjective + as.”",
+      "explanationTh": "โครงสร้างเทียบความเท่ากัน/ไม่เท่ากันคือ “not as + adjective + as” จึงตอบ as",
+      "ruleId": "comparison.patterns",
+      "chapterIds": [
+        18
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-comp-04",
+      "part": 5,
+      "stem": "The new distribution center is three times as large _____ the old one.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "than"
+        },
+        {
+          "id": "B",
+          "text": "as"
+        },
+        {
+          "id": "C",
+          "text": "from"
+        },
+        {
+          "id": "D",
+          "text": "like"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "comparison"
+      ],
+      "difficulty": 2,
+      "explanation": "After “three times as large,” the pattern closes with “as.”",
+      "explanationTh": "three times as large เป็นสูตรเดียวกับ twice as large จึงต้องปิดด้วย as",
+      "ruleId": "comparison.patterns",
+      "chapterIds": [
+        18
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-comp-05",
+      "part": 5,
+      "stem": "Shipping by rail is generally less expensive _____ shipping by air.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "as"
+        },
+        {
+          "id": "B",
+          "text": "than"
+        },
+        {
+          "id": "C",
+          "text": "like"
+        },
+        {
+          "id": "D",
+          "text": "from"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "comparison"
+      ],
+      "difficulty": 2,
+      "explanation": "“Less expensive” is a comparative structure and takes “than.”",
+      "explanationTh": "less + adjective เป็น comparative เช่นเดียวกับ more + adjective จึงใช้ than",
+      "ruleId": "comparison.patterns",
+      "chapterIds": [
+        18
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-adv-01",
+      "part": 5,
+      "stem": "The new inventory system processes orders more _____ than the previous one.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "efficient"
+        },
+        {
+          "id": "B",
+          "text": "efficiently"
+        },
+        {
+          "id": "C",
+          "text": "efficiency"
+        },
+        {
+          "id": "D",
+          "text": "efficiencies"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 2,
+      "explanation": "The blank modifies the verb “processes,” so an adverb is required. “Efficiently” is the adverb.",
+      "explanationTh": "ช่องว่างขยายกริยา “processes” ว่าประมวลผลอย่างไร จึงต้องใช้ adverb “efficiently” ไม่ใช่ adjective “efficient”",
+      "ruleId": "wordform.adverb-modifier",
+      "chapterIds": [
+        5,
+        6
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-adv-02",
+      "part": 5,
+      "stem": "The customer service team responded _____ to the complaint.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "professional"
+        },
+        {
+          "id": "B",
+          "text": "professionally"
+        },
+        {
+          "id": "C",
+          "text": "profession"
+        },
+        {
+          "id": "D",
+          "text": "professionalism"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 2,
+      "explanation": "The blank modifies the verb “responded,” so the adverb “professionally” is required.",
+      "explanationTh": "ช่องว่างขยาย responded จึงต้องตอบ adverb “professionally”",
+      "ruleId": "wordform.adverb-modifier",
+      "chapterIds": [
+        5,
+        6
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-adv-03",
+      "part": 5,
+      "stem": "All safety equipment is inspected _____ before each shift.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "thorough"
+        },
+        {
+          "id": "B",
+          "text": "thoroughly"
+        },
+        {
+          "id": "C",
+          "text": "thoroughness"
+        },
+        {
+          "id": "D",
+          "text": "more thorough"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 2,
+      "explanation": "The blank modifies “is inspected,” so an adverb is required: “thoroughly.”",
+      "explanationTh": "คำนี้ขยายกริยา passive “is inspected” ว่าตรวจอย่างไร จึงต้องเป็น adverb “thoroughly”",
+      "ruleId": "wordform.adverb-modifier",
+      "chapterIds": [
+        5,
+        6
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-adv-04",
+      "part": 5,
+      "stem": "Ms. Park explained the revised procedure _____ during orientation.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "clear"
+        },
+        {
+          "id": "B",
+          "text": "clearly"
+        },
+        {
+          "id": "C",
+          "text": "clarity"
+        },
+        {
+          "id": "D",
+          "text": "clearing"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 2,
+      "explanation": "“Clearly” is an adverb modifying the verb “explained.”",
+      "explanationTh": "ช่องว่างตอบคำถามว่า explained อย่างไร จึงต้องใช้ adverb “clearly”",
+      "ruleId": "wordform.adverb-modifier",
+      "chapterIds": [
+        5,
+        6
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-adv-05",
+      "part": 5,
+      "stem": "The migration was completed _____ and ahead of schedule.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "successful"
+        },
+        {
+          "id": "B",
+          "text": "successfully"
+        },
+        {
+          "id": "C",
+          "text": "success"
+        },
+        {
+          "id": "D",
+          "text": "succeed"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 2,
+      "explanation": "The adverb “successfully” modifies “was completed.”",
+      "explanationTh": "completed เป็นกริยา จึงต้องใช้ adverb “successfully” เพื่อบอกว่าทำสำเร็จอย่างไร",
+      "ruleId": "wordform.adverb-modifier",
+      "chapterIds": [
+        5,
+        6
+      ],
+      "targetSeconds": 25
+    },
+    {
+      "id": "adaptive-20261007-coll-01",
+      "part": 5,
+      "stem": "The company will _____ a customer survey next week.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "conduct"
+        },
+        {
+          "id": "B",
+          "text": "construct"
+        },
+        {
+          "id": "C",
+          "text": "contain"
+        },
+        {
+          "id": "D",
+          "text": "contact"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "vocabulary",
+        "collocation"
+      ],
+      "difficulty": 3,
+      "explanation": "All four choices are verbs, so grammar alone is not enough. The natural collocation is “conduct a survey,” meaning carry out a survey.",
+      "explanationTh": "ทุกตัวเลือกเป็น verb จึงใช้ไวยากรณ์ตัดไม่ได้ ต้องดู collocation: “conduct a survey” = ดำเนินการสำรวจ ส่วน construct=ก่อสร้าง, contain=บรรจุ/ประกอบด้วย, contact=ติดต่อ",
+      "whyOthers": {
+        "B": "Construct means build; we construct a building, not a survey.",
+        "C": "Contain means hold/include; a company does not contain a survey.",
+        "D": "Contact needs a person/organization as its object; we contact a customer, not conduct a survey by saying contact a survey."
+      },
+      "ruleId": "vocab.business-collocation",
+      "chapterIds": [
+        21,
+        26
+      ],
+      "targetSeconds": 30
+    },
+    {
+      "id": "adaptive-20261007-coll-02",
+      "part": 5,
+      "stem": "The retailer plans to _____ a new loyalty program in November.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "launch"
+        },
+        {
+          "id": "B",
+          "text": "land"
+        },
+        {
+          "id": "C",
+          "text": "lend"
+        },
+        {
+          "id": "D",
+          "text": "lift"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "vocabulary",
+        "collocation"
+      ],
+      "difficulty": 2,
+      "explanation": "The business collocation is “launch a program,” meaning introduce it.",
+      "explanationTh": "collocation ที่ใช้จริงคือ “launch a program” = เปิดตัว/เริ่มโครงการ",
+      "ruleId": "vocab.business-collocation",
+      "chapterIds": [
+        21,
+        26
+      ],
+      "targetSeconds": 30
+    },
+    {
+      "id": "adaptive-20261007-coll-03",
+      "part": 5,
+      "stem": "Please _____ any technical problems to the IT help desk immediately.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "report"
+        },
+        {
+          "id": "B",
+          "text": "repeat"
+        },
+        {
+          "id": "C",
+          "text": "reply"
+        },
+        {
+          "id": "D",
+          "text": "return"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "vocabulary",
+        "collocation"
+      ],
+      "difficulty": 2,
+      "explanation": "The natural expression is “report a problem to” a department.",
+      "explanationTh": "ใช้ “report a problem to + หน่วยงาน” = แจ้งปัญหาไปยังหน่วยงาน",
+      "ruleId": "vocab.business-collocation",
+      "chapterIds": [
+        21,
+        26
+      ],
+      "targetSeconds": 30
+    },
+    {
+      "id": "adaptive-20261007-coll-04",
+      "part": 5,
+      "stem": "The updated procedure is intended to _____ the approval process.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "streamline"
+        },
+        {
+          "id": "B",
+          "text": "stream"
+        },
+        {
+          "id": "C",
+          "text": "straight"
+        },
+        {
+          "id": "D",
+          "text": "strength"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "vocabulary",
+        "collocation"
+      ],
+      "difficulty": 3,
+      "explanation": "“Streamline a process” means make it simpler and more efficient.",
+      "explanationTh": "“streamline a process” เป็นวลีธุรกิจ หมายถึงทำกระบวนการให้สั้น/ง่าย/มีประสิทธิภาพขึ้น",
+      "ruleId": "vocab.business-collocation",
+      "chapterIds": [
+        21,
+        26
+      ],
+      "targetSeconds": 30
+    },
+    {
+      "id": "adaptive-20261007-coll-05",
+      "part": 5,
+      "stem": "The supplier agreed to _____ the damaged units at no additional charge.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "replace"
+        },
+        {
+          "id": "B",
+          "text": "reserve"
+        },
+        {
+          "id": "C",
+          "text": "repeat"
+        },
+        {
+          "id": "D",
+          "text": "recover"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "vocabulary",
+        "collocation"
+      ],
+      "difficulty": 2,
+      "explanation": "The natural phrase is “replace damaged units.”",
+      "explanationTh": "collocation และความหมายที่ถูกคือ “replace damaged units” = เปลี่ยนสินค้าที่เสีย",
+      "ruleId": "vocab.business-collocation",
+      "chapterIds": [
+        21,
+        26
+      ],
+      "targetSeconds": 30
+    }
+  ]
+}

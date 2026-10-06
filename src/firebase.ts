@@ -21,6 +21,32 @@ const db = getDatabase(app)
 const USER = 'solo'
 const base = `users/${USER}`
 
+const encodeRuleKey = (key: string) => key
+  .replaceAll('%', '%25')
+  .replaceAll('.', '%2E')
+  .replaceAll('#', '%23')
+  .replaceAll('$', '%24')
+  .replaceAll('[', '%5B')
+  .replaceAll(']', '%5D')
+  .replaceAll('/', '%2F')
+
+const decodeRuleKey = (key: string) => key
+  .replaceAll('%2F', '/')
+  .replaceAll('%5D', ']')
+  .replaceAll('%5B', '[')
+  .replaceAll('%24', '$')
+  .replaceAll('%23', '#')
+  .replaceAll('%2E', '.')
+  .replaceAll('%25', '%')
+
+const encodeRuleStats = (ruleStats: TrainerState['ruleStats']) => Object.fromEntries(
+  Object.entries(ruleStats ?? {}).map(([key, value]) => [encodeRuleKey(key), value]),
+)
+
+const decodeRuleStats = (ruleStats: TrainerState['ruleStats'] | undefined) => Object.fromEntries(
+  Object.entries(ruleStats ?? {}).map(([key, value]) => [decodeRuleKey(key), value]),
+)
+
 const localDay = () => {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -28,11 +54,14 @@ const localDay = () => {
 
 export async function loadCloudState() {
   const snapshot = await get(ref(db, `${base}/state`))
-  return snapshot.exists() ? normalizeState(snapshot.val() as TrainerState) : null
+  if (!snapshot.exists()) return null
+  const raw = snapshot.val() as TrainerState
+  return normalizeState({ ...raw, ruleStats: decodeRuleStats(raw.ruleStats) })
 }
 
 export async function syncCloudState(state: TrainerState) {
   const safe = normalizeState(state)
+  const cloudState = { ...safe, ruleStats: encodeRuleStats(safe.ruleStats) }
   const summary = buildAgentSummary(safe)
   const targets = dailyTargets(safe)
   const todayAttempts = safe.attempts.filter(attempt => {
@@ -42,7 +71,7 @@ export async function syncCloudState(state: TrainerState) {
   })
 
   const payload = {
-    [`${base}/state`]: safe,
+    [`${base}/state`]: cloudState,
     [`${base}/summary`]: summary,
     [`${base}/daily/${localDay()}`]: {
       answered: todayAttempts.length,
@@ -54,9 +83,9 @@ export async function syncCloudState(state: TrainerState) {
       updatedAt: Date.now(),
     },
     [`${base}/meta`]: {
-      schemaVersion: 4,
-      appVersion: '4.0.0',
-      adaptiveVersion: 'v6-rule-aware',
+      schemaVersion: 5,
+      appVersion: '4.1.0',
+      adaptiveVersion: 'v7-safe-cloud-deep-feedback',
       lastSyncAt: Date.now(),
       examDate: '2026-10-17',
     },
@@ -90,7 +119,7 @@ export function watchPersonalizedPassages(callback: (passages: Passage[]) => voi
 export async function publishQuestionBankManifest(counts: { part5: number; part6: number; part7: number }) {
   await set(ref(db, 'questionBank/meta'), {
     ...counts,
-    appBankVersion: 4,
+    appBankVersion: 5,
     updatedAt: Date.now(),
     note: 'Core bank is bundled with the app; personalized questions and Part 6/7 passages are loaded live from Firebase.',
   })
