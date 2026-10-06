@@ -3,14 +3,17 @@ import { get, getDatabase, onValue, ref, set, update } from 'firebase/database'
 import { buildAgentSummary, dailyTargets, normalizeState } from './adaptive'
 import type { FirebaseQuestionBank, Question, TrainerState } from './types'
 
+// Firebase web configuration is intentionally client-visible. Environment
+// variables override these defaults when present, but the defaults keep
+// GitHub -> Netlify deploys zero-config for this single-user study app.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDIvGwUhidzPDItLXy3bcHY6aM5ebM9zHQ',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'toeic-study-c4905.firebaseapp.com',
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || 'https://toeic-study-c4905-default-rtdb.asia-southeast1.firebasedatabase.app',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'toeic-study-c4905',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'toeic-study-c4905.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '329309163147',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:329309163147:web:974c41a7f718ea15ae8e8e',
 }
 
 const app = initializeApp(firebaseConfig)

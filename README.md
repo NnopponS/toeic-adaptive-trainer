@@ -1,58 +1,50 @@
-# TOEIC Adaptive Trainer
+# TOEIC Reading Coach
 
-Local-first TOEIC Reading trainer for an October 17, 2026 exam sprint.
+Mobile-first adaptive TOEIC Reading trainer for the October 17, 2026 exam sprint.
 
-## Current bank
+## What is included
 
-- Part 5: 150 original TOEIC-style questions
+- Part 5: 214 original TOEIC-style questions
 - Part 6: 40 questions across 10 business texts
-- Part 7: 60 questions across single- and multi-document reading sets
+- Part 7: 60 questions across single- and multi-document sets
 - Full Reading simulation: 30 Part 5 + 16 Part 6 + 54 Part 7 = 100 questions / 75 minutes
+- Mobile-first PWA interface
+- Firebase Realtime Database progress sync
+- Live Firebase personalized-question bank
+- Adaptive mastery, difficulty, spaced review, XP, streak, weak-point analytics
 
-The app follows the current TOEIC Reading structure, but it does not copy official ETS/IIBC questions. All practice content in this repository is original.
+All bundled practice questions are original. Local reference PDFs under `example-toeic/` are used only for private style/difficulty calibration and are excluded from Git.
 
-## Fastest workflow
+## Part 5 learning loop
 
-1. Run adaptive Part 5 every day.
-2. When an answer is wrong, select the reason: Grammar, Vocabulary, Misread, Rushed, or Guessed.
-3. Complete the daily 70-question mission.
-4. Use Part 6 for fast context decisions and Part 7 for evidence scanning/paraphrase.
-5. Use the 75-minute simulation to test pacing.
-6. Return to ChatGPT and ask it to read `data/learner-summary.md` and `data/learner-progress.json`, then create the next personalized question batch.
+Focused Part 5 lessons use:
 
-## Persistent feedback
+1. Detect a weak grammar pattern.
+2. Teach 5 worked examples with clue, rule, explanation, and common trap.
+3. Give a 10-question mastery check on the same pattern.
+4. Update mastery and difficulty from accuracy + response time.
+5. Schedule the pattern for spaced review.
+6. Mix it back into adaptive practice after the pattern improves.
 
-The browser still saves progress in localStorage, but the Vite dev server also writes:
+Current guided topics include verb tense, word form, prepositions, conjunctions, subject-verb agreement, passive voice, relative clauses, pronouns, comparisons, and business collocations.
 
-- `data/learner-progress.json` — full learner state and attempt history
-- `data/learner-summary.md` — compact agent-readable summary of weak skills, recent mistakes, error reasons, timing, improvement, and part accuracy
+## Firebase
 
-These files update automatically after practice. They are the handoff contract for future personalized question generation.
+Firebase project: `toeic-study-c4905`
 
-## Adaptive behavior
+The web client syncs the single-user learner profile under:
 
-Question priority increases when:
-- the exact question was missed,
-- a tagged skill has low mastery,
-- a skill recently received an error boost,
-- the learner self-reports grammar/vocabulary/misread/rushed/guess patterns.
+`/users/solo/`
 
-Recently seen questions are temporarily cooled down to avoid answer memorization. Once recent accuracy rises, the scheduler gives more weight to harder questions.
+Personalized questions can be added live under:
 
-## Progress metrics
+`/questionBank/personalized/`
 
-The dashboard shows:
-- days until October 17,
-- daily 70-question completion,
-- reading readiness,
-- recent accuracy,
-- baseline vs recent improvement,
-- Part 5/6/7 accuracy,
-- skill mastery,
-- mistake reasons,
-- recent error notebook.
+The Firebase web configuration has production-safe client defaults in `src/firebase.ts`, so GitHub -> Netlify deployment works without manually copying Vite environment variables. These values are public Firebase web-app identifiers, not server credentials.
 
-## Run
+> Important: the current Realtime Database is in test mode. That is convenient for development, but a publicly deployed site should eventually use Firebase Authentication and restrictive RTDB rules.
+
+## Local development
 
 ```bash
 cd D:\Project\toeic-adaptive-trainer
@@ -60,11 +52,19 @@ npm install
 npm run dev
 ```
 
-Open the local Vite URL, normally http://localhost:5173.
-
 ## Verify
 
 ```bash
 npm run build
 npm run lint
 ```
+
+## Netlify
+
+The repository includes `netlify.toml`:
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+- SPA fallback: `/* -> /index.html`
+
+Connect the GitHub repository to Netlify and deploy from the `main` branch.
