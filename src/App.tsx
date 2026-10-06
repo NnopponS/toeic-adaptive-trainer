@@ -265,8 +265,6 @@ function App() {
             <Analytics
               state={state}
               startLesson={startLesson}
-              connected={connected}
-              personalizedCount={remoteQuestions.length}
             />
           )}
           {view === 'review' && (
@@ -299,7 +297,7 @@ function AppHeader({
         <Mascot size={38} />
         <span>
           <b>TOEIC Coach</b>
-          <small>{learnerTier(state)} · {state.xp} XP</small>
+          <small>{state.totalAnswered ? `${state.totalAnswered} answered · ${learnerTier(state)}` : 'Ready to start your first set'}</small>
         </span>
       </button>
       <div className={`cloud-state ${connected ? 'online' : ''}`}>
@@ -411,7 +409,7 @@ function Home({
             <span className="tiny-label">ADAPTIVE PLAN TODAY</span>
             <h2>3 tasks for your level</h2>
           </div>
-          <span className="tier-pill">{learnerTier(state)}</span>
+          <span className="tier-pill">{state.totalAnswered ? learnerTier(state) : 'Start here'}</span>
         </div>
         <div className="task-stack">
           <TaskCard
@@ -435,11 +433,6 @@ function Home({
           <button onClick={() => startLesson(focus)}>Start focused lesson</button>
         </div>
         <Mascot size={88} />
-      </section>
-
-      <section className="sync-grid">
-        <InfoTile title="Cloud progress" text="Answers, timing, mastery, and mistakes are synced to Firebase." icon="cloud" />
-        <InfoTile title="Personalized questions" text={remoteCount ? `${remoteCount} extra questions are loaded from your private bank.` : 'Your live Firebase question bank is ready for future personalized sets.'} icon="spark" />
       </section>
 
       <button className="mock-banner" onClick={() => navigate('mock')}>
@@ -531,19 +524,6 @@ function TaskCard({
       <div className="task-copy"><b>{title}</b><small>{subtitle}</small><Progress value={value} /></div>
       <strong>{right}</strong>
     </button>
-  )
-}
-
-function InfoTile({ title, text, icon }: { title: string; text: string; icon: 'cloud' | 'spark' }) {
-  return (
-    <div className="info-tile">
-      <span className="info-icon" aria-hidden="true">
-        {icon === 'cloud'
-          ? <svg viewBox="0 0 24 24"><path d="M7.5 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.6 8.6 4.5 4.5 0 0 0 7.5 18zM9 14l2 2 4-4" /></svg>
-          : <svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1L6.5 8.5l4.1-1.4zM18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z" /></svg>}
-      </span>
-      <div><b>{title}</b><small>{text}</small></div>
-    </div>
   )
 }
 
@@ -869,7 +849,7 @@ function PracticeScreen({
         {onBack ? <button className="round-back" onClick={onBack} aria-label="Back">‹</button> : <span />}
         <div>
           <b>Part {part}: {part === 5 ? 'Incomplete Sentences' : part === 6 ? 'Text Completion' : 'Reading Comprehension'}</b>
-          <small>Adaptive practice · Difficulty {question.difficulty}/5</small>
+          <small>{question.skills.slice(0, 2).map(skill => skillLabels[skill]).join(' · ')}</small>
         </div>
         <span className="practice-part-tag">P{part}</span>
       </div>
@@ -935,7 +915,7 @@ function QuestionCard({
     <section className="mobile-question-card">
       <div className="question-badges">
         <span className="question-skill">{question.skills.slice(0, 2).map(skill => skillLabels[skill]).join(' · ')}</span>
-        <span className="difficulty-badge">{['','Easy','Easy+','Medium','Hard','Challenge'][question.difficulty]}</span>
+        <span className="difficulty-badge">Level {question.difficulty}</span>
       </div>
       <h2>{question.stem}</h2>
       <div className="choices">
@@ -1132,13 +1112,9 @@ function MockTest({ setState }: { setState: StateSetter }) {
 function Analytics({
   state,
   startLesson,
-  connected,
-  personalizedCount,
 }: {
   state: TrainerState
   startLesson: (skill: SkillId) => void
-  connected: boolean
-  personalizedCount: number
 }) {
   const skills = useMemo(() => (
     Object.entries(state.skills)
@@ -1149,8 +1125,6 @@ function Analytics({
   const recentMistakes = state.attempts.filter(a => !a.correct).slice(0, 6)
   const trend = improvement(state)
   const series = dailyAccuracySeries(state)
-  const nextLevel = Math.ceil((state.xp + 1) / 500) * 500
-  const level = Math.floor(state.xp / 500) + 1
 
   return (
     <div className="screen analytics-screen">
@@ -1158,10 +1132,10 @@ function Analytics({
       <section className="profile-card">
         <Mascot size={72} />
         <div className="profile-copy">
-          <b>{learnerTier(state)} reading level</b>
-          <span>Level {level} · {state.xp} XP</span>
-          <Progress value={(state.xp % 500) / 500 * 100} />
-          <small>{Math.max(0, nextLevel - state.xp)} XP to the next level</small>
+          <b>{state.totalAnswered ? learnerTier(state) : 'No learning data yet'}</b>
+          <span>{state.totalAnswered ? `${recentAccuracy(state)}% recent accuracy · ${studyStreak(state)} day streak` : 'Complete your first practice set to create your profile.'}</span>
+          <Progress value={state.totalAnswered ? recentAccuracy(state) : 0} />
+          <small>{state.totalAnswered ? `Next focus: ${skillLabels[nextFocusSkill(state)]}` : 'Your weak points and review plan will appear here.'}</small>
         </div>
       </section>
 
@@ -1206,16 +1180,6 @@ function Analytics({
         )) : <div className="empty-state">No mistakes yet.</div>}
       </section>
 
-      <section className="adaptive-cloud-card">
-        <div className="adaptive-cloud-head">
-          <div><span className="tiny-label">ADAPTIVE LEARNING</span><h2>{learnerTier(state)}</h2></div>
-          <Mascot size={68} />
-        </div>
-        <div className="cloud-features">
-          <InfoTile title={connected ? 'Cloud sync active' : 'Offline backup'} text={connected ? 'Your latest progress is stored in Firebase.' : 'Your device keeps a local copy until Firebase reconnects.'} icon="cloud" />
-          <InfoTile title="Personalized questions" text={personalizedCount ? `${personalizedCount} custom questions loaded from Firebase.` : 'No custom questions yet. Core practice remains available.'} icon="spark" />
-        </div>
-      </section>
     </div>
   )
 }

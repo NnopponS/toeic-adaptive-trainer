@@ -1,4 +1,4 @@
-const CACHE = 'toeic-coach-v4-pages'
+const CACHE = 'toeic-coach-v5-readability'
 const SCOPE_URL = new URL(self.registration.scope)
 const BASE_PATH = SCOPE_URL.pathname.endsWith('/') ? SCOPE_URL.pathname : `${SCOPE_URL.pathname}/`
 const APP_SHELL = [BASE_PATH, `${BASE_PATH}manifest.webmanifest`, `${BASE_PATH}app-icon.svg`]
