@@ -632,11 +632,15 @@ export function dailyTargets(state?: TrainerState) {
   const partTargets: Record<Part, number> = { 5: 90, 6: 48, 7: 54 }
   const weights = ([5, 6, 7] as Part[]).map(part => {
     const attempts = s.attempts.filter(a => a.part === part)
-    const acc = attempts.length ? windowAccuracy(attempts.slice(0, 30)) : 50
+    const recent = attempts.slice(0, 30)
+    const acc = attempts.length ? windowAccuracy(recent) : 50
     const coverage = Math.min(1, attempts.length / partTargets[part])
+    const speedPressure = recent.length
+      ? recent.filter(a => a.diagnosis === 'correct-slow' || a.diagnosis === 'rushed' || a.diagnosis === 'fast-guess').length / recent.length
+      : 0
     return {
       part,
-      weight: base[part] + (100 - acc) / 75 + (1 - coverage) * 0.9,
+      weight: base[part] + (100 - acc) / 75 + (1 - coverage) * 0.9 + speedPressure * 0.8,
     }
   })
   const weightTotal = weights.reduce((sum, item) => sum + item.weight, 0)
@@ -696,6 +700,14 @@ export function buildAgentSummary(state: TrainerState) {
     recentUncertainCorrect: s.attempts.filter(a => a.correct && a.confidence && a.confidence < 3).slice(0, 40),
     vocabReview: s.vocabReview,
     recentWrongVocabulary: s.attempts.filter(a => !a.correct && a.vocabSelected).slice(0, 40),
+    speedDiagnosis: {
+      onTarget: s.attempts.filter(a => a.diagnosis === 'on-target').slice(0, 40).length,
+      correctSlow: s.attempts.filter(a => a.diagnosis === 'correct-slow').slice(0, 40).length,
+      knowledgeGap: s.attempts.filter(a => a.diagnosis === 'knowledge-gap').slice(0, 40).length,
+      rushed: s.attempts.filter(a => a.diagnosis === 'rushed' || a.diagnosis === 'fast-guess').slice(0, 40).length,
+      uncertain: s.attempts.filter(a => a.diagnosis === 'uncertain').slice(0, 40).length,
+    },
+    recentSpeedProblems: s.attempts.filter(a => a.diagnosis && a.diagnosis !== 'on-target' && a.diagnosis !== 'knowledge-gap').slice(0, 40),
   }
 }
 
