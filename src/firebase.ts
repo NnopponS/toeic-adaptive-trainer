@@ -83,9 +83,9 @@ export async function syncCloudState(state: TrainerState) {
       updatedAt: Date.now(),
     },
     [`${base}/meta`]: {
-      schemaVersion: 6,
-      appVersion: '6.0.1',
-      adaptiveVersion: 'v9-calibrated-recall',
+      schemaVersion: 7,
+      appVersion: '6.1.0',
+      adaptiveVersion: 'v10-part7-vocab-speed',
       lastSyncAt: Date.now(),
       examDate: '2026-10-17',
     },
@@ -119,7 +119,7 @@ export function watchPersonalizedPassages(callback: (passages: Passage[]) => voi
 export async function publishQuestionBankManifest(counts: { part5: number; part6: number; part7: number }) {
   await set(ref(db, 'questionBank/meta'), {
     ...counts,
-    appBankVersion: 5,
+    appBankVersion: 6,
     updatedAt: Date.now(),
     note: 'Core bank is bundled with the app; personalized questions and Part 6/7 passages are loaded live from Firebase.',
   })
