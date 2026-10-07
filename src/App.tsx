@@ -3,6 +3,7 @@ import './App.css'
 import {
   addFeedbackToLatest,
   attemptsToday,
+  classifyAttempt,
   completeLesson,
   completeReadingSample,
   dailyTargets,
@@ -17,6 +18,7 @@ import {
   partAccuracy,
   pickAdaptiveQuestion,
   questionsForSkill,
+  questionTargetMs,
   recentAccuracy,
   readinessReport,
   recordAttempt,
@@ -47,6 +49,7 @@ import {
   type Language,
 } from './i18n'
 import type {
+  AttemptDiagnosis,
   ErrorReason,
   LessonDefinition,
   Part,
@@ -208,6 +211,18 @@ function chooseFresher(local: TrainerState, cloud: TrainerState | null) {
 
 function formatTime(ms: number) {
   return `${Math.max(1, Math.round(ms / 1000))}s`
+}
+
+function speedDiagnosisCopy(diagnosis: AttemptDiagnosis, lang: Language) {
+  const labels: Record<AttemptDiagnosis, [string, string]> = {
+    'on-target': ['On target', 'อยู่ในเวลาเป้า'],
+    'correct-slow': ['Correct but slow', 'ถูกแต่ช้าเกินเป้า'],
+    'knowledge-gap': ['Knowledge gap', 'ยังไม่แม่นเนื้อหา'],
+    rushed: ['Rushed', 'รีบเกินไป'],
+    uncertain: ['Correct but uncertain', 'ถูกแต่ยังไม่มั่นใจ'],
+    'fast-guess': ['Fast guess', 'ตอบเร็วแบบเดา'],
+  }
+  return labels[diagnosis][lang === 'th' ? 1 : 0]
 }
 
 function pct(n: number) {
@@ -1405,6 +1420,7 @@ type VocabCard = {
   explanation: string
   mistakes: number
   lastAt: number
+  trigger: 'missed' | 'uncertain'
 }
 
 function normalizedVocabKey(word: string) {
@@ -1445,13 +1461,15 @@ function buildVocabCards(
 ): VocabCard[] {
   const cards = new Map<string, VocabCard>()
   for (const attempt of state.attempts) {
-    if (attempt.correct) continue
+    const reinforcement = attempt.correct && attempt.vocabReviewApplied && (attempt.confidence ?? 3) < 3
+    if (attempt.correct && !reinforcement) continue
     const question = questionMap[attempt.questionId]
-    if (!question || !isUsefulVocabQuestion(question)) continue
+    if (!question || (!isUsefulVocabQuestion(question) && attempt.errorReason !== 'vocabulary')) continue
     const selectedChoice = question.choices.find(choice => choice.id === attempt.selected)
     const answerChoice = question.choices.find(choice => choice.id === question.answer)
     if (!selectedChoice || !answerChoice) continue
-    const key = normalizedVocabKey(selectedChoice.text)
+    const focusChoice = attempt.correct ? answerChoice : selectedChoice
+    const key = normalizedVocabKey(focusChoice.text)
     const existing = cards.get(key)
     const passage = question.passageId ? passageMap[question.passageId] : undefined
     const context = passage
@@ -1460,19 +1478,25 @@ function buildVocabCards(
     const sentence = correctSentenceForMap(question, context)
     const next: VocabCard = {
       key,
-      word:selectedChoice.text,
-      meaningTh:choiceMeaningTh(question, selectedChoice.id) || 'คำนี้ยังไม่มีคำแปลเฉพาะในคลัง — ระบบจะเก็บไว้ให้เพิ่มคำแปลเมื่อพบซ้ำ',
+      word:focusChoice.text,
+      meaningTh:choiceMeaningTh(question, focusChoice.id) || 'คำนี้ยังไม่มีคำแปลเฉพาะในคลัง — ระบบจะเก็บไว้ให้เพิ่มคำแปลเมื่อพบซ้ำ',
       pos:choicePosLabel(selectedChoice.text),
       correctWord:answerChoice.text,
       correctMeaningTh:choiceMeaningTh(question, answerChoice.id) || vocabGlossaryTh[normalizedVocabKey(answerChoice.text)] || '',
       sentence,
       explanation:localizedQuestionExplanation(question, 'th'),
-      mistakes:(existing?.mistakes ?? 0) + 1,
+      mistakes:(existing?.mistakes ?? 0) + (attempt.correct ? 0 : 1),
       lastAt:Math.max(existing?.lastAt ?? 0, attempt.at),
+      trigger:attempt.correct ? 'uncertain' : 'missed',
     }
     cards.set(key, next)
   }
-  return [...cards.values()].sort((a,b) => b.mistakes - a.mistakes || b.lastAt - a.lastAt)
+  return [...cards.values()].sort((a,b) => {
+    const ar=state.vocabReview?.[a.key]; const br=state.vocabReview?.[b.key]
+    const ap=a.mistakes*4+(ar?.hard??0)*3+Math.max(0,(ar?.seen??0)-(ar?.known??0))
+    const bp=b.mistakes*4+(br?.hard??0)*3+Math.max(0,(br?.seen??0)-(br?.known??0))
+    return bp-ap || b.lastAt-a.lastAt
+  })
 }
 
 function VocabReview({
@@ -1523,7 +1547,7 @@ function VocabReview({
 
       <section className={revealed ? 'flashcard revealed' : 'flashcard'} onClick={() => setRevealed(true)}>
         <div className="flashcard-front">
-          <small>{L(lang,'YOU PREVIOUSLY CHOSE','คำที่คุณเคยเลือกผิด')}</small>
+          <small>{card.trigger === 'missed' ? L(lang,'YOU PREVIOUSLY CHOSE','คำที่คุณเคยเลือกผิด') : L(lang,'REINFORCE THIS WORD','คำที่ตอบถูกแต่ยังลังเล')}</small>
           <h1>{card.word}</h1>
           <span>{card.pos}</span>
           {!revealed && <button>{L(lang,'Tap to reveal','แตะเพื่อดูความหมาย')}</button>}
@@ -1767,9 +1791,16 @@ function PassageText({ passage, evidence }: { passage: Passage; evidence?: strin
       : passage.body.split(/\n\n+/)
     return (
       <div className="multi-document">
-        {blocks.map((block, index) => (
-          <div className="multi-doc-section" key={index}>{highlightPassageEvidence(block.trim(), evidence)}</div>
-        ))}
+        {blocks.map((block, index) => {
+          const trimmed = block.trim()
+          const match = trimmed.match(/^(DOCUMENT\s+\d+\s+—\s+[^\n]+)\n?/i)
+          const label = match?.[1] ?? 'DOCUMENT ' + (index + 1)
+          const copy = match ? trimmed.slice(match[0].length).trim() : trimmed
+          return <section className="multi-doc-section" key={index}>
+            <header className="multi-doc-header"><span>{String(index + 1).padStart(2,'0')}</span><b>{label}</b></header>
+            <div className="multi-doc-copy">{highlightPassageEvidence(copy, evidence)}</div>
+          </section>
+        })}
       </div>
     )
   }
@@ -2660,11 +2691,13 @@ function PracticeScreen({
   }
 
   if (finishedSet) {
-    const errors=session.filter(item=>!item.correct || item.confidence===1 || item.confidence===2)
-    const slow=session.filter(item=>item.seconds>(item.question.targetSeconds??(part===5?25:part===6?45:75)))
-    const repair=errors[0]?.question ?? slow[0]?.question
+    const diagnosed=session.map(item=>({...item,diagnosis:classifyAttempt(item.correct,item.seconds*1000,questionTargetMs(item.question),item.confidence===0?undefined:item.confidence as 1|2|3)}))
+    const errors=diagnosed.filter(item=>!item.correct || item.confidence===1 || item.confidence===2)
+    const slow=diagnosed.filter(item=>item.diagnosis==='correct-slow')
+    const rushed=diagnosed.filter(item=>item.diagnosis==='rushed' || item.diagnosis==='fast-guess')
+    const repair=errors[0]?.question ?? slow[0]?.question ?? rushed[0]?.question
     const recall=repair ? recallForQuestion(repair) : undefined
-    return <div className="screen set-result"><div className="set-score">{session.filter(item=>item.correct).length}<small>/{session.length}</small></div><h1>{L(lang,'A small set. A clear next step.','จบชุดนี้ รู้จุดที่ควรแก้')}</h1><div className="set-metrics"><div><b>{session.filter(item=>!item.correct).length}</b><small>{L(lang,'Incorrect','ข้อที่ผิด')}</small></div><div><b>{session.filter(item=>item.confidence===1 || item.confidence===2).length}</b><small>{L(lang,'Unsure / guessed','ลังเล / เดา')}</small></div><div><b>{slow.length}</b><small>{L(lang,'Over target time','เกินเวลาเป้าหมาย')}</small></div></div>
+    return <div className="screen set-result"><div className="set-score">{session.filter(item=>item.correct).length}<small>/{session.length}</small></div><h1>{L(lang,'A small set. A clear next step.','จบชุดนี้ รู้จุดที่ควรแก้')}</h1><div className="set-metrics"><div><b>{session.filter(item=>!item.correct).length}</b><small>{L(lang,'Knowledge misses','ผิดเนื้อหา')}</small></div><div><b>{slow.length}</b><small>{L(lang,'Correct but slow','ถูกแต่ช้า')}</small></div><div><b>{rushed.length}</b><small>{L(lang,'Rushed / fast guess','รีบ / เดาเร็ว')}</small></div></div>
       <div className="set-repair"><span className="eyebrow">{L(lang,'YOUR NEXT FOCUS','จุดที่ควรทวนต่อ')}</span><p>{repair ? repair.skills.map(skill=>localizedSkill(skill,lang)).join(' · ') : L(lang,'Keep testing the pattern with new questions.','ฝึกข้อใหม่ต่อ เพื่อยืนยันว่าใช้ pattern ได้จริง')}</p>{recall && <><b>{recall.title}</b><p>{recall.memory}</p><details><summary>{L(lang,'Quick recall','ลองนึกสั้น ๆ')}</summary><p>{recall.prompt}</p><details><summary>{L(lang,'Reveal','เปิดคำตอบ')}</summary><p>{recall.answer}</p></details></details></>}</div>
       <button className="big-next" onClick={()=>{setSession([]);setFinishedSet(false);setExtraPractice(true);setQuestion(firstQuestionOfPickedPassage(state,pool,activePassageMap,question.passageId));setSelected('');setChecked(false);setCoachingStep(0);setReason('');setConfidence(0);startedAt.current=performance.now()}}>{L(lang,'Start next adaptive set','เริ่มชุดถัดไปตามจุดอ่อน')} →</button><button className="back-link" onClick={onBack}>{L(lang,'Finish for now','พักก่อน กลับไปหน้าฝึก')}</button>
     </div>
@@ -2868,6 +2901,9 @@ function FeedbackCard({
   const answerText = question.choices.find(c => c.id === question.answer)?.text
   const selectedText = question.choices.find(c => c.id === selected)?.text
   const courseRefs = chaptersForQuestion(question)
+  const targetMs = questionTargetMs(question)
+  const diagnosis = classifyAttempt(correct, elapsed, targetMs, confidence || undefined, reason || undefined)
+  const ratio = elapsed / Math.max(targetMs,1)
   return (
     <section className={correct ? 'feedback-panel correct' : 'feedback-panel wrong'}>
       <div className="feedback-heading">
@@ -2882,6 +2918,10 @@ function FeedbackCard({
                 `คุณเลือก ${selected}. ${selectedText} · คำตอบที่ถูก: ${question.answer}. ${answerText}`,
               )}</small>
         </div>
+      </div>
+      <div className={`speed-diagnosis ${diagnosis}`}>
+        <div><b>{speedDiagnosisCopy(diagnosis, lang)}</b><small>{L(lang,'Target','เป้า')} {formatTime(targetMs)} · {L(lang,'Actual','ใช้จริง')} {formatTime(elapsed)}</small></div>
+        <span>{ratio > 1.25 ? '↘' : ratio < 0.55 ? '⚡' : '✓'}</span>
       </div>
       {!correct && courseRefs[0] && (
         <details className="mistake-study-card mistake-study-collapsible">
@@ -3094,6 +3134,14 @@ function Analytics({
   const trend = improvement(state)
   const series = dailyAccuracySeries(state)
   const readinessData = readinessReport(state)
+  const recentDiagnoses = state.attempts.slice(0,40)
+  const speedSummary = {
+    onTarget: recentDiagnoses.filter(a=>a.diagnosis==='on-target').length,
+    slow: recentDiagnoses.filter(a=>a.diagnosis==='correct-slow').length,
+    knowledge: recentDiagnoses.filter(a=>a.diagnosis==='knowledge-gap').length,
+    rushed: recentDiagnoses.filter(a=>a.diagnosis==='rushed' || a.diagnosis==='fast-guess').length,
+    uncertain: recentDiagnoses.filter(a=>a.diagnosis==='uncertain').length,
+  }
 
   return (
     <div className="screen analytics-screen">
@@ -3156,6 +3204,15 @@ function Analytics({
       <section className="chart-card">
         <div className="chart-title"><div><h2>{L(lang, 'Recent Accuracy', 'ความถูกต้องล่าสุด')}</h2><small>{L(lang, 'Last 14 days', '14 วันที่ผ่านมา')}</small></div><span>{recentAccuracy(state)}% <b>{trend.delta >= 0 ? '+' : ''}{trend.delta}</b></span></div>
         <AccuracyChart values={series} />
+      </section>
+
+      <SectionTitle title={L(lang, 'Speed & Accuracy Diagnosis', 'วิเคราะห์ความเร็วและความแม่น')} />
+      <section className="diagnosis-grid">
+        <div><span>✓</span><b>{speedSummary.onTarget}</b><small>{L(lang,'On target','ถูกและทันเวลา')}</small></div>
+        <div><span>◷</span><b>{speedSummary.slow}</b><small>{L(lang,'Correct but slow','ถูกแต่ช้า')}</small></div>
+        <div><span>×</span><b>{speedSummary.knowledge}</b><small>{L(lang,'Knowledge gap','ยังไม่แม่น')}</small></div>
+        <div><span>⚡</span><b>{speedSummary.rushed}</b><small>{L(lang,'Rushed / fast guess','รีบ / เดาเร็ว')}</small></div>
+        <div><span>?</span><b>{speedSummary.uncertain}</b><small>{L(lang,'Correct but unsure','ถูกแต่ลังเล')}</small></div>
       </section>
 
       <SectionTitle title={L(lang, 'Weak Points', 'จุดที่ยังอ่อน')} />
