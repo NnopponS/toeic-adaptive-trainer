@@ -1834,7 +1834,7 @@ function PassageDocument({
           : L(lang, 'Read the document and answer from the evidence.', 'อ่านเอกสารและตอบจากหลักฐานในบทความ')}</span>
       </div>
       <h2>{passage.title}</h2>
-      {part === 7 && <PassageVisual passage={passage} />}
+      {part === 7 && passage.kind !== 'multi' && <PassageVisual passage={passage} />}
       {part === 6
         ? <div className="passage-copy">{passageWithActiveBlank(passage.body, question.stem, {
             selectedText,
@@ -1843,6 +1843,12 @@ function PassageDocument({
             onClick: onBlankClick,
           })}</div>
         : <PassageText passage={passage} evidence={checked ? question.evidence : undefined} />}
+      {part === 7 && passage.kind === 'multi' && passage.visual && (
+        <div className="multi-reference-document">
+          <span>{L(lang, 'REFERENCE DOCUMENT', 'เอกสารประกอบ')}</span>
+          <PassageVisual passage={passage} />
+        </div>
+      )}
       {passage.sourceLabel && <small className="passage-source-label">{passage.sourceLabel}</small>}
     </article>
   )
@@ -2676,7 +2682,17 @@ function firstQuestionOfPickedPassage(
   const candidates = excludePassageId
     ? pool.filter(q => q.passageId !== excludePassageId)
     : pool
-  const picked = pickAdaptiveQuestion(state, candidates.length ? candidates : pool)
+  const baseCandidates = candidates.length ? candidates : pool
+  const highFidelityPart7 = baseCandidates.filter(q => {
+    if (q.part !== 7 || !q.passageId) return false
+    const passage = map[q.passageId]
+    return q.id.startsWith('v7-p7-')
+      || Boolean(passage?.visual && passage.body.length >= 650 && q.difficulty >= 3)
+  })
+  const selectionPool = pool[0]?.part === 7 && highFidelityPart7.length
+    ? highFidelityPart7
+    : baseCandidates
+  const picked = pickAdaptiveQuestion(state, selectionPool)
   if (!picked.passageId) return picked
   const passage = map[picked.passageId]
   const firstId = passage?.questions.find(id => pool.some(q => q.id === id))
