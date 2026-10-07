@@ -727,7 +727,7 @@ function blankRequirement(question: Question): BlankRequirement | null {
   return null
 }
 
-function preciseChoiceReason(question: Question, choiceId: string, analysis: QuestionAnalysis, lang: Language) {
+function preciseChoiceReason(question: Question, choiceId: string, lang: Language) {
   const choice = question.choices.find(c => c.id === choiceId)
   if (!choice) return ''
   const answer = question.choices.find(c => c.id === question.answer)
@@ -777,7 +777,7 @@ function explainChoice(question: Question, choiceId: string, analysis: QuestionA
   const specific = question.whyOthers?.[choice.id]
 
   if (question.skills.includes('vocabulary') || question.skills.includes('collocation')) {
-    return preciseChoiceReason(question, choiceId, analysis, lang)
+    return preciseChoiceReason(question, choiceId, lang)
   }
 
   if (correct) {
