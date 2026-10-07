@@ -35,7 +35,7 @@ export const courseChapters: CourseChapter[] = [
     'Many adverbs end in -ly, but common adverbs such as very, quite, so, too, fast, forward, and backward do not.',
     'When an adverb modifies an adjective or another adverb, it normally comes before it.',
   ]},
-  { id:6, title:'Nouns / Adjectives / Adverbs Summary', file:'Chapter6 (Nouns / Adjectives / Adverbs)', sections:['6.1 Summary'], memorize:[
+  { id:6, title:'Nouns / Adjectives / Adverbs Summary', file:'Chapter6-สรุป n Adj Adv.pdf', sections:['6.1 Summary'], memorize:[
     'Noun positions: subject, object, and after prepositions.',
     'Adjective positions: before nouns, after be, and after linking verbs.',
     'Use determiner number clues to decide singular, plural, or uncountable noun forms.',

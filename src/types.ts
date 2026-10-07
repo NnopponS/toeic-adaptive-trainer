@@ -91,6 +91,7 @@ export interface Attempt {
   skills: SkillId[]
   errorReason?: ErrorReason
   confidence?: 1 | 2 | 3
+  confidenceBase?: { skills: Partial<Record<SkillId,Pick<SkillState,'mastery'|'dueBoost'>>>; rule?: Pick<SkillState,'mastery'|'dueBoost'> }
   mode?: AttemptMode
   lessonSkill?: SkillId
   difficulty?: number
@@ -118,6 +119,7 @@ export interface VocabReviewState {
 }
 
 export interface TrainerState {
+  modifiedAt?: number
   attempts: Attempt[]
   skills: Partial<Record<SkillId, SkillState>>
   questionMistakes: Record<string, number>

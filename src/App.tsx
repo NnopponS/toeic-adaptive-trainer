@@ -4,6 +4,7 @@ import {
   addFeedbackToLatest,
   attemptsToday,
   completeLesson,
+  completeReadingSample,
   dailyTargets,
   daysToExam,
   dueLessonSkills,
@@ -20,9 +21,7 @@ import {
   readinessReport,
   recordAttempt,
   skillAssessment,
-  skillTier,
   studyStreak,
-  weakestSkills,
 } from './adaptive'
 import { part5, part6, part7, passageById, skillLabels } from './data'
 import {
@@ -34,7 +33,8 @@ import {
   watchPersonalizedQuestions,
 } from './firebase'
 import { lessonBySkill, lessons } from './lessons'
-import { chaptersForQuestion, chaptersForSkill, readingCourseChapters } from './courseGuide'
+import { chaptersForQuestion, chaptersForSkill } from './courseGuide'
+import { courseCards, courseSources, courseSkills, cardIsDue, recallForQuestion, type CourseCard } from './courseCards'
 import { grammarClasses, grammarFunctions, reviewedGrammar } from './grammarGuide'
 import {
   LANG_STORAGE_KEY,
@@ -59,6 +59,7 @@ import type {
 
 const STORAGE_KEY = 'toeic-adaptive-trainer-v3'
 const LEGACY_STORAGE_KEY = 'toeic-adaptive-trainer-v1'
+const sandbox = import.meta.env.DEV && typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('sandbox')
 type StateSetter = Dispatch<SetStateAction<TrainerState>>
 
 const LanguageContext = createContext<Language>('th')
@@ -102,11 +103,6 @@ function localizedTier(tier: ReturnType<typeof learnerTier>, lang: Language) {
     'Exam Ready': 'พร้อมสอบ',
   }
   return map[tier]
-}
-
-function localizedSkillTierName(tier: ReturnType<typeof skillTier>, lang: Language) {
-  if (lang === 'en') return tier
-  return ({ Learn:'ต้องเรียน', Build:'กำลังสร้างพื้นฐาน', Practice:'ฝึกเพิ่ม', Challenge:'ระดับท้าทาย' } as Record<string,string>)[tier] ?? tier
 }
 
 function localizedGateLabel(key: string, fallback: string, lang: Language) {
@@ -200,7 +196,7 @@ function loadLocalState() {
 }
 
 function latestTime(state: TrainerState) {
-  return state.attempts[0]?.at ?? 0
+  return Math.max(state.modifiedAt ?? 0,state.attempts[0]?.at ?? 0,...Object.values(state.vocabReview).map(review=>review.lastAt ?? 0),...Object.values(state.lessonResults).map(result=>result?.lastCompletedAt ?? 0))
 }
 
 function chooseFresher(local: TrainerState, cloud: TrainerState | null) {
@@ -1483,10 +1479,6 @@ function VocabReview({
   const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
 
-  useEffect(() => {
-    if (index >= cards.length) setIndex(0)
-  }, [cards.length, index])
-
   if (!cards.length) {
     return (
       <div className="screen vocab-screen">
@@ -1496,7 +1488,7 @@ function VocabReview({
     )
   }
 
-  const card = cards[index]
+  const card = cards[index % cards.length]
   const review = state.vocabReview?.[card.key]
   const next = (knewIt:boolean) => {
     setState(current => markVocabReview(current, card.key, knewIt))
@@ -1510,7 +1502,7 @@ function VocabReview({
         <button className="round-back" onClick={onBack}>‹</button>
         <div>
           <span>{L(lang,'VOCAB REPAIR','ซ่อมจุดอ่อนคำศัพท์')}</span>
-          <b>{index + 1}/{cards.length} {L(lang,'missed words','คำที่เคยพลาด')}</b>
+          <b>{index % cards.length + 1}/{cards.length} {L(lang,'missed words','คำที่เคยพลาด')}</b>
         </div>
         <span className="vocab-count">{card.mistakes}×</span>
       </div>
@@ -1820,8 +1812,8 @@ function PassageDocument({
 
 function App() {
   const [view, setView] = useState<View>('home')
-  const [state, setState] = useState<TrainerState>(() => loadLocalState())
-  const [hydrated, setHydrated] = useState(false)
+  const [state, setState] = useState<TrainerState>(() => sandbox ? emptyState() : loadLocalState())
+  const [hydrated, setHydrated] = useState(sandbox)
   const [connected, setConnected] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState(false)
@@ -1856,17 +1848,28 @@ function App() {
   )
 
   useEffect(() => {
+    if (sandbox) return
     const stopConnection = watchConnection(setConnected)
     const stopQuestions = watchPersonalizedQuestions(setRemoteQuestions)
     const stopPassages = watchPersonalizedPassages(setRemotePassages)
 
-    loadCloudState()
-      .then(cloud => setState(local => chooseFresher(normalizeState(local), cloud)))
-      .catch(() => undefined)
-      .finally(() => setHydrated(true))
+    let stopped=false
+    const hydrate = () => loadCloudState()
+      .then(cloud => {
+        if (stopped) return
+        setState(local => chooseFresher(normalizeState(local), cloud))
+        setHydrated(true)
+        setSyncError(false)
+      })
+      .catch(() => { if (!stopped) setSyncError(true) })
+    void hydrate()
+    // Keep local work safe until the first successful cloud read, then retry when online.
+    window.addEventListener('online', hydrate)
 
     publishQuestionBankManifest({ part5: part5.length, part6: part6.length, part7: part7.length }).catch(() => undefined)
     return () => {
+      stopped=true
+      window.removeEventListener('online', hydrate)
       stopConnection()
       stopQuestions()
       stopPassages()
@@ -1880,11 +1883,12 @@ function App() {
 
   useEffect(() => {
     const normalized = normalizeState(state)
+    if (sandbox) return
     localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized))
     if (!hydrated) return
 
-    setSyncing(true)
     const timer = window.setTimeout(() => {
+      setSyncing(true)
       syncCloudState(normalized)
         .then(() => setSyncError(false))
         .catch(error => {
@@ -1894,7 +1898,7 @@ function App() {
         .finally(() => setSyncing(false))
     }, 350)
     return () => window.clearTimeout(timer)
-  }, [state, hydrated])
+  }, [state, hydrated, connected])
 
   const navigate = (next: View) => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -1929,20 +1933,21 @@ function App() {
           />
 
         <main className="app-main">
+          {sandbox && <small className="sandbox-note">โหมดทดสอบ · ไม่บันทึกผลจริง</small>}
           {view === 'home' && (
             <Home
               state={state}
               startLesson={startLesson}
               navigate={navigate}
               startQuickPart5={startQuickPart5}
-              questionCounts={{ 5: allPart5.length, 6: allPart6.length, 7: allPart7.length }}
+              questionCounts={{ 5: practicePool(allPart5,false).length, 6: allPart6.length, 7: allPart7.length }}
               vocabCount={vocabCardCount}
             />
           )}
           {view === 'learn' && (lessonSkill && lessonBySkill[lessonSkill]
-            ? <LessonSession key={lessonSkill} lesson={lessonBySkill[lessonSkill]!} state={state} setState={setState} pool={allPart5} onExit={() => setLessonSkill(null)} />
-            : <Part5Hub state={state} startLesson={startLesson} />)}
-          {view === 'practice' && <PracticeHub state={state} navigate={navigate} counts={{5: allPart5.length, 6: allPart6.length, 7: allPart7.length}} />}
+            ? <LessonSession key={lessonSkill} lesson={lessonBySkill[lessonSkill]!} state={state} setState={setState} pool={practicePool(allPart5,false)} onExit={() => setLessonSkill(null)} />
+            : <Part5Hub state={state} setState={setState} startLesson={startLesson} navigate={navigate} />)}
+          {view === 'practice' && <PracticeHub state={state} navigate={navigate} counts={{5: practicePool(allPart5,false).length, 6: allPart6.length, 7: allPart7.length}} />}
           {view === 'part5' && <PracticeScreen part={5} state={state} setState={setState} pool={allPart5} onBack={() => navigate('practice')} />}
           {view === 'part6' && (
             <PracticeScreen
@@ -2072,136 +2077,34 @@ function NavIcon({ kind }: { kind: 'home' | 'learn' | 'practice' | 'progress' })
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11h3v9zm5.5 0V5h3v15zm5.5 0v-7h3v7z" /></svg>
 }
 
-function Home({
-  state,
-  startLesson,
-  navigate,
-  startQuickPart5,
-  questionCounts,
-  vocabCount,
-}: {
-  state: TrainerState
-  startLesson: (skill: SkillId) => void
-  navigate: (view: View) => void
-  startQuickPart5: () => void
-  questionCounts: Record<Part, number>
-  vocabCount: number
+function Home({ state, startLesson, navigate, startQuickPart5, questionCounts, vocabCount }: {
+  state: TrainerState; startLesson: (skill: SkillId) => void; navigate: (view: View) => void
+  startQuickPart5: () => void; questionCounts: Record<Part,number>; vocabCount: number
 }) {
-  const lang = useLanguage()
-  const focus = nextFocusSkill(state)
-  const focusLesson = lessonBySkill[focus] ?? lessons[0]
-  const focusText = localizedLesson(focusLesson, lang)
-  const targets = dailyTargets(state)
-  const today = attemptsToday(state)
-  const todayAttempts = state.attempts.filter(a => todayKey(a.at) === todayKey(Date.now()))
-  const p6done = todayAttempts.filter(a => a.part === 6).length
-  const p7done = todayAttempts.filter(a => a.part === 7).length
-  const weak = weakestSkills(state, 3)
-  const focusAssessment = skillAssessment(state, focus)
-
-  return (
-    <div className="screen home-screen">
-      <section className="welcome">
-        <div>
-          <span className="hello">{greetingLabel(lang)}</span>
-          <h1>TOEIC Reading Coach</h1>
-          <p>{state.totalAnswered
-            ? L(lang, `${state.totalAnswered} questions completed · ${learnerTier(state)} level`, `ทำแล้ว ${state.totalAnswered} ข้อ · ระดับ ${localizedTier(learnerTier(state), lang)}`)
-            : L(lang, 'Start with a short diagnostic and build your plan from real results.', 'เริ่มจากการประเมินสั้น ๆ แล้วให้ระบบสร้างแผนจากผลจริงของคุณ')}</p>
-        </div>
-        <Mascot size={94} />
-      </section>
-
-      <section className="stat-row">
-        <StatBox value={studyStreak(state)} label={L(lang, 'day streak', 'วันต่อเนื่อง')} accent="orange" />
-        <StatBox value={`${Math.min(100, Math.round(today / Math.max(1, targets.total) * 100))}%`} label={L(lang, 'daily goal', 'เป้าหมายวันนี้')} accent="green" ring />
-        <StatBox value={daysToExam()} label={L(lang, 'days left', 'วันก่อนสอบ')} accent="blue" />
-      </section>
-
-      <button className="continue-button" onClick={() => startLesson(focusLesson.skill)}>
-        <span className="play-dot">▶</span>
-        <span>
-          <b>{L(lang, 'Continue personalized lesson', 'เรียนต่อจากบทที่เหมาะกับคุณ')}</b>
-          <small>{focusText.shortTitle} · {L(lang, '5 examples + 10 practice', 'ตัวอย่าง 5 ข้อ + ฝึกจริง 10 ข้อ')}</small>
-        </span>
-        <strong>›</strong>
-      </button>
-
-      <section className="section-block">
-        <SectionTitle title={L(lang, 'Your Learning Path', 'เส้นทางการเรียนของคุณ')} action={L(lang, 'See all', 'ดูทั้งหมด')} onAction={() => navigate('analytics')} />
-        <div className="learning-path">
-          <PathNode done={partAccuracy(state, 5) >= 75} active label="Part 5" sub={L(lang, 'Grammar', 'ไวยากรณ์')} />
-          <PathLine />
-          <PathNode done={partAccuracy(state, 6) >= 75} active={partAccuracy(state, 5) >= 65} label="Part 6" sub={L(lang, 'Text Completion', 'เติมข้อความ')} />
-          <PathLine />
-          <PathNode done={partAccuracy(state, 7) >= 75} active={partAccuracy(state, 6) >= 60} label="Part 7" sub={L(lang, 'Reading', 'การอ่าน')} />
-        </div>
-      </section>
-
-      <section className="section-block">
-        <SectionTitle title={L(lang, 'Practice by Part', 'ฝึกแยกตามพาร์ต')} />
-        <div className="part-cards-mobile">
-          <PracticePartCard className="mint" part="5" title={L(lang, 'Grammar', 'ไวยากรณ์')} count={questionCounts[5]} progress={partAccuracy(state, 5)} onClick={startQuickPart5} />
-          <PracticePartCard className="sky" part="6" title={L(lang, 'Text Completion', 'เติมข้อความ')} count={questionCounts[6]} progress={partAccuracy(state, 6)} onClick={() => navigate('part6')} />
-          <PracticePartCard className="sun" part="7" title={L(lang, 'Reading', 'การอ่าน')} count={questionCounts[7]} progress={partAccuracy(state, 7)} onClick={() => navigate('part7')} />
-        </div>
-      </section>
-
-      <section className="section-block">
-        <div className="adaptive-heading">
-          <div>
-            <span className="tiny-label">{L(lang, 'ADAPTIVE PLAN TODAY', 'แผน ADAPTIVE วันนี้')}</span>
-            <h2>{L(lang, vocabCount ? '4 tasks for your level' : '3 tasks for your level', vocabCount ? '4 งานที่เหมาะกับระดับคุณ' : '3 งานที่เหมาะกับระดับคุณ')}</h2>
-          </div>
-          <span className="tier-pill">{state.totalAnswered ? localizedTier(learnerTier(state), lang) : L(lang, 'Start here', 'เริ่มตรงนี้')}</span>
-        </div>
-        <div className="task-stack">
-          <TaskCard
-            icon="T"
-            title={L(lang, `Learn: ${focusLesson.shortTitle}`, `เรียน: ${focusText.shortTitle}`)}
-            subtitle={L(lang, '5 worked examples + mastery check', 'ตัวอย่างอธิบาย 5 ข้อ + แบบวัดความแม่น')}
-            value={focusAssessment.value ?? Math.min(100, focusAssessment.attempts / 3 * 100)}
-            right={focusAssessment.value !== null ? `${focusAssessment.value}%` : focusAssessment.attempts ? `${focusAssessment.attempts}/3` : L(lang, 'New', 'ใหม่')}
-            onClick={() => startLesson(focus)}
-          />
-          <TaskCard icon="6" title={L(lang, 'Part 6 speed set', 'Part 6 ฝึกทำให้เร็ว')} subtitle={L(lang, `${targets.part6} questions today`, `วันนี้ ${targets.part6} ข้อ`)} value={p6done / targets.part6 * 100} right={`${Math.min(p6done, targets.part6)}/${targets.part6}`} onClick={() => navigate('part6')} />
-          <TaskCard icon="7" title={L(lang, 'Part 7 evidence reading', 'Part 7 อ่านหาหลักฐาน')} subtitle={L(lang, `${targets.part7} questions today`, `วันนี้ ${targets.part7} ข้อ`)} value={p7done / targets.part7 * 100} right={`${Math.min(p7done, targets.part7)}/${targets.part7}`} onClick={() => navigate('part7')} />
-          {vocabCount > 0 && (
-            <TaskCard icon="V" title={L(lang, 'Repair missed vocabulary', 'ทวนคำศัพท์ที่เคยพลาด')} subtitle={L(lang, 'Flashcards built from your real mistakes', 'Flashcard สร้างจากคำที่คุณตอบผิดจริง')} value={Math.min(100, Object.values(state.vocabReview ?? {}).reduce((sum,item)=>sum+item.known,0) / Math.max(1,vocabCount) * 100)} right={`${vocabCount} ${L(lang,'words','คำ')}`} onClick={() => navigate('vocab')} />
-          )}
-        </div>
-      </section>
-
-      <section className="focus-card">
-        <div className="focus-copy">
-          <span className="tiny-label">{L(lang, 'YOUR CURRENT PRIORITY', 'สิ่งที่ควรเน้นตอนนี้')}</span>
-          <h2>{focusText.title}</h2>
-          <p>{weak.length
-            ? L(lang, `Your weakest measured skill is currently ${skillLabels[focus]}. We will teach the pattern before testing it again.`, `จุดที่อ่อนที่สุดที่วัดได้ตอนนี้คือ ${localizedSkill(focus, lang)} ระบบจะสอน pattern ก่อนแล้วค่อยให้ทำซ้ำ`)
-            : L(lang, 'Start here to build your first diagnostic profile.', 'เริ่มตรงนี้เพื่อสร้างโปรไฟล์ระดับจริงของคุณ')}</p>
-          <button onClick={() => startLesson(focus)}>{L(lang, 'Start focused lesson', 'เริ่มบทเรียนเฉพาะจุด')}</button>
-        </div>
-        <Mascot size={88} />
-      </section>
-
-      <button className="mock-banner" onClick={() => navigate('mock')}>
-        <span><b>{L(lang, '75-minute Reading Simulation', 'จำลองสอบ Reading 75 นาที')}</b><small>30 Part 5 · 16 Part 6 · 54 Part 7</small></span>
-        <strong>{L(lang, 'Start', 'เริ่ม')} ›</strong>
-      </button>
-
-      <p className="build-version">v{import.meta.env.VITE_APP_VERSION} · {import.meta.env.VITE_BUILD_ID}</p>
-      <div className="home-spacer" />
-    </div>
-  )
-}
-
-function StatBox({ value, label, accent, ring = false }: { value: number | string; label: string; accent: string; ring?: boolean }) {
-  return (
-    <div className={`stat-box ${accent}`}>
-      <div className={ring ? 'stat-value ring' : 'stat-value'}>{value}</div>
-      <span>{label}</span>
-    </div>
-  )
+  const lang=useLanguage()
+  const focus=nextFocusSkill(state)
+  const lesson=lessonBySkill[focus] ?? lessons[0]
+  const assessment=skillAssessment(state,focus)
+  const today=attemptsToday(state)
+  const due=courseCards.filter(card=>cardIsDue(state,card.id) && courseSkills(card.chapter).includes(focus)).length
+  const uncertain=state.attempts.slice(0,30).filter(a=>a.confidence===1 || a.confidence===2).length
+  return <div className="screen home-screen coach-home">
+    <div className="home-greeting"><span>{greetingLabel(lang)}</span><span>{studyStreak(state)} {L(lang,'day streak','วันต่อเนื่อง')} · {daysToExam()} {L(lang,'days to exam','วันก่อนสอบ')}</span></div>
+    <section className="today-hero">
+      <div className="hero-copy"><span className="eyebrow">YOUR NEXT SMALL WIN</span><h1>{L(lang,'Less guessing.\nMore confidence.','ลดการเดา\nเพิ่มความมั่นใจ')}</h1><p>{L(lang,'Today’s focus','วันนี้เน้น')} · <b>{localizedSkill(focus,lang)}</b></p></div>
+      <div className="hero-art" aria-hidden="true"><div className="orbit-dot">✦</div><Mascot size={112}/><span className="floating-note">S + V → ✓</span></div>
+      <div className="hero-insight"><span>{assessment.value===null ? L(lang,'Building your profile','กำลังวัดพื้นฐาน') : `${L(lang,'Mastery','ความแม่น')} ${assessment.value}%`}</span><b>{today} {L(lang,'answers today','ข้อวันนี้')}</b></div>
+    </section>
+    <section className="daily-route"><div className="section-title"><h2>{L(lang,'Your next 15 minutes','15 นาทีถัดไปของคุณ')}</h2><span className="tiny-label">ADAPTIVE</span></div>
+      <button className="route-row" onClick={()=>navigate('learn')}><span className="route-number">01</span><span><b>{L(lang,'Recall one useful pattern','ปลุกความจำด้วยการ์ดทริค')}</b><small>{L(lang,'Recall before revealing','ลองนึกก่อนเปิดคำตอบ')} · {due} {L(lang,'focus cards due','การ์ดในจุดที่ควรทวน')}</small></span><strong>↗</strong></button>
+      <button className="route-row primary-route" onClick={startQuickPart5}><span className="route-number">02</span><span><b>{L(lang,'Practice a short adaptive set','ฝึกชุดสั้น ปรับตามจุดอ่อน')}</b><small>{L(lang,'6 questions · new examples of your weak patterns','6 ข้อ · ฝึก pattern ที่ยังไม่แม่น')}</small></span><strong>→</strong></button>
+      <button className="route-row" onClick={()=>startLesson(lesson.skill)}><span className="route-number">03</span><span><b>{L(lang,'Repair, then prove you know it','เข้าใจวิธีคิด แล้ววัดความแม่น')}</b><small>{localizedLesson(lesson,lang).shortTitle} · {uncertain ? L(lang,`${uncertain} recent unsure answers`,`${uncertain} ข้อล่าสุดที่ยังลังเล`) : L(lang,'Worked examples → mastery check','ตัวอย่างสอน → วัดความแม่น')}</small></span><strong>↗</strong></button>
+    </section>
+    <SectionTitle title={L(lang,'Train each Reading part','ฝึก Reading ทีละพาร์ต')} action={L(lang,'See all','ดูทั้งหมด')} onAction={()=>navigate('practice')}/>
+    <div className="part-cards-mobile"><PracticePartCard className="mint" part="5" title={L(lang,'Grammar','โครงสร้าง')} count={questionCounts[5]} progress={partAccuracy(state,5)} onClick={startQuickPart5}/><PracticePartCard className="sky" part="6" title={L(lang,'Context','บริบท')} count={questionCounts[6]} progress={partAccuracy(state,6)} onClick={()=>navigate('part6')}/><PracticePartCard className="sun" part="7" title={L(lang,'Evidence','หลักฐาน')} count={questionCounts[7]} progress={partAccuracy(state,7)} onClick={()=>navigate('part7')}/></div>
+    <div className="home-links"><button onClick={()=>navigate('vocab')}>Aa {L(lang,'Vocabulary repair','ทวนศัพท์ที่พลาด')} <b>{vocabCount}</b></button><button onClick={()=>navigate('mock')}>◷ {L(lang,'75-min simulation','จำลองสอบ 75 นาที')} →</button></div>
+    <p className="build-version">v{import.meta.env.VITE_APP_VERSION} · {import.meta.env.VITE_BUILD_ID}</p>
+  </div>
 }
 
 function SectionTitle({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
@@ -2211,20 +2114,6 @@ function SectionTitle({ title, action, onAction }: { title: string; action?: str
       {action && <button onClick={onAction}>{action} ›</button>}
     </div>
   )
-}
-
-function PathNode({ done, active, label, sub }: { done: boolean; active: boolean; label: string; sub: string }) {
-  return (
-    <div className={`path-node ${active ? 'active' : ''}`}>
-      <div>{done ? '✓' : active ? '◆' : '•'}</div>
-      <b>{label}</b>
-      <span>{sub}</span>
-    </div>
-  )
-}
-
-function PathLine() {
-  return <div className="path-line"><span /></div>
 }
 
 function PracticePartCard({
@@ -2254,30 +2143,6 @@ function PracticePartCard({
   )
 }
 
-function TaskCard({
-  icon,
-  title,
-  subtitle,
-  value,
-  right,
-  onClick,
-}: {
-  icon: string
-  title: string
-  subtitle: string
-  value: number
-  right: string
-  onClick: () => void
-}) {
-  return (
-    <button className="task-card" onClick={onClick}>
-      <span className="task-icon">{icon}</span>
-      <div className="task-copy"><b>{title}</b><small>{subtitle}</small><Progress value={value} /></div>
-      <strong>{right}</strong>
-    </button>
-  )
-}
-
 function PracticeHub({ state, navigate, counts }: { state: TrainerState; navigate: (view: View) => void; counts: Record<Part, number> }) {
   const lang = useLanguage()
   return <div className="screen practice-hub">
@@ -2290,127 +2155,64 @@ function PracticeHub({ state, navigate, counts }: { state: TrainerState; navigat
   </div>
 }
 
-function Part5Hub({
-  state,
-  startLesson,
-}: {
-  state: TrainerState
-  startLesson: (skill: SkillId) => void
+function Part5Hub({ state, setState, startLesson, navigate }: {
+  state: TrainerState; setState: StateSetter; startLesson: (skill: SkillId) => void; navigate: (view: View) => void
 }) {
-  const lang = useLanguage()
-  const focus = nextFocusSkill(state)
-  const due = new Set(dueLessonSkills(state))
-  const overallMastery = averagePart5Mastery(state)
-  const sorted = [...lessons].sort((a, b) => {
-    if (a.skill === focus) return -1
-    if (b.skill === focus) return 1
-    const aScore = skillAssessment(state, a.skill).value ?? -1
-    const bScore = skillAssessment(state, b.skill).value ?? -1
-    return aScore - bScore
+  const lang=useLanguage()
+  const [tab,setTab]=useState<'cards'|'lessons'>('cards')
+  return <div className="screen learn-screen">
+    <div className="screen-intro compact-intro"><span className="eyebrow">LEARN / RECALL / APPLY</span><h1>{L(lang,'Make the pattern stick.','จำให้เป็น ใช้ให้ได้')}</h1><p>{L(lang,'One idea at a time. Recall it, then use it.','ทีละทริค ลองนึกก่อน แล้วค่อยนำไปใช้กับโจทย์')}</p></div>
+    <div className="segment library-switch"><button className={tab==='cards'?'active':''} onClick={()=>setTab('cards')}>{L(lang,'Memory library','คลังทริค & ความจำ')}</button><button className={tab==='lessons'?'active':''} onClick={()=>setTab('lessons')}>{L(lang,'Guided lessons','บทเรียนพร้อมตัวอย่าง')}</button></div>
+    {tab==='cards' ? <CourseMemoryBank state={state} setState={setState} startLesson={startLesson} navigate={navigate}/> : <div className="guided-grid">{lessons.map(lesson=>{const assessment=skillAssessment(state,lesson.skill);const result=state.lessonResults[lesson.skill];return <button className="guided-card" key={lesson.skill} onClick={()=>startLesson(lesson.skill)}><span className="lesson-icon">{lesson.icon}</span><b>{localizedLesson(lesson,lang).shortTitle}</b><small>{L(lang,'5 examples · mastery check','5 ตัวอย่าง · แบบวัดความแม่น')}</small><Progress value={assessment.value??0}/><span>{result ? `${L(lang,'Best','ดีที่สุด')} ${result.bestScore}%` : localizedAssessmentLabel(assessment,lang)}</span></button>})}</div>}
+  </div>
+}
+
+function MemoryCard({card,state,setState,onNext}: {card:CourseCard;state:TrainerState;setState:StateSetter;onNext:()=>void}) {
+  const lang=useLanguage()
+  const [quiz,setQuiz]=useState(false)
+  const [revealed,setRevealed]=useState(false)
+  const [studied,setStudied]=useState(false)
+  const source=courseSources.find(s=>s.id===card.chapter)
+  const review=state.vocabReview[`card:${card.id}`]
+  const mark=(knew:boolean)=>{setState(current=>markVocabReview(current,`card:${card.id}`,knew));setStudied(true)}
+  const patternRow=(pattern:string)=>{const [a,b]=pattern.split('→');return <div key={pattern}><b>{a}</b>{b && <><span aria-hidden="true">→</span><span>{b}</span></>}</div>}
+  return <article className="memory-card" key={card.id}>
+    <div className="memory-card-top"><span className="eyebrow">{L(lang,'CHAPTER','บท')} {card.chapter<=28?card.chapter:'＋'} · {L(lang,'RECALL','ลองนึก')}</span><span className="recall-status">{review?.known ? L(lang,`${review.known} recalls`,`${review.known} ครั้งที่จำได้`) : L(lang,'Fresh pattern','เริ่มจำ pattern')}</span></div>
+    <h2>{quiz && !revealed && card.id.startsWith('chunk-') ? card.prompt.split(' : ')[0] : card.title}</h2>
+    {(!quiz || revealed) && <><div className="memory-hook"><span aria-hidden="true">✦</span><p>{card.memory}</p></div>
+    <div className="pattern-map">{card.patterns.slice(0,4).map(patternRow)}</div>
+    {card.patterns.length>4 && <details className="more-patterns"><summary>{L(lang,`See ${card.patterns.length-4} more patterns`,`ดูอีก ${card.patterns.length-4} รูปแบบ`)}</summary><div className="pattern-map">{card.patterns.slice(4).map(patternRow)}</div></details>}
+    {card.example && <div className="memory-example"><small>{L(lang,'SEE IT IN A SENTENCE','ดูในประโยคจริง')}</small><p>{card.example}</p></div>}</>}
+    {!quiz ? <button className="recall-start" onClick={()=>setQuiz(true)}>{L(lang,'Hide the note · try recalling','ปิดโน้ต · ลองนึกด้วยตัวเอง')} →</button> : <div className="recall-box"><span className="tiny-label">{L(lang,'RECALL BEFORE REVEALING','นึกคำตอบโดยไม่เปิดโน้ต')}</span><h3>{card.prompt}</h3>
+      {!revealed ? <button className="recall-reveal" onClick={()=>setRevealed(true)}>{L(lang,'Reveal and check','เปิดคำตอบแล้วเช็กตัวเอง')} ↗</button> : <div className="recall-answer" aria-live="polite"><p>{card.answer}</p>{!studied ? <div className="recall-actions"><button onClick={()=>mark(false)}>{L(lang,'Needs another look','ยังจำไม่ได้')}</button><button onClick={()=>mark(true)}>{L(lang,'Recalled it','นึกได้เอง')} ✓</button></div> : <div className="recall-saved"><span>✓ {L(lang,'Review scheduled','จัดรอบทบทวนให้แล้ว')}</span><button onClick={onNext}>{L(lang,'Next card','การ์ดถัดไป')} →</button></div>}</div>}
+    </div>}
+    <details className="card-source"><summary>{L(lang,'Source & review timing','อ้างอิง & รอบทบทวน')}</summary><small>{source?.file} · {L(lang,'pages','หน้า')} {card.pages}<br/>{L(lang,'Original summary. Recall again in 1, 3 or 7 days based on your recalls.','สรุปและตัวอย่างเขียนใหม่ · ทวนใน 1, 3 หรือ 7 วันตามผลที่นึกได้')}</small></details>
+  </article>
+}
+
+function CourseMemoryBank({state,setState,startLesson,navigate}: {state:TrainerState;setState:StateSetter;startLesson:(skill:SkillId)=>void;navigate:(view:View)=>void}) {
+  const lang=useLanguage()
+  const [category,setCategory]=useState('focus')
+  const [search,setSearch]=useState('')
+  const [chapter,setChapter]=useState<number|null>(null)
+  const [index,setIndex]=useState(0)
+  const focus=nextFocusSkill(state)
+  const [dueIds]=useState(()=>new Set(courseCards.filter(card=>cardIsDue(state,card.id)).map(card=>card.id)))
+  const matches=courseCards.filter(card=>{
+    const group=category==='all' || (category==='focus' ? courseSkills(card.chapter).includes(focus) && dueIds.has(card.id) : category==='grammar' ? card.chapter<=20 || card.chapter===30 : category==='vocab' ? [13,21].includes(card.chapter) : category==='listening' ? card.chapter>=22 && card.chapter<=25 : card.chapter>=26 && card.chapter<=29)
+    return group && (!chapter || card.chapter===chapter) && [card.title,card.memory,...card.patterns].join(' ').toLowerCase().includes(search.trim().toLowerCase())
   })
-
-  return (
-    <div className="screen learn-screen">
-      <div className="screen-intro">
-        <span className="tiny-label">{L(lang, 'LEARN · GRAMMAR & READING', 'เรียน · หลักไวยากรณ์และเทคนิค Reading')}</span>
-        <h1>{L(lang, 'Fix the pattern, then prove it.', 'แก้จุดอ่อนให้เข้าใจก่อน แล้วค่อยพิสูจน์ด้วยโจทย์จริง')}</h1>
-        <p>{L(lang, 'Every focused lesson gives you 5 fully explained examples first, followed by a 10-question mastery check.', 'แต่ละบทจะสอนด้วยตัวอย่างอธิบายละเอียด 5 ข้อก่อน แล้วให้ทำแบบวัดความแม่น 10 ข้อ')}</p>
-      </div>
-
-      <div className="level-card">
-        <div>
-          <span>{L(lang, 'Current Part 5 level', 'ระดับ Part 5 ตอนนี้')}</span>
-          <strong>{overallMastery === null ? L(lang, 'Not assessed yet', 'ยังไม่ได้ประเมิน') : localizedSkillTierName(skillTier(overallMastery), lang)}</strong>
-          <small>{overallMastery === null ? L(lang, 'Do at least 3 questions in a skill before mastery is shown.', 'ทำอย่างน้อย 3 ข้อในหัวข้อนั้นก่อน ระบบจึงจะแสดงค่าความแม่น') : L(lang, `${partAccuracy(state, 5)}% measured accuracy`, `ความถูกต้องที่วัดได้ ${partAccuracy(state, 5)}%`)}</small>
-        </div>
-        <div className={overallMastery === null ? 'level-orbit unassessed' : 'level-orbit'}><span>{overallMastery === null ? '—' : `${Math.round(overallMastery)}%`}</span></div>
-      </div>
-
-      <SectionTitle title={L(lang, 'Part 5 · Focused lessons', 'Part 5 · บทเรียนเฉพาะจุด')} />
-      <div className="function-guide">
-        <div><b>N.</b><span>{L(lang,'Subject / object / after a preposition','ประธาน / กรรม / หลัง Prep.')}</span><code>the final approval</code></div>
-        <div><b>Adj.</b><span>{L(lang,'Describe a noun or a state','ขยาย N. / บอกสภาพหลัง linking V.')}</span><code>a detailed report</code></div>
-        <div><b>Adv.</b><span>{L(lang,'Modify V. / Adj. / Adv.','ขยาย V. / Adj. / Adv.')}</span><code>remarkably detailed</code></div>
-        <div><b>V.</b><span>{L(lang,'Check subject, tense and voice','เช็กประธาน เวลา และ voice')}</span><code>must be approved</code></div>
-      </div>
-      <div className="lesson-list">
-        {sorted.map(lesson => {
-          const assessment = skillAssessment(state, lesson.skill)
-          const result = state.lessonResults[lesson.skill]
-          const chapter = chaptersForSkill(lesson.skill)[0]
-          const lessonText = localizedLesson(lesson, lang)
-          return (
-            <button className={lesson.skill === focus ? 'lesson-card recommended' : 'lesson-card'} key={lesson.skill} onClick={() => startLesson(lesson.skill)}>
-              <span className="lesson-icon">{lesson.icon}</span>
-              <div className="lesson-card-copy">
-                <div className="lesson-title-line">
-                  <b>{lessonText.shortTitle}</b>
-                  {lesson.skill === focus && <span>{L(lang, 'Recommended', 'แนะนำ')}</span>}
-                  {due.has(lesson.skill) && <span className="due">{L(lang, 'Review due', 'ถึงเวลาทบทวน')}</span>}
-                </div>
-                {chapter && <span className="course-ref-mini">{L(lang, 'Chapter', 'บทที่')} {chapter.id} · {localizedChapterTitle(chapter.id, chapter.title, lang)}</span>}
-                <small>{lessonText.summary}</small>
-                <Progress value={assessment.value ?? Math.min(100, assessment.attempts / 3 * 100)} />
-                <div className="lesson-meta">
-                  <span>{localizedAssessmentLabel(assessment, lang)}</span>
-                  <span>{result ? L(lang, `Best check ${result.bestScore}%`, `คะแนนดีที่สุด ${result.bestScore}%`) : L(lang, 'Not completed yet', 'ยังไม่เคยทำจบบท')}</span>
-                </div>
-              </div>
-              <strong>›</strong>
-            </button>
-          )
-        })}
-      </div>
-
-      <section className="reading-lessons"><SectionTitle title={L(lang,'Part 6 & 7 · Reading method','Part 6 และ 7 · วิธีอ่าน')} />
-        {readingCourseChapters.filter(chapter => chapter.id >= 27).map(chapter => <details className="course-chapter" key={chapter.id}><summary><span>Part {chapter.id === 27 ? 6 : 7}</span><b>{localizedChapterTitle(chapter.id, chapter.title, lang)}</b></summary><div className="course-chapter-body"><ol>{localizedChapterTips(chapter.id, chapter.memorize, lang).map(tip => <li key={tip}>{tip}</li>)}</ol><small>{L(lang,'From your course','จากบทเรียนเดิม')} · {L(lang,'Chapter','บท')} {chapter.id}</small></div></details>)}
-      </section>
-      <details className="course-memory-toggle"><summary>{L(lang,'Open the full course memory bank','เปิดคลังสรุปบทเรียนทั้งหมด')}</summary><CourseMemoryBank /></details>
-    </div>
-  )
-}
-
-function averagePart5Mastery(state: TrainerState) {
-  const p5Skills: SkillId[] = ['part-of-speech','verb-tense','subject-verb','passive','preposition','conjunction','relative-clause','pronoun','comparison','vocabulary','collocation']
-  const values = p5Skills
-    .map(skill => skillAssessment(state, skill))
-    .filter(item => item.value !== null)
-    .map(item => item.value as number)
-  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null
-}
-
-function CourseMemoryBank() {
-  const lang = useLanguage()
-  const grammar = readingCourseChapters.filter(chapter => chapter.id <= 21)
-  const reading = readingCourseChapters.filter(chapter => chapter.id >= 26)
-
-  const renderChapter = (chapter: (typeof readingCourseChapters)[number]) => (
-    <details className="course-chapter" key={chapter.id}>
-      <summary>
-        <span>{L(lang, 'Chapter', 'บทที่')} {chapter.id}</span>
-        <b>{localizedChapterTitle(chapter.id, chapter.title, lang)}</b>
-        <strong>＋</strong>
-      </summary>
-      <div className="course-chapter-body">
-        <small>{lang === 'th' ? `บทที่ ${chapter.id} · ${localizedChapterTitle(chapter.id, chapter.title, lang)}` : chapter.sections.join(' · ')}</small>
-        <h4>{L(lang, 'Memorize these', 'ต้องท่องจำ')}</h4>
-        <ul>{localizedChapterTips(chapter.id, chapter.memorize, lang).map(item => <li key={item}>{item}</li>)}</ul>
-        {chapter.coachTip && <p className="coach-tip">{L(lang, chapter.coachTip, 'บทนี้มีเนื้อหาค่อนข้างกว้าง ระบบจะพาคุณกลับมาทบทวนเมื่อพบว่าพลาดคำศัพท์หรือรูปแบบที่เกี่ยวข้อง')}</p>}
-        <span className="source-file">{L(lang, 'Source', 'อ้างอิงจาก')}: {chapter.file}</span>
-      </div>
-    </details>
-  )
-
-  return (
-    <section className="course-memory-bank">
-      <SectionTitle title={L(lang, 'Your course memory bank', 'คลังสรุปจากบทเรียนจริงของคุณ')} />
-      <p className="course-memory-intro">{L(lang, 'Summaries from the material you actually study in ', 'สรุปจากไฟล์ที่คุณเรียนจริงใน ')}<b>content-TOEIC/TOEIC</b>{L(lang, '. Use it to review only the rules worth memorizing.', ' ใช้ทบทวนเฉพาะกฎที่ต้องจำ โดยไม่ต้องไล่เปิดทุก PDF')}</p>
-      <h3>{L(lang, 'Grammar chapters', 'บทไวยากรณ์')}</h3>
-      <div className="course-chapter-list">{grammar.map(renderChapter)}</div>
-      <h3>{L(lang, 'Reading chapters', 'บท Reading')}</h3>
-      <div className="course-chapter-list">{reading.map(renderChapter)}</div>
-    </section>
-  )
+  const card=matches[Math.min(index,Math.max(0,matches.length-1))]
+  const available=courseSources.filter(source=>courseCards.some(card=>card.chapter===source.id))
+  const next=()=>setIndex(i=>i+1<matches.length ? i+1 : 0)
+  return <section className="course-library">
+    <div className="library-stat"><span className="library-mark" aria-hidden="true">✦</span><div><b>{courseCards.length} {L(lang,'memory cards','การ์ดจำ')}</b><small>{courseSources.length} PDF · {L(lang,'Grammar, vocabulary, listening and reading','Grammar · ศัพท์ · Listening · Reading')}</small></div></div>
+    <label className="library-search"><span aria-hidden="true">⌕</span><input type="search" placeholder={L(lang,'Search a word or pattern…','ค้นหา เช่น unless, คุ้นเคย, ประธาน…')} aria-label={L(lang,'Search memory cards','ค้นหาการ์ดทริค')} value={search} onChange={event=>{setSearch(event.target.value);setIndex(0)}}/></label>
+    <div className="library-filters" role="group" aria-label={L(lang,'Card categories','หมวดการ์ด')}>{[['focus',L(lang,'For you','ควรทวน')],['grammar','Grammar'],['vocab',L(lang,'Vocab','ศัพท์')],['listening','Listening'],['reading','Reading'],['all',L(lang,'All','ทั้งหมด')]].map(([id,title])=><button className={category===id?'active':''} key={id} onClick={()=>{setCategory(id);setChapter(null);setIndex(0)}}>{title}</button>)}</div>
+    <div className="card-pagination"><label>{L(lang,'Chapter','บทเรียน')} <select aria-label={L(lang,'Choose chapter','เลือกบทเรียน')} value={chapter??''} onChange={event=>{setChapter(event.target.value?Number(event.target.value):null);setCategory('all');setIndex(0)}}><option value="">{L(lang,'All chapters','ทุกบท')}</option>{available.map(source=><option key={source.id} value={source.id}>{source.id<=28?`${source.id}. `:''}{localizedChapterTitle(source.id,source.title,lang)}</option>)}</select></label><span>{matches.length ? `${Math.min(index+1,matches.length)} / ${matches.length}` : '0'}</span></div>
+    {card ? <><MemoryCard key={card.id} card={card} state={state} setState={setState} onNext={next}/><div className="card-controls"><button disabled={index===0} onClick={()=>setIndex(i=>Math.max(0,i-1))}>← {L(lang,'Previous','ก่อนหน้า')}</button><button onClick={next}>{L(lang,'Next card','การ์ดถัดไป')} →</button></div><button className="apply-card" onClick={()=>card.chapter>=22 && card.chapter<=25 ? next() : card.chapter===27 || card.chapter===28 ? navigate(card.chapter===27?'part6':'part7') : startLesson(courseSkills(card.chapter)[0]??focus)}>{card.chapter>=22 && card.chapter<=25 ? L(lang,'Next Listening strategy','ทริค Listening ถัดไป') : L(lang,'Use this pattern in a question','นำ pattern นี้ไปใช้กับโจทย์')} ↗</button></> : <div className="empty-state"><b>{L(lang,'No cards here right now','ยังไม่มีการ์ดในตัวกรองนี้')}</b><p>{L(lang,'Try All or choose another chapter.','เลือกทั้งหมด หรือเปลี่ยนคำค้นเพื่อทวนเรื่องอื่น')}</p><button className="recall-reveal" onClick={()=>{setCategory('all');setSearch('');setChapter(null);setIndex(0)}}>{L(lang,'Show all cards','เปิดทุกการ์ด')}</button></div>}
+    <details className="source-index"><summary>{L(lang,'Browse course coverage','ดูบทเรียนและแหล่งอ้างอิงทั้งหมด')} · {available.length}</summary><div>{available.map(source=><button key={source.id} onClick={()=>{setCategory('all');setChapter(source.id);setSearch('');setIndex(0);window.scrollTo({top:140,behavior:'smooth'})}}><span>{source.id<=28?source.id:'＋'}</span><b>{localizedChapterTitle(source.id,source.title,lang)}</b><small>{courseCards.filter(card=>card.chapter===source.id).length} {L(lang,'cards','การ์ด')}</small></button>)}</div></details>
+  </section>
 }
 
 function LessonSession({
@@ -2430,7 +2232,7 @@ function LessonSession({
   const lessonText = localizedLesson(lesson, lang)
   const [phase, setPhase] = useState<'examples' | 'practice' | 'result'>('examples')
   const [exampleIndex, setExampleIndex] = useState(0)
-  const [practiceQuestions] = useState(() => questionsForSkill(state, pool, lesson.skill, lesson.practiceCount))
+  const [practiceQuestions, setPracticeQuestions] = useState(() => questionsForSkill(state, pool, lesson.skill, lesson.practiceCount))
   const [practiceIndex, setPracticeIndex] = useState(0)
   const [selected, setSelected] = useState('')
   const [checked, setChecked] = useState(false)
@@ -2438,10 +2240,11 @@ function LessonSession({
   const [times, setTimes] = useState<number[]>([])
   const [reason, setReasonState] = useState<ErrorReason | ''>('')
   const [lessonConfidence, setLessonConfidence] = useState<1 | 2 | 3 | 0>(0)
-  const startedAt = useRef(performance.now())
+  const startedAt = useRef(0)
   const courseRefs = chaptersForSkill(lesson.skill)
 
   const resetLesson = () => {
+    setPracticeQuestions(questionsForSkill(state, pool, lesson.skill, lesson.practiceCount))
     setPhase('examples')
     setExampleIndex(0)
     setPracticeIndex(0)
@@ -2500,7 +2303,7 @@ function LessonSession({
 
   if (phase === 'result') {
     const percent = Math.round(score / Math.max(1, practiceQuestions.length) * 100)
-    const passed = score >= Math.min(lesson.passScore, practiceQuestions.length)
+    const passed = score / Math.max(1,practiceQuestions.length) >= lesson.passScore / lesson.practiceCount
     const avg = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length / 1000) : 0
     return (
       <div className="screen result-screen">
@@ -2570,6 +2373,7 @@ function LessonSession({
         <b>{score} {L(lang, 'correct', 'ข้อถูก')}</b>
       </div>
       <QuestionCard
+        key={question.id}
         question={question}
         selected={selected}
         checked={checked}
@@ -2708,6 +2512,11 @@ function DailyPartComplete({
 }
 
 function practicePool(questions: Question[], exam: boolean) {
+  // Part 5 uses reviewed word roles; the full historical bank remains available in past results.
+  if (questions[0]?.part===5) {
+    const reviewed=questions.filter(q=>reviewedGrammar[q.id])
+    if (reviewed.length) questions=reviewed
+  }
   if (!exam) return questions
   const passageIds = new Set(questions.filter(q => q.difficulty >= 3).map(q => q.passageId).filter(Boolean))
   const challenging = questions.filter(q => q.passageId ? passageIds.has(q.passageId) : q.difficulty >= 3)
@@ -2732,7 +2541,7 @@ function PracticeScreen({
   readingSwitch?: (part: 6 | 7) => void
 }) {
   const lang = useLanguage()
-  const [exam, setExam] = useState(true)
+  const [exam, setExam] = useState(false)
   const pool = useMemo(() => practicePool(sourcePool, exam), [sourcePool, exam])
   const activePassageMap = passageMap ?? passageById
   const [question, setQuestion] = useState<Question>(() => firstQuestionOfPickedPassage(state, pool, activePassageMap))
@@ -2743,7 +2552,10 @@ function PracticeScreen({
   const [reason, setReason] = useState<ErrorReason | ''>('')
   const [confidence, setConfidence] = useState<1 | 2 | 3 | 0>(0)
   const [extraPractice, setExtraPractice] = useState(false)
-  const startedAt = useRef(performance.now())
+  const [session, setSession] = useState<{question:Question;correct:boolean;seconds:number;confidence:number}[]>([])
+  const [finishedSet, setFinishedSet] = useState(false)
+  const [dailyComplete, setDailyComplete] = useState(false)
+  const startedAt = useRef(0)
 
   useEffect(() => {
     setQuestion(firstQuestionOfPickedPassage(state, pool, activePassageMap))
@@ -2753,10 +2565,13 @@ function PracticeScreen({
     setReason('')
     setConfidence(0)
     setExtraPractice(false)
+    setSession([])
+    setFinishedSet(false)
+    setDailyComplete(false)
     startedAt.current = performance.now()
     // reset only when pool/part changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [part, pool])
+  }, [part, exam])
 
   const passage = question?.passageId ? activePassageMap[question.passageId] : undefined
   const passageQuestionIds = passage?.questions.filter(id => pool.some(q => q.id === id)) ?? []
@@ -2769,18 +2584,25 @@ function PracticeScreen({
   const partDone = todayPartCount(state, part)
   const passageBoundary = part === 5 || !passage || passageQuestionIndex >= passageQuestionIds.length - 1
   const goalReached = partDone >= partTarget
-  const showDailyComplete = goalReached && !extraPractice && !checked
+  const showDailyComplete = goalReached && !extraPractice && !checked && (session.length===0 || dailyComplete)
 
   const submit = () => {
     if (!selected || checked) return
     const ms = performance.now() - startedAt.current
     setElapsed(ms)
+    setSession(items=>[...items,{question,correct:selected===question.answer,seconds:ms/1000,confidence:0}])
     setState(current => recordAttempt(current, question, selected, ms, { mode: 'adaptive' }))
     setChecked(true)
   }
 
   const next = () => {
+    if (session.length>=6 && passageBoundary) {
+      setFinishedSet(true)
+      window.scrollTo({top:0,behavior:'smooth'})
+      return
+    }
     if (!extraPractice && goalReached && passageBoundary) {
+      setDailyComplete(true)
       setSelected('')
       setChecked(false)
       setCoachingStep(0)
@@ -2801,6 +2623,17 @@ function PracticeScreen({
     setConfidence(0)
     startedAt.current = performance.now()
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (finishedSet) {
+    const errors=session.filter(item=>!item.correct || item.confidence===1 || item.confidence===2)
+    const slow=session.filter(item=>item.seconds>(item.question.targetSeconds??(part===5?25:part===6?45:75)))
+    const repair=errors[0]?.question ?? slow[0]?.question
+    const recall=repair ? recallForQuestion(repair) : undefined
+    return <div className="screen set-result"><div className="set-score">{session.filter(item=>item.correct).length}<small>/{session.length}</small></div><h1>{L(lang,'A small set. A clear next step.','จบชุดนี้ รู้จุดที่ควรแก้')}</h1><div className="set-metrics"><div><b>{session.filter(item=>!item.correct).length}</b><small>{L(lang,'Incorrect','ข้อที่ผิด')}</small></div><div><b>{session.filter(item=>item.confidence===1 || item.confidence===2).length}</b><small>{L(lang,'Unsure / guessed','ลังเล / เดา')}</small></div><div><b>{slow.length}</b><small>{L(lang,'Over target time','เกินเวลาเป้าหมาย')}</small></div></div>
+      <div className="set-repair"><span className="eyebrow">{L(lang,'YOUR NEXT FOCUS','จุดที่ควรทวนต่อ')}</span><p>{repair ? repair.skills.map(skill=>localizedSkill(skill,lang)).join(' · ') : L(lang,'Keep testing the pattern with new questions.','ฝึกข้อใหม่ต่อ เพื่อยืนยันว่าใช้ pattern ได้จริง')}</p>{recall && <><b>{recall.title}</b><p>{recall.memory}</p><details><summary>{L(lang,'Quick recall','ลองนึกสั้น ๆ')}</summary><p>{recall.prompt}</p><details><summary>{L(lang,'Reveal','เปิดคำตอบ')}</summary><p>{recall.answer}</p></details></details></>}</div>
+      <button className="big-next" onClick={()=>{setSession([]);setFinishedSet(false);setExtraPractice(true);setQuestion(firstQuestionOfPickedPassage(state,pool,activePassageMap,question.passageId));setSelected('');setChecked(false);setCoachingStep(0);setReason('');setConfidence(0);startedAt.current=performance.now()}}>{L(lang,'Start next adaptive set','เริ่มชุดถัดไปตามจุดอ่อน')} →</button><button className="back-link" onClick={onBack}>{L(lang,'Finish for now','พักก่อน กลับไปหน้าฝึก')}</button>
+    </div>
   }
 
   if (showDailyComplete) {
@@ -2847,6 +2680,8 @@ function PracticeScreen({
         <Progress value={partDone / Math.max(1, partTarget) * 100} />
         <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}{extraPractice ? L(lang, ' · extra', ' · ฝึกเพิ่ม') : ''}</span>
       </div>
+      <div className="session-status"><b>{L(lang,'SHORT SET','ชุดสั้น')} · {L(lang,'Question','ข้อ')} {session.length + (checked ? 0 : 1)}</b><span>{L(lang,'6+ questions · finish the whole passage','6 ข้อขึ้นไป · ทำให้จบทั้งบทความ')}</span></div>
+      <details className="adaptive-why"><summary>{L(lang,'Why this question?','ทำไมระบบเลือกข้อนี้?')}</summary><p>{L(lang,'Selection balances difficulty with weak skills, missed patterns, confidence, speed, spacing and recent exposure.','ระบบจัดน้ำหนักจากระดับที่ทำได้ จุดอ่อน pattern ที่พลาด ความมั่นใจ เวลา และระยะทบทวน พร้อมลดข้อที่เพิ่งเห็น')} · {question.skills.map(skill=>`${localizedSkill(skill,lang)} ${skillAssessment(state,skill).value??'—'}%`).join(' / ')}</p></details>
 
       {passage && (
         <PassageDocument
@@ -2862,7 +2697,7 @@ function PracticeScreen({
       )}
 
       <div id="active-question">
-          <QuestionCard question={question} selected={selected} checked={checked} onSelect={setSelected} contextText={questionContext} activeStep={coachingStep} onStep={setCoachingStep} />
+          <QuestionCard key={question.id} question={question} selected={selected} checked={checked} onSelect={setSelected} contextText={questionContext} activeStep={coachingStep} onStep={setCoachingStep} />
           {!checked ? (
             <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
           ) : (
@@ -2879,10 +2714,11 @@ function PracticeScreen({
               confidence={confidence}
               onConfidence={value => {
                 setConfidence(value)
+                setSession(items=>items.map((item,index)=>index===items.length-1?{...item,confidence:value}:item))
                 setState(current => addFeedbackToLatest(current, reason || undefined, value))
               }}
               onNext={next}
-              nextLabel={!extraPractice && goalReached && passageBoundary
+              nextLabel={session.length>=6 && passageBoundary ? L(lang,'See set results','ดูสรุปชุดนี้') : !extraPractice && goalReached && passageBoundary
                 ? L(lang, 'Finish today’s target', 'จบตามเป้าหมายวันนี้')
                 : L(lang, 'Next question', 'ข้อถัดไป')}
             />
@@ -2914,15 +2750,11 @@ function QuestionCard({
   const lang = useLanguage()
   const [inspectedChoice, setInspectedChoice] = useState('')
   const [localStep, setLocalStep] = useState(0)
-  const step = activeStep ?? localStep
+  const step = checked ? activeStep ?? localStep : 0
   const chooseStep = (nextStep: number) => {
     (onStep ?? setLocalStep)(nextStep)
     if (question.part === 7) document.getElementById(nextStep === 2 ? `reading-${question.id}` : `sentence-${question.id}`)?.scrollIntoView({ behavior:'smooth', block:'start' })
   }
-
-  useEffect(() => {
-    setInspectedChoice('')
-  }, [question.id])
 
   return (
     <section className="mobile-question-card">
@@ -3087,34 +2919,20 @@ function MockTest({ setState }: { setState: StateSetter }) {
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState('')
   const [correctCount, setCorrectCount] = useState(0)
+  const [answers,setAnswers] = useState<Record<string,string>>({})
+  const [reviewIndex,setReviewIndex] = useState(0)
+  const [showReview,setShowReview] = useState(false)
+  const deadline=useRef(0)
   const [remaining, setRemaining] = useState(75 * 60)
-  const questionStarted = useRef(performance.now())
+  const questionStarted = useRef(0)
 
   const makeTest = () => {
     const shuffle = <T,>(items: T[]) => [...items].sort(() => Math.random() - 0.5)
-    const orderedReadingSample = (items: Question[], target: number) => {
-      const byId = new Map(items.map(q => [q.id, q]))
-      const groups = shuffle(
-        Object.values(passageById)
-          .map(passage => passage.questions.map(id => byId.get(id)).filter((q): q is Question => Boolean(q)))
-          .filter(group => group.length),
-      )
-      const selected: Question[] = []
-      for (const group of groups) {
-        if (selected.length >= target) break
-        selected.push(...group.slice(0, target - selected.length))
-      }
-      if (selected.length < target) {
-        const used = new Set(selected.map(q => q.id))
-        selected.push(...shuffle(items.filter(q => !used.has(q.id))).slice(0, target - selected.length))
-      }
-      return selected
-    }
 
     return [
-      ...shuffle(part5).slice(0, 30),
-      ...orderedReadingSample(part6, 16),
-      ...orderedReadingSample(part7, 54),
+      ...shuffle(practicePool(part5,true)).slice(0, 30),
+      ...completeReadingSample(practicePool(part6,true), passageById, 16),
+      ...completeReadingSample(practicePool(part7,true), passageById, 54),
     ]
   }
 
@@ -3125,6 +2943,10 @@ function MockTest({ setState }: { setState: StateSetter }) {
     setIndex(0)
     setSelected('')
     setCorrectCount(0)
+    setAnswers({})
+    setShowReview(false)
+    setReviewIndex(0)
+    deadline.current=Date.now()+75*60*1000
     setRemaining(75 * 60)
     questionStarted.current = performance.now()
   }
@@ -3132,13 +2954,9 @@ function MockTest({ setState }: { setState: StateSetter }) {
   useEffect(() => {
     if (!started || finished) return
     const timer = window.setInterval(() => {
-      setRemaining(value => {
-        if (value <= 1) {
-          setFinished(true)
-          return 0
-        }
-        return value - 1
-      })
+      const seconds=Math.max(0,Math.ceil((deadline.current-Date.now())/1000))
+      setRemaining(seconds)
+      if (!seconds) setFinished(true)
     }, 1000)
     return () => window.clearInterval(timer)
   }, [started, finished])
@@ -3162,13 +2980,19 @@ function MockTest({ setState }: { setState: StateSetter }) {
 
   if (finished || !questions[index]) {
     const percent = Math.round(correctCount / 100 * 100)
+    const missed=questions.filter(q=>answers[q.id]!==q.answer)
+    const review=missed[Math.min(reviewIndex,Math.max(0,missed.length-1))]
+    if (showReview && review) {
+      const doc=review.passageId ? passageById[review.passageId] : undefined
+      return <div className="screen practice-screen"><button className="back-link" onClick={()=>setShowReview(false)}>{L(lang,'Back to results','กลับไปผลสอบ')}</button><p>{L(lang,'Review','ทบทวน')} {reviewIndex+1}/{missed.length}</p>{doc && <PassageDocument passage={doc} part={review.part} question={review} selected={answers[review.id]??''} checked/>}<QuestionCard key={review.id} question={review} selected={answers[review.id]??''} checked onSelect={()=>undefined}/><button className="big-next" onClick={()=>reviewIndex+1<missed.length ? setReviewIndex(i=>i+1) : setShowReview(false)}>{L(lang,'Next review','ทบทวนข้อถัดไป')} →</button></div>
+    }
     return (
       <div className="screen result-screen">
         <div className="result-badge pass">✓</div>
         <span className="tiny-label">{L(lang, 'SIMULATION COMPLETE', 'ทำชุดจำลองเสร็จแล้ว')}</span>
         <h1>{correctCount}/100 {L(lang, 'correct', 'ข้อถูก')}</h1>
         <Progress value={percent} />
-        <p>{L(lang, 'All responses were added to your adaptive learner model and synced to Firebase.', 'คำตอบทั้งหมดถูกนำไปอัปเดตโมเดล Adaptive ของคุณและซิงก์กับ Firebase แล้ว')}</p>
+        <p>{L(lang,'Your submitted answers update the adaptive plan. Review errors and unanswered items below.','คำตอบที่ส่งนำไปปรับแผน Adaptive แล้ว เปิดทบทวนข้อผิดและข้อที่ยังไม่ได้ตอบได้ด้านล่าง')}</p>{missed.length>0 && <button className="big-next" onClick={()=>setShowReview(true)}>{L(lang,'Review missed questions','ทบทวนข้อผิด / ยังไม่ได้ตอบ')} · {missed.length} →</button>}
         <button className="primary-action" onClick={start}>{L(lang, 'Try another simulation', 'ทำชุดจำลองอีกครั้ง')}</button>
       </div>
     )
@@ -3182,6 +3006,7 @@ function MockTest({ setState }: { setState: StateSetter }) {
   const next = () => {
     if (!selected) return
     const elapsed = performance.now() - questionStarted.current
+    setAnswers(current=>({...current,[q.id]:selected}))
     if (selected === q.answer) setCorrectCount(v => v + 1)
     setState(current => {
       const nextState = recordAttempt(current, q, selected, elapsed, { mode: 'mock' })
@@ -3206,7 +3031,7 @@ function MockTest({ setState }: { setState: StateSetter }) {
         <strong className={remaining < 600 ? 'urgent' : ''}>{mm}:{ss}</strong>
       </div>
       {passage && <article className="reading-passage"><span className="doc-type">PART {q.part}</span><h2>{passage.title}</h2><PassageVisual passage={passage} /><PassageText passage={passage} /></article>}
-      <QuestionCard question={q} selected={selected} checked={false} onSelect={setSelected} showGrammar={false} />
+      <QuestionCard key={q.id} question={q} selected={selected} checked={false} onSelect={setSelected} showGrammar={false} />
       <button className="big-next" disabled={!selected} onClick={next}>{index === 99 ? L(lang, 'Finish', 'ส่งคำตอบ') : L(lang, 'Next', 'ข้อถัดไป')} <span>›</span></button>
       <small className="mock-note">{L(lang, 'No answer feedback during simulation.', 'โหมดจำลองสอบจะยังไม่เฉลยระหว่างทำ')}</small>
     </div>

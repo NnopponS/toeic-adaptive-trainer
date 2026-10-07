@@ -3,6 +3,7 @@ import type {
   ErrorReason,
   LearnerTier,
   Part,
+  Passage,
   Question,
   SkillId,
   SkillState,
@@ -64,6 +65,7 @@ export function recordAttempt(
   const correct = selected === question.answer
   const next = structuredClone(normalizeState(state))
   const now = Date.now()
+  next.modifiedAt = now
 
   const vocabSelected = (question.skills.includes('vocabulary') || question.skills.includes('collocation'))
     ? question.choices.find(choice => choice.id === selected)?.text
@@ -159,7 +161,25 @@ export function recordAttempt(
 export function addFeedbackToLatest(state: TrainerState, reason?: ErrorReason, confidence?: 1 | 2 | 3) {
   if (!state.attempts.length) return state
   const next = structuredClone(normalizeState(state))
-  next.attempts[0] = { ...next.attempts[0], errorReason: reason, confidence }
+  const attempt = next.attempts[0]
+  const rating = confidence ?? attempt.confidence
+  const confidencePenalty = (value?: number) => attempt.correct ? value === 1 ? 10 : value === 2 ? 4 : 0 : 0
+  const penalty = confidencePenalty(rating)
+  attempt.confidenceBase ??= {skills:{}}
+  for (const skill of attempt.skills) {
+    const stats=next.skills[skill]
+    if (stats) {
+      const base=attempt.confidenceBase.skills[skill] ??= {mastery:stats.mastery,dueBoost:stats.dueBoost}
+      stats.mastery=clamp(base.mastery-penalty); stats.dueBoost=clamp(base.dueBoost+penalty*2)
+    }
+  }
+  const rule=attempt.ruleId ? next.ruleStats[attempt.ruleId] : undefined
+  if (rule) {
+    const base=attempt.confidenceBase.rule ??= {mastery:rule.mastery,dueBoost:rule.dueBoost}
+    rule.mastery=clamp(base.mastery-penalty); rule.dueBoost=clamp(base.dueBoost+penalty*2)
+  }
+  next.attempts[0] = { ...attempt, errorReason: reason ?? attempt.errorReason, confidence: rating }
+  next.modifiedAt=Date.now()
   return next
 }
 
@@ -174,6 +194,7 @@ export function markVocabReview(state: TrainerState, word: string, knewIt: boole
     known: old.known + (knewIt ? 1 : 0),
     lastAt: Date.now(),
   }
+  next.modifiedAt=Date.now()
   return next
 }
 
@@ -189,6 +210,7 @@ export function completeLesson(
   const old = next.lessonResults[skill]
   const intervalDays = percent >= 90 ? 3 : percent >= 80 ? 2 : 1
   const now = Date.now()
+  next.modifiedAt=now
   next.lessonResults[skill] = {
     skill,
     attempts: (old?.attempts ?? 0) + 1,
@@ -301,7 +323,14 @@ export function pickAdaptiveQuestion(state: TrainerState, questions: Question[],
   const recentIds = new Set(normalizeState(state).attempts.slice(0, 8).map(a => a.questionId))
   const freshEnough = base.filter(q => !recentIds.has(q.id))
   const pool = freshEnough.length >= Math.min(8, base.length) ? freshEnough : base
-  const weighted = pool.map(q => ({ q, w: questionWeight(state, q) }))
+  const suitable = pool.filter(q => {
+    const values=q.skills.map(skill=>state.skills[skill]?.mastery).filter((n): n is number=>typeof n==='number')
+    const mastery=values.length ? values.reduce((a,b)=>a+b,0)/values.length : 50
+    const ceiling=mastery<45 ? 2 : mastery<65 ? 3 : mastery<80 ? 4 : 5
+    const floor=mastery<45 ? 1 : mastery<80 ? 2 : 3
+    return q.difficulty>=floor && q.difficulty<=ceiling
+  })
+  const weighted = (suitable.length ? suitable : pool).map(q => ({ q, w: questionWeight(state, q) }))
   const total = weighted.reduce((sum, item) => sum + item.w, 0)
   let r = Math.random() * total
   for (const item of weighted) {
@@ -317,6 +346,25 @@ export function questionsForSkill(state: TrainerState, questions: Question[], sk
   const fresh = sorted.filter(q => !state.attempts.slice(0, 16).some(a => a.questionId === q.id))
   const source = fresh.length >= count ? fresh : sorted
   return source.slice(0, Math.min(count, source.length))
+}
+
+export function completeReadingSample(questions: Question[], passages: Record<string,Passage>, target: number) {
+  const byId=new Map(questions.map(q=>[q.id,q]))
+  const groups=Object.values(passages).filter(p=>p.part===questions[0]?.part)
+    .map(p=>p.questions.map(id=>byId.get(id)))
+    .filter((group):group is Question[]=>group.length>0 && group.every(q=>Boolean(q)))
+    .filter(group=>questions[0]?.part!==6 || group.length===4)
+  for (let i=groups.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [groups[i],groups[j]]=[groups[j],groups[i]] }
+  // Exact count from whole passages; never cut a document's question set in half.
+  const sets=new Map<number,Question[]>([[0,[]]])
+  for (const group of groups) {
+    for (const [count,picked] of [...sets]) {
+      const size=count+group.length
+      if (size<=target && !sets.has(size)) sets.set(size,[...picked,...group])
+    }
+    if (sets.has(target)) return sets.get(target)!
+  }
+  throw new Error(`Not enough complete Part ${questions[0]?.part} passages for ${target} questions`)
 }
 
 export function weakestSkills(state: TrainerState, limit = 6) {

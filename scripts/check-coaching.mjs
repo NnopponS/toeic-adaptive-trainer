@@ -19,7 +19,7 @@ async function compile(name) {
   const imports = [...source.matchAll(/from ['"]\.\/([^'"]+)['"]/g)].map(m => m[1])
   for (const dep of imports) await compile(dep)
   source = source.replace(/from ['"]\.\/([^'"]+)['"]/g, "from './$1.mjs'")
-  if (name === 'App') source += '\nexport { labelWords, correctSentenceForMap, inspectionText, buildQuestionAnalysis, blankRequirement, QuestionCard, practicePool, BottomNav, PassageDocument, stepWordIndexes };'
+  if (name === 'App') source += '\nexport { labelWords, correctSentenceForMap, inspectionText, buildQuestionAnalysis, blankRequirement, QuestionCard, practicePool, BottomNav, PassageDocument, stepWordIndexes, chooseFresher };'
   await writeFile(path.join(dir, `${name}.mjs`), ts.transpileModule(source, {
     compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
   }).outputText)
@@ -28,13 +28,66 @@ try {
   await compile('App')
   const { labelWords, correctSentenceForMap, inspectionText, blankRequirement, QuestionCard, practicePool, BottomNav, PassageDocument, stepWordIndexes } = await import(pathToFileURL(path.join(dir, 'App.mjs')))
   const { allQuestions, part5, part6, part7, passageById } = await import(pathToFileURL(path.join(dir, 'data.mjs')))
-  const { coachingQuestions, coachingPart6, coachingPart7 } = await import(pathToFileURL(path.join(dir, 'bankCoaching.mjs')))
+  const { coachingQuestions, coachingPart6, coachingPart7, foundationCoaching } = await import(pathToFileURL(path.join(dir, 'bankCoaching.mjs')))
   const { reviewedGrammar, grammarClasses, grammarFunctions } = await import(pathToFileURL(path.join(dir, 'grammarGuide.mjs')))
   const { lessons } = await import(pathToFileURL(path.join(dir, 'lessons.mjs')))
+  const { emptyState, recordAttempt, addFeedbackToLatest, pickAdaptiveQuestion, completeReadingSample, markVocabReview } = await import(pathToFileURL(path.join(dir,'adaptive.mjs')))
+  const { courseCards, courseSources, cardIsDue, recallForQuestion } = await import(pathToFileURL(path.join(dir,'courseCards.mjs')))
+  assert.equal(recallForQuestion(coachingQuestions.find(q=>q.id==='coach-p5-14')).chapter,19,'connector errors should recall connectors, not unrelated if-clause notes')
+  assert.equal(courseSources.length,30)
+  assert.equal(Object.keys(foundationCoaching).length,31)
+  for (const q of practicePool(part5,false)) {
+    assert.ok(q.coaching, `reviewed Part 5 needs authored coaching: ${q.id}`)
+    assert.equal(q.coaching.steps.length,3)
+    assert.deepEqual(Object.keys(q.coaching.choiceReasons),['A','B','C','D'])
+    for (const clue of q.coaching.focus) assert.ok(q.stem.includes(clue), `${q.id}: ${clue}`)
+    for (const choice of q.choices) assert.equal(inspectionText(q,choice.id,'th'),q.coaching.choiceReasons[choice.id])
+  }
+  for (const letter of ['B','C','D']) {
+    const q=allQuestions.find(q=>q.id==='p5-v4-20-07')
+    assert.ok(q.coaching.choiceReasons[letter].startsWith(q.choices.find(c=>c.id===letter).text))
+  }
+  assert.equal(new Set(courseCards.map(card=>card.id)).size,courseCards.length)
+  for (const source of courseSources) assert.ok(courseCards.some(card=>card.chapter===source.id),`course coverage: ${source.file}`)
+  for (const card of courseCards) for (const field of ['title','memory','pages','prompt','answer']) assert.ok(card[field],`${card.id}/${field}`)
+  const recalled=markVocabReview(emptyState(),`card:${courseCards[0].id}`,true)
+  assert.equal(cardIsDue(recalled,courseCards[0].id),false)
+  assert.equal(cardIsDue(recalled,courseCards[0].id,Date.now()+4*86_400_000),true)
+  for (const [pool,target] of [[part6,16],[part7,54]]) {
+    for (let i=0;i<20;i++) {
+      const sample=completeReadingSample(practicePool(pool,true),passageById,target)
+      assert.equal(sample.length,target)
+      assert.equal(new Set(sample.map(q=>q.id)).size,target)
+      for (const id of new Set(sample.map(q=>q.passageId))) assert.deepEqual(sample.filter(q=>q.passageId===id).map(q=>q.id),passageById[id].questions,'mock must preserve every question in each passage')
+    }
+  }
+  assert.ok(practicePool(part5,true).length>=30,'there must be enough reviewed challenge questions for the mock')
+  const { chooseFresher } = await import(pathToFileURL(path.join(dir,'App.mjs')))
+  const leak = renderToStaticMarkup(createElement(QuestionCard,{question:coachingQuestions[0],selected:'',checked:false,activeStep:3,onSelect:()=>{}}))
+  assert.ok(leak.match(/<h2.*?<\/h2>/s)[0].includes('_____'), 'a previous explanation step must never reveal the next unanswered question')
+  const answered = recordAttempt(emptyState(),coachingQuestions[0],coachingQuestions[0].answer,18000)
+  const feedback = addFeedbackToLatest(answered,undefined,1)
+  assert.ok(feedback.skills['part-of-speech'].mastery < answered.skills['part-of-speech'].mastery, 'a correct guess is weaker mastery evidence than a confident answer')
+  assert.equal(addFeedbackToLatest(feedback,'guess').attempts[0].confidence,1,'changing the reason must preserve confidence')
+  assert.equal(addFeedbackToLatest(feedback,undefined,1).skills['part-of-speech'].mastery,feedback.skills['part-of-speech'].mastery,'repeat feedback must not apply the penalty twice')
+  const boundary=structuredClone(answered)
+  boundary.skills['part-of-speech'].mastery=3
+  boundary.skills['part-of-speech'].dueBoost=95
+  const restored=addFeedbackToLatest(addFeedbackToLatest(boundary,undefined,1),undefined,3)
+  assert.equal(restored.skills['part-of-speech'].mastery,3,'changing confidence must restore the baseline even at the mastery clamp')
+  assert.equal(restored.skills['part-of-speech'].dueBoost,95,'changing confidence must restore the baseline even at the due-weight clamp')
+  const newerCloud = {...feedback,modifiedAt:Date.now()+1000}
+  assert.equal(chooseFresher(answered,newerCloud),newerCloud,'feedback updates must survive cloud hydration even if the latest answer timestamp is unchanged')
+  const originalRandom = Math.random
+  try {
+    Math.random = () => .999
+    const calibration = pickAdaptiveQuestion(emptyState(),[{...coachingQuestions[0],id:'foundation',difficulty:2},{...coachingQuestions[0],id:'advanced',difficulty:5}])
+    assert.equal(calibration.id,'foundation','calibration must not jump to an advanced question just because the lottery picks it')
+  } finally { Math.random=originalRandom }
   const examples = lessons.flatMap(lesson => lesson.workedExamples.map(example => ({ ...example, part:5,skills:[lesson.skill] })))
   const annotationErrors = []
   for (const [id,tags] of Object.entries(reviewedGrammar)) {
-    const q = [...coachingQuestions,...coachingPart6,...coachingPart7,...examples].find(q => q.id === id)
+    const q = [...allQuestions,...examples].find(q => q.id === id)
     assert.ok(q, id)
     const words = labelWords(q, undefined, 'th').filter(word => !word.punctuation)
     const specs = tags.split(' ')
@@ -118,7 +171,7 @@ try {
   assert.ok(!readingOverview.includes('passage-evidence-hit'), 'reading evidence appears at its step, not before')
   const nav = renderToStaticMarkup(createElement(BottomNav, { view: 'part5', navigate: () => {} }))
   assert.match(nav, /nav-button active[^>]*>.*?ฝึก/)
-  console.log(`PASS: ${Object.keys(reviewedGrammar).length} reviewed sentences, ${coachingQuestions.length + coachingPart6.length + coachingPart7.length} authored explanations, four-step popup, exact blank position, answer visibility, complete reading sets, inline Part 6, navigation`)
+  console.log(`PASS: ${Object.keys(reviewedGrammar).length} reviewed sentences, ${coachingQuestions.length + coachingPart6.length + coachingPart7.length + Object.keys(foundationCoaching).length} authored explanations, ${courseCards.length} recall cards / ${courseSources.length} PDFs, calibration, confidence, hydration, four-step popup, exact blank position, answer visibility, complete reading sets, inline Part 6, navigation`)
 } finally {
   await rm(dir, { recursive: true, force: true })
 }

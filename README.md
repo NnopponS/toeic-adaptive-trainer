@@ -21,8 +21,8 @@ Focused Part 5 lessons use:
 
 1. Detect a weak grammar pattern.
 2. Teach 5 worked examples with clue, rule, explanation, and common trap.
-3. Give a 10-question mastery check on the same pattern.
-4. Update mastery and difficulty from accuracy + response time.
+3. Give a mastery check of up to 10 reviewed questions on the same pattern (80% to pass).
+4. Update mastery and difficulty from accuracy, response time, and confidence.
 5. Schedule the pattern for spaced review.
 6. Mix it back into adaptive practice after the pattern improves.
 
@@ -70,12 +70,16 @@ Production URL:
 
 The production Vite build uses the project-site base path `/toeic-adaptive-trainer/`, and the PWA manifest/service worker use the same scope.
 
-## Version 5 coaching
+## Version 6 recall studio
 
-Learn contains worked examples, chapter reminders, and mastery checks. Practice contains Part 5, 6, 7, and the timed reading simulation. Practice defaults to challenge questions while keeping every question in each reading set together; the all-level adaptive pool remains selectable.
+Home shows three next actions: recall a pattern, practice a short adaptive set, and learn with worked examples. Learn separates the recall library from guided lessons. The library has 185 original recall cards referencing all 30 local course PDFs (444 pages), including grammar, vocabulary chunks, mnemonic cues, Listening strategies and Reading methods. Search by keyword, filter by chapter/category, and browse one card at a time. Longer pattern sets stay collapsed. Hide the note, try recalling, reveal, then rate the recall to schedule a 1-, 3-, or 7-day review. These are authored summaries and examples, not reproductions of every exercise, song or handwritten mark. Raw course PDFs remain private.
 
-The question itself carries word classes and sentence functions. The native thinking popup shows one step at a time: whole structure, clue, blank function, and final answer. Word highlights follow the step. Tap any choice after checking to inspect its reason.
+Practice starts with calibrated adaptive difficulty and offers a challenge setting. Short sets end after at least six answers at a passage boundary, with errors, uncertain answers, slow answers and a relevant recall card. Correct guesses count as weaker mastery evidence; repeated confidence ratings do not stack penalties. Part 5 uses 55 questions with reviewed word roles and authored Thai reasons for A–D. The larger historical bank remains available for learner history. Reading practice retains complete passage groups. Listening content currently teaches strategies and recall; the timed simulation is Reading only.
 
-87 sentences have reviewed positional grammar tags (50 worked examples and 37 new questions); older questions use explicitly marked automatic labels. New questions include specific reasons for all four choices. Course summaries stay collapsed until needed.
+The sentence carries word classes and sentence functions. Its native thinking popup shows one step at a time: whole structure, clue, blank function, and final answer. Highlights follow the step; the blank stays hidden until the last step. Tap A–D after checking to inspect the specific reason. There are 118 reviewed positional grammar maps and 68 authored question explanations; older reading questions clearly mark automatic word labels.
 
-The footer shows version and Git commit so local and deployed builds can be compared. The CI workflow runs the coaching checks before deployment.
+The mock samples exactly 30/16/54 questions while keeping every reading set complete. Its deadline clock accounts for background-tab timer delays. Submitted answers can be reviewed after completion. Cloud hydration uses answer, feedback and recall modification times; an unsuccessful initial read cannot overwrite cloud progress with local defaults. Local progress is retained while offline and hydration retries on the browser's online event.
+
+Layout, card transitions and progress animations use CSS, with reduced-motion support. `npm run check:coaching` checks source coverage, card parsing/review timing, confidence/calibration, hydration freshness, grammar alignment, answer visibility, complete mock samples and document annotations. UI checks use the development-only `?sandbox=1` route, which disables cloud and progress writes; it is unavailable in production. The footer shows version and Git commit for comparing local and deployed builds.
+
+Reading format is calibrated against the [ETS sample test](https://www.ets.org/content/dam/ets-org/fr/pdfs/toeic/sample-test-listening-reading.pdf). Original practice difficulty is an internal training scale, not an official ETS score prediction.

@@ -91,7 +91,7 @@ Use this file plus learner-progress.json when extending the bank. Prefer new que
 
 export default defineConfig(({ command }) => ({
   define: {
-    'import.meta.env.VITE_APP_VERSION': JSON.stringify('5.0.0'),
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify('6.0.0'),
     'import.meta.env.VITE_BUILD_ID': JSON.stringify(process.env.GITHUB_SHA?.slice(0, 7) ?? execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim()),
   },
   // GitHub Pages hosts this repository under /toeic-adaptive-trainer/.
