@@ -71,11 +71,22 @@ ${weak || '- No skill evidence yet'}
 ## Self-reported mistake reasons
 ${Object.entries(s.mistakeReasons ?? {}).map(([k, v]) => `- ${k}: ${v}`).join('\n') || '- No self-reported reasons yet'}
 
+## Speed diagnosis
+- On target: ${s.speedDiagnosis?.onTarget ?? 0}
+- Correct but slow: ${s.speedDiagnosis?.correctSlow ?? 0}
+- Knowledge gap: ${s.speedDiagnosis?.knowledgeGap ?? 0}
+- Rushed or fast guess: ${s.speedDiagnosis?.rushed ?? 0}
+- Correct but uncertain: ${s.speedDiagnosis?.uncertain ?? 0}
+
+## Vocabulary repair
+- Tracked review items: ${Object.keys(s.vocabReview ?? {}).length}
+- Recent wrong vocabulary attempts: ${(s.recentWrongVocabulary ?? []).length}
+
 ## Recent mistakes
 ${mistakes || '- No mistakes recorded yet'}
 
 ## Agent instruction
-Use this file plus learner-progress.json when extending the bank. Prefer new questions that target low-mastery skills, repeated distractor patterns, slow responses, and self-reported mistake reasons. Do not merely repeat identical wording.
+Use this file plus learner-progress.json when extending the bank. Prefer new questions that target low-mastery skills, repeated distractor patterns, vocabulary review items, slow responses, rushed/fast-guess patterns, and self-reported mistake reasons. Do not merely repeat identical wording.
 `
           await fs.writeFile(summaryFile, md, 'utf8')
           res.setHeader('Content-Type', 'application/json')
