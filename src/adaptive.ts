@@ -1,4 +1,5 @@
 import type {
+  AttemptDiagnosis,
   AttemptMode,
   ErrorReason,
   LearnerTier,
@@ -14,6 +15,24 @@ export const EXAM_DATE = new Date('2026-10-17T09:00:00+07:00')
 export const DAILY_GOAL = 70
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n))
+export const questionTargetMs = (question: Pick<Question,'part'|'targetSeconds'>) => (question.targetSeconds ?? (question.part === 5 ? 25 : question.part === 6 ? 45 : 75)) * 1000
+export function classifyAttempt(correct:boolean, elapsedMs:number, targetMs:number, confidence?:1|2|3, reason?:ErrorReason):AttemptDiagnosis {
+  const ratio = elapsedMs / Math.max(targetMs, 1)
+  if (correct) {
+    if (confidence === 1 && ratio <= 0.9) return 'fast-guess'
+    if (confidence && confidence < 3) return 'uncertain'
+    if (ratio > 1.25) return 'correct-slow'
+    return 'on-target'
+  }
+  if (reason === 'rushed' || reason === 'guess' || ratio < 0.55) return 'rushed'
+  return 'knowledge-gap'
+}
+function applyVocabSignal(state:TrainerState, word:string|undefined, knewIt:boolean, now=Date.now()) {
+  const key = word?.trim().toLowerCase()
+  if (!key) return
+  const old = state.vocabReview[key] ?? {seen:0,hard:0,known:0}
+  state.vocabReview[key] = {seen:old.seen+1,hard:old.hard+(knewIt?0:1),known:old.known+(knewIt?1:0),lastAt:now}
+}
 const dayKey = (date = new Date()) => {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
@@ -67,19 +86,18 @@ export function recordAttempt(
   const now = Date.now()
   next.modifiedAt = now
 
-  const vocabSelected = (question.skills.includes('vocabulary') || question.skills.includes('collocation'))
-    ? question.choices.find(choice => choice.id === selected)?.text
-    : undefined
-  const vocabAnswer = (question.skills.includes('vocabulary') || question.skills.includes('collocation'))
-    ? question.choices.find(choice => choice.id === question.answer)?.text
-    : undefined
-
-  next.attempts.unshift({
+  const vocabSelected = question.choices.find(choice => choice.id === selected)?.text
+  const vocabAnswer = question.choices.find(choice => choice.id === question.answer)?.text
+  const targetMs = questionTargetMs(question)
+  const vocabQuestion = question.skills.includes('vocabulary') || question.skills.includes('collocation')
+  const attempt = {
     questionId: question.id,
     part: question.part,
     correct,
     selected,
     elapsedMs,
+    targetMs,
+    diagnosis: classifyAttempt(correct, elapsedMs, targetMs),
     at: now,
     skills: question.skills,
     mode: meta.mode ?? 'adaptive',
@@ -89,7 +107,14 @@ export function recordAttempt(
     chapterIds: question.chapterIds,
     vocabSelected,
     vocabAnswer,
-  })
+    vocabReviewApplied: false,
+  }
+  if (!correct && vocabQuestion) {
+    applyVocabSignal(next, vocabAnswer, false, now)
+    if (vocabSelected !== vocabAnswer) applyVocabSignal(next, vocabSelected, false, now)
+    attempt.vocabReviewApplied = true
+  }
+  next.attempts.unshift(attempt)
   next.attempts = next.attempts.slice(0, 1600)
   next.totalAnswered += 1
   next.totalCorrect += correct ? 1 : 0
@@ -178,22 +203,22 @@ export function addFeedbackToLatest(state: TrainerState, reason?: ErrorReason, c
     const base=attempt.confidenceBase.rule ??= {mastery:rule.mastery,dueBoost:rule.dueBoost}
     rule.mastery=clamp(base.mastery-penalty); rule.dueBoost=clamp(base.dueBoost+penalty*2)
   }
-  next.attempts[0] = { ...attempt, errorReason: reason ?? attempt.errorReason, confidence: rating }
+  const nextReason = reason ?? attempt.errorReason
+  const vocabSignal = attempt.skills.includes('vocabulary') || attempt.skills.includes('collocation') || nextReason === 'vocabulary'
+  if (!attempt.vocabReviewApplied && vocabSignal && ((!attempt.correct) || (rating && rating < 3))) {
+    applyVocabSignal(next, attempt.vocabAnswer, false)
+    if (!attempt.correct && attempt.vocabSelected !== attempt.vocabAnswer) applyVocabSignal(next, attempt.vocabSelected, false)
+    attempt.vocabReviewApplied = true
+  }
+  const targetMs = attempt.targetMs ?? (attempt.part === 5 ? 25_000 : attempt.part === 6 ? 45_000 : 75_000)
+  next.attempts[0] = { ...attempt, errorReason: nextReason, confidence: rating, targetMs, diagnosis: classifyAttempt(attempt.correct, attempt.elapsedMs, targetMs, rating, nextReason) }
   next.modifiedAt=Date.now()
   return next
 }
 
 export function markVocabReview(state: TrainerState, word: string, knewIt: boolean) {
   const next = structuredClone(normalizeState(state))
-  const key = word.trim().toLowerCase()
-  if (!key) return next
-  const old = next.vocabReview[key] ?? { seen:0, hard:0, known:0 }
-  next.vocabReview[key] = {
-    seen: old.seen + 1,
-    hard: old.hard + (knewIt ? 0 : 1),
-    known: old.known + (knewIt ? 1 : 0),
-    lastAt: Date.now(),
-  }
+  applyVocabSignal(next, word, knewIt)
   next.modifiedAt=Date.now()
   return next
 }
@@ -260,8 +285,11 @@ export function questionWeight(state: TrainerState, q: Question) {
   const targetDifficulty = mastery < 45 ? 1.8 : mastery < 62 ? 2.5 : mastery < 78 ? 3.4 : 4.2
   const difficultyFit = Math.max(-14, 20 - Math.abs(q.difficulty - targetDifficulty) * 10)
 
-  const targetMs = (q.targetSeconds ?? (q.part === 5 ? 25 : q.part === 6 ? 45 : 75)) * 1000
+  const targetMs = questionTargetMs(q)
   const speedBonus = rule?.attempts && rule.totalMs / rule.attempts > targetMs * 1.2 ? 16 : 0
+  const speedDiagnosisBonus = attempts.slice(0,16)
+    .filter(a => a.diagnosis && a.skills.some(skill => q.skills.includes(skill)))
+    .reduce((sum,a) => sum + (a.diagnosis === 'correct-slow' ? 8 : (a.diagnosis === 'rushed' || a.diagnosis === 'fast-guess') && q.difficulty <= 3 ? 7 : a.diagnosis === 'knowledge-gap' ? 5 : 0),0)
   const remediationBonus = lastRuleIndex >= 0 && lastRuleIndex <= 6 && attempts[lastRuleIndex]?.correct === false && lastQuestionIndex !== 0 ? 22 : 0
   const feedbackBonus = attempts.slice(0, 12)
     .filter(a => !a.correct && a.errorReason && a.skills.some(skill => q.skills.includes(skill)))
@@ -277,15 +305,16 @@ export function questionWeight(state: TrainerState, q: Question) {
     .reduce((sum, a) => sum + (a.confidence === 1 ? 14 : 7), 0)
   const spacingBonus = rule?.lastPracticedAt && Date.now() - rule.lastPracticedAt > 86_400_000 ? 14 : 0
   const freshBonus = questionExposure === 0 ? 10 : 0
-  const normalizedChoices = q.choices.map(choice => choice.text.trim().toLowerCase())
+  const lexicalSurface = [q.stem,...q.choices.map(choice=>choice.text)].join(' ').toLowerCase()
   const vocabReviewBonus = Object.entries(s.vocabReview ?? {}).reduce((sum, [word, review]) => {
-    if (!normalizedChoices.includes(word)) return sum
-    return sum + Math.min(28, review.hard * 9 + Math.max(0, review.seen - review.known) * 3)
+    if (word.length < 3 || !lexicalSurface.includes(word)) return sum
+    return sum + Math.min(32, review.hard * 9 + Math.max(0, review.seen - review.known) * 3)
   }, 0)
   const recentWrongVocabBonus = attempts.slice(0, 80)
-    .filter(a => !a.correct && a.vocabSelected && normalizedChoices.includes(a.vocabSelected.toLowerCase()))
+    .filter(a => !a.correct && (a.errorReason === 'vocabulary' || a.skills.includes('vocabulary') || a.skills.includes('collocation')))
+    .filter(a => [a.vocabSelected,a.vocabAnswer].filter(Boolean).some(word => lexicalSurface.includes(String(word).toLowerCase())))
     .reduce((sum) => sum + 7, 0)
-  const authenticPart7Bonus = q.part === 7 && q.id.startsWith('v7-p7-') ? 30 : 0
+  const authenticPart7Bonus = q.part === 7 && q.id.startsWith('v8-p7-') ? 36 : q.part === 7 && q.id.startsWith('v7-p7-') ? 30 : 0
   const part7DepthBonus = q.part === 7 ? Math.max(0, q.difficulty - 2) * 7 : 0
 
   const recentQuestionPenalty = lastQuestionIndex >= 0 && lastQuestionIndex < 8 ? 90 : lastQuestionIndex >= 8 && lastQuestionIndex < 24 ? 24 : 0
@@ -301,6 +330,7 @@ export function questionWeight(state: TrainerState, q: Question) {
       + coverageBonus
       + difficultyFit
       + speedBonus
+      + speedDiagnosisBonus
       + remediationBonus
       + feedbackBonus
       + uncertaintyBonus
