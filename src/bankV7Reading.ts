@@ -346,13 +346,12 @@ DOCUMENT 2 — RIDER NOTE
 
 I usually leave the Eastside Medical Center between 10:20 and 10:35 P.M. My apartment is near Pine Square. Route 4 gets me there with one transfer, but I often miss the current final connection because it leaves Central Station at 10:30. If the pilot gives me a later connection, I can stop paying for a taxi several nights a week.
 — S. Rivera`,
-    visual:'chart',
+    visual:'schedule',
     visualTitle:'PILOT — LAST DEPARTURE FROM CENTRAL STATION',
     visualData:[
-      'Route 4 current|22',
-      'Route 4 pilot|42',
-      'Route 7 current|18',
-      'Route 7 pilot|38',
+      'Route|Current final departure|Pilot final departure',
+      'Route 4|10:30 P.M.|11:10 P.M.',
+      'Route 7|10:15 P.M.|10:55 P.M.',
     ],
     questions:[
       {
