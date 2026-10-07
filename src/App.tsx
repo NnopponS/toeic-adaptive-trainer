@@ -391,6 +391,33 @@ const choiceLexicon: Record<string, { pos: string; en: string; th: string }> = {
   has: { pos:'singular auxiliary', en:'singular auxiliary for he/she/it or a singular head subject', th:'กริยาช่วยสำหรับประธานเอกพจน์' },
   have: { pos:'plural/base auxiliary', en:'used with plural subjects or I/you/we/they', th:'กริยาช่วยที่ใช้กับประธานพหูพจน์ หรือ I/you/we/they' },
   be: { pos:'base verb', en:'bare infinitive; it needs a modal/to or another structure', th:'กริยารูป base form ต้องมี modal/to หรือโครงสร้างรองรับ' },
+  estimate: { pos:'verb / noun', en:'estimate = calculate an approximate amount', th:'estimate = ประมาณ/คาดคะเนจำนวนหรือค่าใช้จ่าย' },
+  esteem: { pos:'verb / noun', en:'esteem = respect or admire someone/something', th:'esteem = ยกย่อง/เคารพ ไม่ได้แปลว่า “ประมาณค่าใช้จ่าย”' },
+  establishing: { pos:'V-ing', en:'establishing = creating or setting something up', th:'establishing = การกำลังก่อตั้ง/จัดตั้ง เป็นรูป V-ing' },
+  estate: { pos:'noun', en:'estate = property, land, or the assets of a person', th:'estate = ทรัพย์สิน/ที่ดิน/กองมรดก เป็นคำนาม' },
+  recall: { pos:'noun / verb', en:'product recall = withdrawal of an unsafe product', th:'recall ใน product recall = การเรียกคืนสินค้า' },
+  returning: { pos:'V-ing', en:'returning = coming or sending back', th:'returning = การกลับ/การส่งคืน เป็น V-ing' },
+  retreat: { pos:'noun / verb', en:'retreat = move back or a withdrawal, not a product recall', th:'retreat = การถอย/ล่าถอย ไม่ใช้กับการเรียกคืนสินค้า' },
+  receipt: { pos:'noun', en:'receipt = proof that payment or goods were received', th:'receipt = ใบเสร็จ/หลักฐานการรับ' },
+  launch: { pos:'verb / noun', en:'launch a program = introduce or start it', th:'launch a program = เปิดตัว/เริ่มโครงการ' },
+  land: { pos:'verb / noun', en:'land = arrive on the ground or obtain something', th:'land = ลงจอด/ได้มา ไม่ใช้ว่าเปิดตัวโครงการ' },
+  lend: { pos:'verb', en:'lend = give something temporarily', th:'lend = ให้ยืม' },
+  leave: { pos:'verb / noun', en:'leave = go away or allow something to remain', th:'leave = ออกไป/ปล่อยไว้' },
+  streamline: { pos:'verb', en:'streamline a process = make it simpler and more efficient', th:'streamline a process = ทำกระบวนการให้กระชับและมีประสิทธิภาพขึ้น' },
+  stream: { pos:'noun / verb', en:'stream = a flow, or transmit media continuously', th:'stream = กระแส/สตรีมข้อมูล ไม่ได้แปลว่าปรับกระบวนการให้คล่องตัว' },
+  straight: { pos:'adjective / adverb', en:'straight = direct or not curved', th:'straight = ตรง/โดยตรง เป็น Adj./Adv. ไม่ใช่กริยาในตำแหน่งนี้' },
+  strength: { pos:'noun', en:'strength = power or a strong quality', th:'strength = ความแข็งแรง/จุดแข็ง เป็นคำนาม' },
+  report: { pos:'verb / noun', en:'report a problem = formally tell someone about it', th:'report a problem = รายงาน/แจ้งปัญหา' },
+  repeat: { pos:'verb', en:'repeat = say or do again', th:'repeat = ทำ/พูดซ้ำ' },
+  reply: { pos:'verb / noun', en:'reply = answer; normally reply to a message/person', th:'reply = ตอบกลับ มักใช้ reply to ...' },
+  return: { pos:'verb / noun', en:'return = go/give back', th:'return = กลับ/คืน' },
+  replace: { pos:'verb', en:'replace damaged items = substitute new items for damaged ones', th:'replace damaged items = เปลี่ยนของที่เสียด้วยของใหม่' },
+  reserve: { pos:'verb', en:'reserve = book or keep for future use', th:'reserve = จอง/กันไว้' },
+  recover: { pos:'verb', en:'recover = get back or become well again', th:'recover = ฟื้นตัว/กู้คืน' },
+  convenience: { pos:'noun', en:'for the convenience of = to make something easier for someone', th:'convenience = ความสะดวก; for the convenience of = เพื่อความสะดวกของ...' },
+  conviction: { pos:'noun', en:'conviction = a strong belief or a criminal judgment', th:'conviction = ความเชื่อมั่น/คำพิพากษาว่ามีความผิด' },
+  conversion: { pos:'noun', en:'conversion = changing from one form to another', th:'conversion = การเปลี่ยนรูป/การแปลง' },
+  conversation: { pos:'noun', en:'conversation = a spoken exchange between people', th:'conversation = การสนทนา' },
 }
 
 const connectorUsage: Record<string, { type: string; pattern: string; relation: string; th: string }> = {
@@ -653,6 +680,93 @@ function buildQuestionAnalysis(question: Question, lang: Language): QuestionAnal
   return { needed, memory, steps, segments }
 }
 
+
+type BlankRequirement = {
+  labelEn: string
+  labelTh: string
+  accepts: (pos: string) => boolean
+  clueEn: string
+  clueTh: string
+}
+
+function blankRequirement(question: Question): BlankRequirement | null {
+  const stem = question.stem
+  if (/\b(should|can|could|will|would|may|might|must|shall)\s+_{3,}/i.test(stem)) {
+    const modal = stem.match(/\b(should|can|could|will|would|may|might|must|shall)\s+_{3,}/i)?.[1] ?? 'modal'
+    return {
+      labelEn:'base verb (V1)', labelTh:'กริยา V1',
+      accepts:pos => /verb|V1/i.test(pos) && !/ing|participle|noun/i.test(pos),
+      clueEn:'"' + modal + ' + ___" requires the base verb.',
+      clueTh:'เห็น "' + modal + ' + ___" → หลัง modal ต้องเป็น V1',
+    }
+  }
+  if (/\bto\s+_{3,}/i.test(stem)) {
+    return {
+      labelEn:'base verb (V1) after infinitive "to"', labelTh:'กริยา V1 หลัง infinitive "to"',
+      accepts:pos => /verb/i.test(pos) && !/ing|participle/i.test(pos),
+      clueEn:'This "to" introduces an infinitive, so the next word must be the base verb.',
+      clueTh:'ตรงนี้ "to" เป็น infinitive marker → หลัง to ต้องเป็น V1 ไม่ใช่ N., Adj. หรือ V-ing',
+    }
+  }
+  if (/\b(has|have|had)\s+_{3,}/i.test(stem)) {
+    return {
+      labelEn:'past participle (V3)', labelTh:'กริยา V3',
+      accepts:pos => /V3|participle|verb/i.test(pos) && !/ing/i.test(pos),
+      clueEn:'has/have/had + V3 forms the perfect tense.',
+      clueTh:'เห็น has/have/had หน้า blank → ต้องตามด้วย V3',
+    }
+  }
+  if (/\b(a|an|the|this|that|these|those|my|your|his|her|its|our|their)\s+_{3,}\s+[A-Za-z]/i.test(stem)) {
+    return {
+      labelEn:'adjective before the following noun', labelTh:'adjective เพื่อขยายคำนามด้านหลัง',
+      accepts:pos => /adjective|Adj/i.test(pos),
+      clueEn:'Determiner + ___ + noun usually requires an adjective in the blank.',
+      clueTh:'เห็น determiner + blank + N. → blank ต้องเป็น Adj. เพื่อขยาย N.',
+    }
+  }
+  return null
+}
+
+function preciseChoiceReason(question: Question, choiceId: string, analysis: QuestionAnalysis, lang: Language) {
+  const choice = question.choices.find(c => c.id === choiceId)
+  if (!choice) return ''
+  const answer = question.choices.find(c => c.id === question.answer)
+  const word = choice.text.toLowerCase()
+  const lex = choiceLexicon[word]
+  const pos = lex?.pos ?? inferWordClass(choice.text)
+  const requirement = blankRequirement(question)
+  const specific = question.whyOthers?.[choiceId]
+
+  if (choiceId === question.answer) {
+    const structure = requirement ? L(lang, requirement.clueEn, requirement.clueTh) + ' ' : ''
+    const meaning = lex ? L(lang, lex.en, lex.th) + ' ' : ''
+    return lang === 'th'
+      ? '✓ ถูก: ' + structure + meaning + localizedQuestionExplanation(question, lang)
+      : '✓ Correct: ' + structure + meaning + question.explanation
+  }
+
+  if (requirement && !requirement.accepts(pos)) {
+    return lang === 'th'
+      ? '✗ ตัดออกได้จาก Grammar ทันที: ' + requirement.clueTh + ' แต่ "' + choice.text + '" เป็น ' + pos + (lex ? ' — ' + lex.th : '')
+      : '✗ Grammar eliminates this choice: ' + requirement.clueEn + ' But "' + choice.text + '" is ' + pos + (lex ? ' — ' + lex.en : '') + '.'
+  }
+
+  if (specific) {
+    if (lang === 'en') return '✗ ' + specific
+    return '✗ รูปคำอาจผ่าน Grammar แต่ความหมาย/การใช้ไม่ผ่าน: "' + choice.text + '"' + (lex ? ' = ' + lex.th : '') + ' ส่วนคำตอบ "' + (answer?.text ?? '') + '" ใช้ในประโยคนี้เพราะ ' + localizedQuestionExplanation(question, lang)
+  }
+
+  if (lex) {
+    return lang === 'th'
+      ? '✗ ' + (requirement ? 'รูปคำผ่านเงื่อนไข ' + requirement.labelTh + ' แต่' : '') + 'ความหมายไม่ตรง: ' + lex.th + ' ในขณะที่ประโยคต้องใช้ "' + (answer?.text ?? '') + '" — ' + localizedQuestionExplanation(question, lang)
+      : '✗ ' + (requirement ? 'The blank needs ' + requirement.labelEn + '. ' : '') + lex.en + ', but the sentence needs "' + (answer?.text ?? '') + '": ' + question.explanation
+  }
+
+  return lang === 'th'
+    ? '✗ "' + choice.text + '" เป็น ' + pos + '; ' + (requirement ? requirement.clueTh + ' ' : '') + 'คำตอบที่ถูกคือ "' + (answer?.text ?? '') + '" เพราะ ' + localizedQuestionExplanation(question, lang)
+    : '✗ "' + choice.text + '" is ' + pos + '. ' + (requirement ? requirement.clueEn + ' ' : '') + 'The correct answer is "' + (answer?.text ?? '') + '" because ' + question.explanation
+}
+
 function explainChoice(question: Question, choiceId: string, analysis: QuestionAnalysis, lang: Language) {
   const choice = question.choices.find(c => c.id === choiceId)
   if (!choice) return ''
@@ -661,6 +775,10 @@ function explainChoice(question: Question, choiceId: string, analysis: QuestionA
   const lex = choiceLexicon[word]
   const rule = question.ruleId ?? question.skills[0]
   const specific = question.whyOthers?.[choice.id]
+
+  if (question.skills.includes('vocabulary') || question.skills.includes('collocation')) {
+    return preciseChoiceReason(question, choiceId, analysis, lang)
+  }
 
   if (correct) {
     const base = localizedQuestionExplanation(question, lang)
@@ -1083,13 +1201,20 @@ function inspectionText(question: Question, choiceId: string, lang: Language) {
 function ChoiceInspection({ question, choiceId }: { question: Question; choiceId: string }) {
   const lang = useLanguage()
   const correct = choiceId === question.answer
+  const choice = question.choices.find(item => item.id === choiceId)
+  const lex = choice ? choiceLexicon[choice.text.toLowerCase()] : undefined
+  const pos = choice ? (lex?.pos ?? inferWordClass(choice.text)) : ''
+  const meaningTh = question.choiceTranslationsTh?.[choiceId] ?? lex?.th
   return (
     <div className={correct ? 'choice-inspection correct' : 'choice-inspection wrong'}>
       <b>{correct ? L(lang,'Why this choice works','ทำไมตัวนี้ถูก') : L(lang,'Why this choice fails','ทำไมตัวนี้ผิด')}</b>
-      <p>{inspectionText(question, choiceId, lang)}</p>
-      {lang === 'th' && question.choiceTranslationsTh?.[choiceId] && (
-        <small className="choice-th-meaning"><strong>ความหมาย:</strong> {question.choiceTranslationsTh[choiceId]}</small>
+      {choice && (
+        <div className="choice-facts">
+          <span><strong>{L(lang,'Word class','ชนิดคำ')}:</strong> {pos}</span>
+          {lang === 'th' && meaningTh && <span><strong>ความหมาย:</strong> {meaningTh}</span>}
+        </div>
       )}
+      <p>{inspectionText(question, choiceId, lang)}</p>
       {question.part === 7 && question.evidence && correct && (
         <small><strong>{L(lang,'Evidence','หลักฐาน')}:</strong> “{question.evidence}”</small>
       )}
