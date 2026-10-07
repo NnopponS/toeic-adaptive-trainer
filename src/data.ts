@@ -5,6 +5,7 @@ import { extraPart5V4 } from './bankV4P5'
 import { extraPart6V4, extraPart7V4, extraPassagesV4 } from './bankV4Reading'
 import { extraPart7V5, extraPassagesV5 } from './bankV5Reading'
 import { extraPart7V7, extraPassagesV7 } from './bankV7Reading'
+import { vocabRepairQuestions } from './bankVocabRepair'
 import { extraPart6V6, extraPassagesV6 } from './bankV6Reading'
 
 export const skillLabels: Record<SkillId, string> = {
@@ -124,7 +125,7 @@ const basePart7: Question[] = [
   { id:'p7-03-q4', part:7, passageId:'p7-03', stem:'What can be inferred about the 10:00 time slot?', choices:c('Daniel has two conflicting commitments.','Priya is unavailable all morning.','The client call was postponed.','The website review was cancelled.'), answer:'A', skills:['multi-text','inference'], difficulty:2, explanation:'Both the design check-in and supplier meeting are scheduled at 10:00, creating a conflict for Daniel.' },
 ]
 
-export const part5 = [...basePart5, ...extraPart5, ...extraPart5V3, ...extraPart5V4]
+export const part5 = [...basePart5, ...extraPart5, ...extraPart5V3, ...extraPart5V4, ...vocabRepairQuestions]
 export const part6 = [...extraPart6, ...extraPart6V3, ...extraPart6V4, ...extraPart6V6]
 export const part7 = [...basePart7, ...extraPart7, ...extraPart7V4, ...extraPart7V5, ...extraPart7V7]
 export const passages = [...basePassages, ...extraPassages, ...extraPassagesV3, ...extraPassagesV4, ...extraPassagesV5, ...extraPassagesV6, ...extraPassagesV7]
