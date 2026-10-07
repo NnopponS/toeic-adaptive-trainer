@@ -3146,3 +3146,296 @@ button.choice:hover:not(:disabled),
 .speed-diagnosis{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:12px 0 4px;padding:12px 14px;border:1px solid #dfe8e2;border-radius:13px;background:#f7faf8}.speed-diagnosis>div{display:grid;gap:2px}.speed-diagnosis b{font-size:.78rem;color:#274b3b}.speed-diagnosis small{font-size:.66rem;color:#7a8c82}.speed-diagnosis>span{display:grid;place-items:center;min-width:32px;height:32px;border-radius:50%;background:#e7f3eb;color:#2f6b4f;font-weight:900}.speed-diagnosis.correct-slow{background:#fff9ec;border-color:#eedfb8}.speed-diagnosis.correct-slow>span{background:#f7eac8;color:#936d22}.speed-diagnosis.knowledge-gap,.speed-diagnosis.rushed,.speed-diagnosis.fast-guess{background:#fff4f2;border-color:#f0d7d1}.speed-diagnosis.knowledge-gap>span,.speed-diagnosis.rushed>span,.speed-diagnosis.fast-guess>span{background:#f8ded8;color:#a94e42}.speed-diagnosis.uncertain{background:#f5f3ff;border-color:#dfdaf5}.speed-diagnosis.uncertain>span{background:#e7e2fa;color:#6559a3}
 .diagnosis-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:22px}.diagnosis-grid>div{display:grid;gap:3px;padding:13px 10px;border:1px solid #e0e8e3;border-radius:14px;background:#fff;text-align:center}.diagnosis-grid span{font-size:1rem;color:#527362}.diagnosis-grid b{font-size:1.05rem;color:#203e32}.diagnosis-grid small{font-size:.62rem;line-height:1.4;color:#7e8e85}
 @media(max-width:700px){.diagnosis-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.diagnosis-grid>div:last-child{grid-column:1/-1}.multi-doc-copy{padding:14px;font-size:.94rem}}
+
+
+/* Mobile viewport hardening: keep every study surface inside the visual viewport. */
+.app-shell,
+.mobile-frame,
+.app-main,
+.screen,
+.practice-screen,
+#active-question,
+.mobile-question-card,
+.reading-passage,
+.choices,
+.choice {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.practice-screen,
+#active-question,
+.mobile-question-card,
+.choices,
+.choice {
+  width: 100%;
+}
+
+.mobile-question-card,
+.reading-passage {
+  overflow-x: clip;
+}
+
+.choice {
+  grid-template-columns: 38px minmax(0, 1fr) 24px;
+}
+
+.choice > b,
+.practice-toolbar > div,
+.practice-mode,
+.practice-progress,
+.session-status,
+.feedback-panel,
+.explain-box,
+.rule-note {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sentence-exam {
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.sentence-exam .exam-word {
+  white-space: normal;
+}
+
+.sentence-exam .exam-blank {
+  min-width: clamp(56px, 18vw, 78px);
+  margin-inline: .18em;
+}
+
+/* Phones sometimes report a desktop-like layout viewport. Coarse-pointer portrait
+   devices should still use the whole screen instead of the 640/760px desktop frame. */
+@media (hover: none) and (pointer: coarse) {
+  .app-shell,
+  .mobile-frame,
+  .app-main {
+    width: 100%;
+    max-width: none;
+  }
+
+  .mobile-frame {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .bottom-nav {
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    bottom: 0;
+    border-radius: 0;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 520px) {
+  .screen {
+    padding: 16px 14px 24px;
+  }
+
+  .practice-screen {
+    padding-bottom: calc(108px + env(safe-area-inset-bottom));
+  }
+
+  .practice-toolbar {
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .practice-toolbar b {
+    font-size: .9rem;
+    line-height: 1.35;
+  }
+
+  .practice-toolbar small {
+    font-size: .66rem;
+    line-height: 1.35;
+  }
+
+  .round-back,
+  .practice-part-tag {
+    width: 36px;
+    height: 36px;
+  }
+
+  .practice-mode {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    align-items: stretch;
+  }
+
+  .practice-mode select {
+    width: 100%;
+  }
+
+  .session-status {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .mobile-question-card {
+    padding: 15px 14px;
+    border-radius: 17px;
+  }
+
+  .question-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sentence-exam,
+  .mobile-question-card h2.sentence-exam {
+    font-size: 1.08rem;
+    line-height: 1.72;
+    margin: 14px 0 16px;
+    letter-spacing: 0;
+  }
+
+  .sentence-exam .exam-blank {
+    min-width: 58px;
+    padding-inline: 2px;
+  }
+
+  .choices {
+    gap: 9px;
+  }
+
+  .choice {
+    grid-template-columns: 34px minmax(0, 1fr) 22px;
+    gap: 9px;
+    min-height: 58px;
+    padding: 10px 11px;
+  }
+
+  .choice > span {
+    width: 34px;
+    height: 34px;
+    font-size: .86rem;
+  }
+
+  .choice > b {
+    font-size: .98rem;
+    line-height: 1.42;
+    word-break: normal;
+  }
+
+  /* After checking, keep every grammar label but lay words out as compact,
+     wrapping analysis chips instead of one dense pseudo-sentence. */
+  .mobile-question-card h2.sentence-inline:not(.sentence-exam),
+  .sentence-inline:not(.sentence-exam) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 7px 5px;
+    font-size: 1rem;
+    line-height: 1.15;
+    margin: 14px 0 10px;
+  }
+
+  .sentence-inline:not(.sentence-exam) .sentence-word {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 5px 6px;
+    border-radius: 9px;
+  }
+
+  .sentence-inline:not(.sentence-exam) .sentence-word:not(.focus):not(.answer) {
+    border-color: #e4ece8;
+    background: #f8fbf9;
+  }
+
+  .sentence-word b {
+    white-space: nowrap;
+    font-size: .98rem;
+  }
+
+  .sentence-word small {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .sentence-word .word-pos {
+    font-size: .56rem;
+  }
+
+  .sentence-word .word-function {
+    max-width: 82px;
+    font-size: .48rem;
+    line-height: 1.28;
+  }
+
+  .sentence-tools {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .sentence-tools button {
+    flex: 1 1 150px;
+  }
+
+  .feedback-panel {
+    padding: 14px;
+  }
+
+  .confidence-picker > div,
+  .reason-picker > div {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .confidence-picker button,
+  .reason-picker button {
+    min-width: 0;
+    padding-inline: 7px;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-header {
+    padding-inline: 10px;
+  }
+
+  .brand-mini b {
+    font-size: .95rem;
+  }
+
+  .brand-mini small {
+    max-width: 118px;
+    font-size: .61rem;
+  }
+
+  .cloud-state {
+    min-width: 30px;
+    padding: 7px;
+    font-size: 0;
+    justify-content: center;
+  }
+
+  .screen {
+    padding-inline: 11px;
+  }
+
+  .mobile-question-card {
+    padding: 13px 12px;
+  }
+
+  .sentence-exam,
+  .mobile-question-card h2.sentence-exam {
+    font-size: 1.02rem;
+  }
+}
