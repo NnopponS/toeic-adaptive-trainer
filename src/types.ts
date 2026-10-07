@@ -22,6 +22,7 @@ export type SkillId =
   | 'multi-text'
 
 export type ErrorReason = 'grammar' | 'vocabulary' | 'misread' | 'rushed' | 'guess'
+export type AttemptDiagnosis = 'on-target' | 'correct-slow' | 'knowledge-gap' | 'rushed' | 'uncertain' | 'fast-guess'
 export type AttemptMode = 'adaptive' | 'mastery' | 'mock' | 'review'
 export type LearnerTier = 'Calibrating' | 'Foundation' | 'Developing' | 'Building' | 'Strong' | 'Exam Ready'
 
@@ -87,6 +88,8 @@ export interface Attempt {
   correct: boolean
   selected: string
   elapsedMs: number
+  targetMs?: number
+  diagnosis?: AttemptDiagnosis
   at: number
   skills: SkillId[]
   errorReason?: ErrorReason
@@ -99,6 +102,7 @@ export interface Attempt {
   chapterIds?: number[]
   vocabSelected?: string
   vocabAnswer?: string
+  vocabReviewApplied?: boolean
 }
 
 export interface LessonResult {
