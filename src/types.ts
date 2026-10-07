@@ -60,7 +60,7 @@ export interface Passage {
   body: string
   questions: string[]
   sourceLabel?: string
-  visual?: 'floor-plan' | 'schedule' | 'receipt' | 'poster' | 'chart' | 'route' | 'table' | 'menu'
+  visual?: 'floor-plan' | 'schedule' | 'receipt' | 'poster' | 'chart' | 'route' | 'table' | 'menu' | 'web-page' | 'invoice' | 'calendar' | 'chat' | 'directory' | 'coupon' | 'map'
   visualTitle?: string
   visualData?: string[]
 }
@@ -90,6 +90,8 @@ export interface Attempt {
   difficulty?: number
   ruleId?: string
   chapterIds?: number[]
+  vocabSelected?: string
+  vocabAnswer?: string
 }
 
 export interface LessonResult {
@@ -100,6 +102,13 @@ export interface LessonResult {
   lastAvgSeconds: number
   lastCompletedAt: number
   nextReviewAt: number
+}
+
+export interface VocabReviewState {
+  seen: number
+  hard: number
+  known: number
+  lastAt?: number
 }
 
 export interface TrainerState {
@@ -115,6 +124,7 @@ export interface TrainerState {
   studyDates: string[]
   lessonResults: Partial<Record<SkillId, LessonResult>>
   ruleStats: Record<string, SkillState>
+  vocabReview: Record<string, VocabReviewState>
   mockCompletions: number
 }
 
@@ -149,4 +159,4 @@ export interface FirebaseQuestionBank {
   passages?: Record<string, Passage>
 }
 
-export type View = 'home' | 'part5' | 'part6' | 'part7' | 'mock' | 'analytics' | 'review'
+export type View = 'home' | 'part5' | 'part6' | 'part7' | 'mock' | 'analytics' | 'review' | 'vocab'
