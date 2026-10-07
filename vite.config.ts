@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import { execFileSync } from 'node:child_process'
 import { defineConfig, type Plugin } from 'vite'
 
 function learnerProgressPlugin(): Plugin {
@@ -89,6 +90,10 @@ Use this file plus learner-progress.json when extending the bank. Prefer new que
 }
 
 export default defineConfig(({ command }) => ({
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify('5.0.0'),
+    'import.meta.env.VITE_BUILD_ID': JSON.stringify(process.env.GITHUB_SHA?.slice(0, 7) ?? execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim()),
+  },
   // GitHub Pages hosts this repository under /toeic-adaptive-trainer/.
   // Local development remains rooted at /.
   base: command === 'build' ? '/toeic-adaptive-trainer/' : '/',

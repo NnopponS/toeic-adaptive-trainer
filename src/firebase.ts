@@ -84,7 +84,7 @@ export async function syncCloudState(state: TrainerState) {
     },
     [`${base}/meta`]: {
       schemaVersion: 6,
-      appVersion: '4.2.0',
+      appVersion: '5.0.0',
       adaptiveVersion: 'v8-part7-vocab-memory',
       lastSyncAt: Date.now(),
       examDate: '2026-10-17',

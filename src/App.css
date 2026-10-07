@@ -2879,3 +2879,69 @@ button.choice:hover:not(:disabled),
 .multi-reference-document{margin-top:12px;padding-top:11px;border-top:1px dashed #d8e4eb}
 .multi-reference-document>span{display:inline-block;margin-bottom:5px;padding:3px 6px;border-radius:5px;background:#edf5fb;color:#47769b;font-size:.58rem;font-weight:950;letter-spacing:.08em}
 .multi-reference-document .passage-visual{margin-top:0;margin-bottom:0}
+/* Keep the explanation on the sentence and reveal detail on demand. */
+.sentence-inline { display:block; font-size:clamp(1.15rem,4.5vw,1.65rem); line-height:1.6; margin:18px 0 10px; }
+.sentence-word { display:inline-flex; flex-direction:column; align-items:center; vertical-align:top; border:1px solid transparent; background:transparent; color:inherit; font:inherit; border-radius:8px; padding:4px 5px; margin:3px 4px 3px 0; cursor:pointer; }
+.sentence-word b { font-size:inherit; font-weight:800; }
+.sentence-word small { font-size:.65rem; line-height:1.2; color:#475569; font-weight:600; }
+.sentence-word.focus { background:#fff4cb; box-shadow:inset 0 -2px #d4a72c; }
+.sentence-word.blank { border:1px dashed #8296a5; }
+.sentence-word.answer { background:#def8eb; outline:2px solid #20a56b; padding:1px 6px; }
+.sentence-word[aria-pressed="true"] { border-color:#668ba0; }
+.sentence-word .word-pos { margin-top:3px; font-size:.68rem; font-weight:750; color:#36556a; }
+.sentence-word .word-function { max-width:100px; white-space:normal; font-size:.58rem; line-height:1.4; color:#6a7c88; }
+.sentence-tools { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:.7rem; color:#64748b; }
+.sentence-tools button { border:1px solid #cbd5e1; background:white; border-radius:7px; padding:7px 9px; color:#334155; font:inherit; cursor:pointer; min-height:36px; }
+.grammar-estimate { display:block; margin-top:8px; color:#64748b; font-size:.72rem; line-height:1.5; }
+.submitted-answer { font-size:.85rem; color:#9b3b49; }
+.clause-outline { margin-top:10px; font-size:.72rem; line-height:1.6; color:#526b7d; }
+.word-inspector { padding:10px; margin-top:8px; border:1px solid #d5e0e6; border-radius:8px; background:#f7fafc; font-size:.8rem; }
+.word-inspector p { margin:3px 0; }
+.word-inspector small { color:#64748b; font-size:.7rem; }
+.choice-trap { margin-top:14px; padding:10px; border-radius:8px; background:#fff1f2; font-size:.82rem; color:#963d4b; }
+.lesson-course-note summary { padding-bottom:8px; }
+.practice-mode { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin:12px 0; color:#475569; font-size:.8rem; }
+.practice-mode select { max-width:100%; font:inherit; padding:10px; border:1px solid #cbd5e1; border-radius:8px; background:white; color:#183750; }
+.practice-roadmap { margin:20px 0; border:1px solid #dbe7ef; border-radius:14px; padding:18px; background:white; }
+.practice-roadmap h2 { font-size:1.1rem; margin:0 0 10px; }
+.practice-roadmap p, .practice-roadmap small { color:#5c7081; line-height:1.65; }
+.practice-hub .part-cards-mobile { margin-top:20px; }
+.function-guide { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0 20px; }
+.function-guide div { display:grid; gap:5px; padding:12px; border:1px solid #d9e5eb; border-radius:12px; background:white; }
+.function-guide b { font-size:1.2rem; color:#13734a; }
+.function-guide span { font-size:.75rem; line-height:1.5; color:#526679; }
+.function-guide code { font-size:.7rem; white-space:normal; color:#64748b; }
+.reading-lessons { margin-top:25px; }
+.course-memory-toggle { margin:22px 0; border-top:1px solid #d9e5eb; padding-top:18px; }
+.build-version { text-align:center; color:#7a8c99; font-size:.7rem; margin-top:22px; }
+#active-question { scroll-margin-top:90px; }
+.passage-copy .sentence-inline { font-size:1.1rem; white-space:normal; }
+.passage-copy .sentence-tools, .passage-copy .grammar-estimate, .passage-copy .submitted-answer { white-space:normal; }
+
+.thinking-control { margin:8px 0; }
+.thinking-launcher { anchor-name:--thinking; border:1px solid #b9d8c9; background:#edf8f2; color:#126344; border-radius:9px; padding:9px 13px; font:inherit; font-size:.8rem; font-weight:750; cursor:pointer; }
+.thinking-popover { position:fixed; position-anchor:--thinking; inset:auto; top:anchor(bottom); left:anchor(left); position-try-fallbacks:flip-block,flip-inline; margin:7px 0; width:min(410px,calc(100vw - 32px)); max-height:min(46vh,360px); overflow:auto; padding:14px; border:1px solid #bfd7cb; border-radius:14px; box-shadow:0 10px 32px #16392d26; background:#f8fcfa; color:#183750; }
+.thinking-popover::backdrop { background:transparent; }
+.thinking-popover header, .thinking-popover footer { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.thinking-popover header { font-size:.85rem; }
+.thinking-popover button { border:1px solid #cadbd2; border-radius:8px; background:white; padding:8px 12px; min-height:36px; color:inherit; font:inherit; font-size:.8rem; cursor:pointer; }
+.thinking-popover header button { padding:2px 10px; font-size:1.2rem; }
+.thinking-popover h3 { font-size:.92rem; margin:6px 0; }
+.thinking-step { margin:10px 0; }
+.thinking-step small { font-size:.7rem; color:#587466; }
+.thinking-popover p { margin:6px 0; font-size:.82rem; line-height:1.65; }
+.thinking-popover footer { flex-shrink:0; margin:12px -14px -14px; padding:10px 14px; background:#f8fcfa; border-top:1px solid #dcebe3; }
+.thinking-popover .thinking-next { background:#117449; color:white; border-color:#117449; }
+.thinking-popover button:disabled { opacity:.4; cursor:default; }
+.thinking-popover .memory-line { border-top:1px dashed #bcd4c6; padding-top:8px; }
+.thinking-popover details { margin:8px 0; font-size:.8rem; }
+.thinking-popover summary, .lesson-course-note summary, .course-memory-toggle summary { cursor:pointer; font-weight:700; }
+@supports not (top:anchor(bottom)) { .thinking-popover { inset:auto 16px 80px; margin:auto; } }
+
+
+.sentence-inline { scroll-margin-top:84px; }
+.thinking-popover { height:min(46vh,320px); }
+.thinking-popover:popover-open { display:flex; flex-direction:column; }
+.thinking-popover header { flex-shrink:0; }
+.thinking-body { flex:1; overflow:auto; min-height:0; }
+@media (max-width:600px) { .thinking-popover { position-anchor:auto; inset:auto 16px 80px; margin:0; width:calc(100vw - 32px); height:min(38vh,260px); } .sentence-inline { font-size:1.45rem; } }

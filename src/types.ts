@@ -50,6 +50,12 @@ export interface Question {
   ruleId?: string
   chapterIds?: number[]
   targetSeconds?: number
+  coaching?: {
+    focus: string[]
+    steps: [string, string, string]
+    memory: string
+    choiceReasons: Record<string, string>
+  }
 }
 
 export interface Passage {
@@ -159,4 +165,4 @@ export interface FirebaseQuestionBank {
   passages?: Record<string, Passage>
 }
 
-export type View = 'home' | 'part5' | 'part6' | 'part7' | 'mock' | 'analytics' | 'review' | 'vocab'
+export type View = 'home' | 'learn' | 'practice' | 'part5' | 'part6' | 'part7' | 'mock' | 'analytics' | 'review' | 'vocab'

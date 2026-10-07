@@ -1,12 +1,13 @@
 {
   "name": "toeic-adaptive-trainer",
   "private": true,
-  "version": "0.0.0",
+  "version": "5.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "check:coaching": "node scripts/check-coaching.mjs",
     "preview": "vite preview",
     "firebase:inspect": "node scripts/inspect-firebase.mjs",
     "firebase:personalize": "node scripts/push-personalized.mjs"

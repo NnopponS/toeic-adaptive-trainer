@@ -4,9 +4,9 @@ Mobile-first adaptive TOEIC Reading trainer for the October 17, 2026 exam sprint
 
 ## What is included
 
-- Part 5: 214 original TOEIC-style questions
-- Part 6: 40 questions across 10 business texts
-- Part 7: 60 questions across single- and multi-document sets
+- Parts 5–7: original TOEIC-style questions, with 37 additional challenge questions in version 5
+- Part 6: complete business text sets, including sentence insertion
+- Part 7: single- and multi-document sets, including invoices and cross-document calculations
 - Full Reading simulation: 30 Part 5 + 16 Part 6 + 54 Part 7 = 100 questions / 75 minutes
 - Mobile-first PWA interface
 - Firebase Realtime Database progress sync
@@ -55,6 +55,7 @@ npm run dev
 ## Verify
 
 ```bash
+npm run check:coaching
 npm run build
 npm run lint
 ```
@@ -68,3 +69,13 @@ Production URL:
 `https://nnoppons.github.io/toeic-adaptive-trainer/`
 
 The production Vite build uses the project-site base path `/toeic-adaptive-trainer/`, and the PWA manifest/service worker use the same scope.
+
+## Version 5 coaching
+
+Learn contains worked examples, chapter reminders, and mastery checks. Practice contains Part 5, 6, 7, and the timed reading simulation. Practice defaults to challenge questions while keeping every question in each reading set together; the all-level adaptive pool remains selectable.
+
+The question itself carries word classes and sentence functions. The native thinking popup shows one step at a time: whole structure, clue, blank function, and final answer. Word highlights follow the step. Tap any choice after checking to inspect its reason.
+
+87 sentences have reviewed positional grammar tags (50 worked examples and 37 new questions); older questions use explicitly marked automatic labels. New questions include specific reasons for all four choices. Course summaries stay collapsed until needed.
+
+The footer shows version and Git commit so local and deployed builds can be compared. The CI workflow runs the coaching checks before deployment.

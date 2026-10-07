@@ -35,6 +35,7 @@ import {
 } from './firebase'
 import { lessonBySkill, lessons } from './lessons'
 import { chaptersForQuestion, chaptersForSkill, readingCourseChapters } from './courseGuide'
+import { grammarClasses, grammarFunctions, reviewedGrammar } from './grammarGuide'
 import {
   LANG_STORAGE_KEY,
   L,
@@ -234,44 +235,6 @@ function greetingLabel(lang: Language) {
   return L(lang, 'Evening study plan', 'แผนฝึกช่วงเย็น')
 }
 
-function passageWithActiveBlank(
-  body: string,
-  stem: string,
-  options?: {
-    selectedText?: string
-    checked?: boolean
-    correct?: boolean
-    onClick?: () => void
-  },
-) {
-  const blank = stem.match(/\[(\d+)\]/)?.[1]
-  const pieces = body.split(/(\[\d+\]\s*_____)/g)
-  return pieces.map((piece, index) => {
-    const match = piece.match(/\[(\d+)\]/)
-    if (!match) return <span key={index}>{piece}</span>
-    const active = match[1] === blank
-    const label = active && options?.selectedText ? `[${match[1]}] ${options.selectedText}` : piece
-    const stateClass = active && options?.checked
-      ? (options.correct ? ' correct' : ' wrong')
-      : active && options?.selectedText
-        ? ' chosen'
-        : ''
-    if (active && options?.onClick) {
-      return (
-        <button
-          key={index}
-          type="button"
-          className={`passage-blank active tappable${stateClass}`}
-          onClick={options.onClick}
-        >
-          {label}
-        </button>
-      )
-    }
-    return <mark key={index} className={active ? 'passage-blank active' : 'passage-blank'}>{label}</mark>
-  })
-}
-
 function fallbackWrongExplanation(question: Question, lang: Language) {
   const skill = question.skills[0]
   const en: Partial<Record<SkillId, string>> = {
@@ -325,38 +288,7 @@ function fallbackWrongExplanation(question: Question, lang: Language) {
 function localizedQuestionExplanation(question: Question, lang: Language) {
   if (lang === 'en') return question.explanation
   if (question.explanationTh) return question.explanationTh
-  const byRule: Record<string, string> = {
-    'wordform.adjective-before-noun':'ช่องว่างอยู่หน้าคำนาม จึงต้องใช้ adjective เพื่อขยายคำนาม ไม่ใช่ noun/adverb/verb',
-    'wordform.adverb-modifier':'ช่องว่างทำหน้าที่ขยายกริยาหรือ adjective จึงต้องใช้ adverb',
-    'wordform.noun-position':'ตำแหน่งนี้ต้องการ noun เพราะทำหน้าที่เป็นประธาน กรรม หรืออยู่หลัง article/possessive',
-    'tense.present-perfect-since':'คำว่า since บอกจุดเริ่มต้นในอดีตและช่วงเวลายังเชื่อมถึงปัจจุบัน จึงใช้ present perfect: has/have + V3',
-    'tense.past-perfect-sequence':'มีเหตุการณ์อดีต 2 เหตุการณ์ เหตุการณ์ที่เกิดก่อนใช้ past perfect: had + V3',
-    'tense.future-progressive':'บริบทพูดถึงเหตุการณ์ในอนาคต ให้เลือก future form ที่ตรงกับช่วงเวลาและลำดับเหตุการณ์',
-    'sva.head-subject':'ต้องหาประธานตัวจริงก่อนแล้วจึงผันกริยาให้ตรง อย่าหลงคำนามที่อยู่ใกล้กริยาแต่เป็นเพียงส่วนขยาย',
-    'sva.correlative':'either...or / neither...nor ให้กริยาสอดคล้องกับประธานที่อยู่ใกล้กริยามากกว่า',
-    'passive.core':'ประธานเป็นผู้ถูกกระทำ จึงต้องใช้ passive voice: be + V3 และผัน be ให้ตรงกับ tense',
-    'gerund.after-preposition':'หลัง preposition ถ้าตามด้วยกริยาให้ใช้ V-ing',
-    'infinitive.pattern':'โครงสร้างนี้ต้องใช้ infinitive: to + V1',
-    'preposition.time':'ให้ดูความหมายเวลา เช่น deadline, จุดเริ่มต้น, ระยะเวลา หรือวัน/เวลาเฉพาะ แล้วเลือก preposition ให้ตรง',
-    'preposition.verb-collocation':'เป็น fixed collocation ต้องจำ verb/adjective + preposition เป็นชุดเดียว',
-    'connector.clause-vs-phrase':'ดูสิ่งที่ตามหลังช่องว่างก่อน: conjunction ตามด้วย clause ส่วน preposition เช่น despite/because of ตามด้วย noun phrase',
-    'connector.condition-purpose':'หาความสัมพันธ์ของใจความก่อนว่าเป็นเงื่อนไข เหตุผล จุดประสงค์ เวลา หรือความขัดแย้ง',
-    'relative.pronouns':'เลือก relative pronoun จากคำนามข้างหน้าและหน้าที่ใน relative clause',
-    'pronoun.forms':'ดูว่าช่องว่างต้องการ subject/object/possessive/reflexive form',
-    'comparison.patterns':'คำอย่าง than, as...as และ of the group เป็นตัวบอกว่าใช้ comparative, equality หรือ superlative',
-    'participle.feeling':'-ing ใช้กับสิ่งที่ก่อให้เกิดความรู้สึก ส่วน -ed ใช้กับผู้ที่รู้สึก',
-    'vocab.business-collocation':'ต้องเลือกคำที่เข้าความหมายธุรกิจและจับคู่กับคำรอบข้างได้เป็นธรรมชาติ',
-    'p6.word-form':'Part 6 ต้องดูทั้งชนิดคำและประโยครอบช่องว่าง ไม่ใช่แปลคำแยกจากบริบท',
-    'p6.connector-context':'อ่านประโยคก่อนและหลังแล้วเลือกคำเชื่อมให้ตรงความสัมพันธ์ของเนื้อหา',
-    'p6.fixed-phrase':'ข้อนี้ทดสอบวลีตายตัว ให้จำเป็น chunk และตรวจว่าความหมายเข้ากับย่อหน้าด้วย',
-    'p6.sentence-placement':'ประโยคที่หายไปต้องเชื่อมกับทั้งประโยคก่อนหน้าและหลังผ่านหัวข้อ ลำดับเหตุการณ์ และ reference words',
-    'p6.preposition':'ดูทั้ง fixed phrase และความสัมพันธ์เวลา/สถานที่ของย่อหน้า',
-    'p6.verb-form':'หา subject, time signal และ voice ก่อนเลือก tense/verb form',
-    'p6.passive-tense':'ประธานถูกกระทำ จึงต้องใช้ passive และผัน tense ให้ตรงกับบริบท',
-    'p6.relative':'เลือก relative word ให้ตรงกับ antecedent และหน้าที่ใน clause',
-    'p6.if-clause':'ดูรูป if-clause และ result clause เป็นคู่ ไม่เลือก tense จากประโยคเดียว',
-  }
-  return byRule[question.ruleId ?? ''] ?? fallbackWrongExplanation(question, lang)
+  return question.explanation
 }
 
 type AnalysisTone = 'subject' | 'verb' | 'clue' | 'blank' | 'object' | 'modifier'
@@ -535,12 +467,6 @@ function simpleClauseParts(text: string) {
   }
 }
 
-function relationLabel(relation: string, lang: Language) {
-  const th: Record<string,string> = { contrast:'ความขัดแย้ง', reason:'เหตุผล', time:'เวลา', condition:'เงื่อนไข' }
-  return lang === 'th' ? (th[relation] ?? relation) : relation
-}
-
-
 function inferWordClass(word: string) {
   const value = word.toLowerCase().replace(/[^a-z-]/g, '')
   const known = choiceLexicon[value]
@@ -655,6 +581,14 @@ function buildQuestionAnalysis(question: Question, lang: Language): QuestionAnal
         L(lang, 'Spot “twice as / as ...” before the blank.', 'เห็น “twice as / as ...” ก่อนช่องว่าง'),
         L(lang, 'This is not a normal comparative with “than”; it is the as ... as pattern.', 'นี่ไม่ใช่ comparative ปกติที่ใช้ than แต่เป็นโครงสร้าง as ... as'),
         L(lang, 'Close the pattern with “as”.', 'จึงต้องปิดโครงสร้างด้วย “as”'),
+      )
+    } else if (/\bthan\b/i.test(after)) {
+      needed = L(lang, 'a comparative adjective or adverb', 'Adj. หรือ Adv. ขั้นกว่า')
+      memory = L(lang, 'Comparative (-er / more + adjective or adverb) + than', 'ขั้นกว่า (-er / more + Adj. หรือ Adv.) + than')
+      steps.push(
+        L(lang, 'Locate “than” after the blank.', 'เห็น than หลังช่องว่าง → มีการเปรียบเทียบ'),
+        L(lang, 'Choose a comparative; use an adjective for a noun/state, an adverb for an action.', 'เลือกรูปขั้นกว่า แล้วดูว่าขยายคำนาม/บอกสภาพ (Adj.) หรือขยายการกระทำ (Adv.)'),
+        localizedQuestionExplanation(question, lang),
       )
     } else {
       needed = L(lang, 'the connector required by the comparison pattern', 'คำเชื่อมที่ตรงกับรูปแบบการเปรียบเทียบ')
@@ -783,6 +717,14 @@ type BlankRequirement = {
 
 function blankRequirement(question: Question): BlankRequirement | null {
   const stem = question.stem
+  if (question.ruleId === 'gerund.after-preposition' || /\b(?:committed|accustomed|used|object|look forward)\s+to\s+_{3,}/i.test(stem)) {
+    return {
+      labelEn: 'noun or gerund after a preposition', labelTh: 'N. หรือ V-ing หลัง preposition',
+      accepts: pos => /noun|ing|gerund/i.test(pos),
+      clueEn: 'This to belongs to a preposition phrase, not an infinitive.',
+      clueTh: 'to ในวลีนี้เป็น preposition จึงตามด้วย N. / V-ing ไม่ใช่ V1',
+    }
+  }
   if (/\b(should|can|could|will|would|may|might|must|shall)\s+_{3,}/i.test(stem)) {
     const modal = stem.match(/\b(should|can|could|will|would|may|might|must|shall)\s+_{3,}/i)?.[1] ?? 'modal'
     return {
@@ -959,14 +901,14 @@ function correctSentenceForMap(question: Question, contextText?: string) {
   const answerText = question.choices.find(choice => choice.id === question.answer)?.text ?? ''
   const source = contextText ?? question.stem
   if (!source.includes('_____')) return source
-  return source
-    .replace(/\[\d+\]\s*_____/, '@@ANSWER@@')
-    .replace(/_____/, '@@ANSWER@@')
-    .replace('@@ANSWER@@', answerText)
+  const number = question.stem.match(/\[(\d+)\]/)?.[1]
+  const active = number ? new RegExp(`\\[${number}\\]\\s*_____`) : /_____/
+  return (active.test(source) ? source.replace(active, answerText) : source.replace(/_____/, answerText))
+    .replace(/^\[\d+\]\s*/, '')
 }
 
-function tokenizeGrammar(text: string) {
-  return text.match(/[A-Za-z]+(?:['’][A-Za-z]+)?|\d+(?:[.,:]\d+)?|[–—-]|[^\sA-Za-z0-9]/g) ?? []
+function tokenizeGrammar(text: string): string[] {
+  return text.match(/[A-Z](?:\.[A-Z])+\.?|[A-Za-z]+(?:-[A-Za-z]+)*(?:['’][A-Za-z]+|['’])?|\d+(?:[.,:]\d+)?|[–—-]|[^\sA-Za-z0-9]/g) ?? []
 }
 
 function basePos(word: string, previous = '', next = '') {
@@ -974,7 +916,7 @@ function basePos(word: string, previous = '', next = '') {
   const p = previous.toLowerCase()
   const n = next.toLowerCase()
 
-  if (/^[,.;:!?()[\]]$/.test(word)) return 'Punct.'
+  if (/^[^A-Za-z0-9]+$/.test(word)) return 'Punct.'
   if (/^\d/.test(word)) return 'Number'
   if (grammarDeterminers.has(w)) return 'Det.'
   if (grammarPossessives.has(w)) return 'Poss. Det.'
@@ -982,17 +924,19 @@ function basePos(word: string, previous = '', next = '') {
   if (grammarModals.has(w)) return 'Modal'
   if (grammarBe.has(w)) return 'V. be'
   if (grammarHave.has(w) || grammarDo.has(w)) return 'Aux./V.'
+  if (['before','after','since','until'].includes(w) && (/ing$/.test(n) || grammarDeterminers.has(n))) return 'Prep.'
   if (grammarConjunctions.has(w)) return 'Conj.'
   if (grammarPrepositions.has(w)) return w === 'to' && (grammarModals.has(p) || p === '') ? 'to' : 'Prep.'
   if (/['’]s$/.test(word)) return 'Poss. N.'
+  if (/ing$/.test(w) && (grammarPrepositions.has(p) || ['before','after','since'].includes(p))) return 'Gerund (N.)'
   if (grammarAdverbs.has(w) || /ly$/.test(w)) return 'Adv.'
   if (grammarAdjectives.has(w) || /(ous|ful|less|ive|able|ible|al|ic|ary|ory)$/.test(w)) return 'Adj.'
+  if (grammarVerbLexicon.has(w) && (grammarDeterminers.has(p) || grammarPossessives.has(p))) return 'N.'
   if (grammarVerbLexicon.has(w) || /(ed|ing|ize|ise|ify)$/.test(w)) return 'V.'
   if (grammarModals.has(p) || (p === 'to' && !['look','forward','used','object'].includes(previous.toLowerCase()))) return 'V1'
   if (grammarHave.has(p)) return 'V3'
   if (grammarBe.has(p) && /ing$/.test(w)) return 'V-ing'
   if (grammarBe.has(p) && /(ed|en)$/.test(w)) return 'V3/Adj.'
-  if (grammarDeterminers.has(p) && n && !grammarBe.has(n) && !grammarVerbLexicon.has(n) && !/[,.!?]/.test(next)) return 'Adj.'
   if (/(tion|sion|ment|ness|ity|ance|ence|ship|ism|ure|er|or)$/.test(w)) return 'N.'
   return 'N.'
 }
@@ -1027,13 +971,15 @@ function labelWords(question: Question, contextText: string | undefined, lang: L
   })
 
   const answerText = question.choices.find(choice => choice.id === question.answer)?.text ?? ''
-  let answerMarked = false
-  for (const token of words) {
-    if (!answerMarked && token.text.toLowerCase() === answerText.toLowerCase()) {
-      token.answer = true
-      token.tone = 'answer'
-      answerMarked = true
-    }
+  const source = contextText ?? question.stem
+  const number = question.stem.match(/\[(\d+)\]/)?.[1]
+  const activeBlank = number ? source.match(new RegExp(`\\[${number}\\]\\s*_____`)) : null
+  const blankIndex = activeBlank?.index ?? source.indexOf('_____')
+  const prefix = blankIndex < 0 ? '' : source.slice(0, blankIndex).replace(/^\[\d+\]\s*/, '').replace(/\[\d+\]\s*$/, '')
+  const answerStart = blankIndex < 0 ? -1 : tokenizeGrammar(prefix).length
+  const answerLength = tokenizeGrammar(answerText).length
+  for (let i = answerStart; i >= 0 && i < answerStart + answerLength; i += 1) {
+    if (words[i]) { words[i].answer = true; words[i].tone = 'answer' }
   }
 
   // Preposition objects.
@@ -1182,6 +1128,28 @@ function labelWords(question: Question, contextText: string | undefined, lang: L
     token.tone = 'answer'
   }
 
+  const reviewed = reviewedGrammar[question.id]?.split(' ')
+  const lexical = words.filter(word => !word.punctuation)
+  if (reviewed?.length === lexical.length) {
+    reviewed.forEach((tag, index) => {
+      const [pos, role] = tag.split(':')
+      lexical[index].pos = grammarClasses[pos]
+      lexical[index].role = role ? grammarFunctions[role][lang === 'th' ? 0 : 1] : ''
+    })
+  }
+  words.forEach((word, index) => {
+    if (word.punctuation || word.role) return
+    word.role = word.pos.includes('Det.') ? L(lang,'noun determiner','ตัวกำหนดนาม')
+      : word.pos === 'Adv.' ? (words[index + 1]?.pos.startsWith('Adj.') ? L(lang,'adjective modifier','ขยาย Adj.') : L(lang,'verb/phrase modifier','ขยายกริยา/วลี'))
+      : word.pos.startsWith('Adj.') ? L(lang,'noun/state modifier','ขยายนาม/บอกสภาพ')
+      : word.pos === 'Prep.' ? L(lang,'introduces noun phrase','นำ noun phrase')
+      : word.pos === 'Inf. to' ? L(lang,'introduces V1','นำ infinitive V1')
+      : word.pos === 'Conj.' ? L(lang,'connects clauses','เชื่อมประโยค')
+      : word.pos.includes('N.') ? L(lang,'noun in this phrase','นามในวลี')
+      : word.pos === 'V1' ? L(lang,'infinitive verb','กริยา infinitive')
+      : word.pos.startsWith('V') ? L(lang,'verb form','รูปกริยา') : L(lang,'word in this phrase','คำในวลี')
+  })
+
   return words
 }
 
@@ -1223,70 +1191,99 @@ function spottingRules(question: Question, contextText: string | undefined, lang
   return tips.slice(0, 4)
 }
 
-function WordLevelGrammarMap({
+function stepWordIndexes(question: Question, contextText: string | undefined, step: number, words: GrammarWord[]) {
+  const indices = new Set<number>()
+  const answerStart = words.findIndex(word => word.answer)
+  if (step === 0) {
+    words.forEach((word, index) => { if (/main subject|ประธานหลัก|ประธานแท้|main verb|กริยาหลัก|^auxiliary$|^กริยาช่วย$/.test(word.role) && !word.answer) indices.add(index) })
+    return indices
+  }
+  if (step === 3) {
+    words.forEach((word, index) => { if (word.answer) indices.add(index) })
+    return indices
+  }
+  if (step === 2) {
+    if (question.skills.includes('subject-verb')) {
+      words.forEach((word, index) => { if (/subject|ประธาน/.test(word.role) || word.answer) indices.add(index) })
+    } else {
+      for (let index = Math.max(0, answerStart - 2); index <= Math.min(words.length - 1, answerStart + 2); index += 1) if (!words[index].punctuation) indices.add(index)
+    }
+    return indices
+  }
+  // ponytail: legacy questions use signal matching; authored focus phrases replace it as the bank is reviewed.
+  const targets = question.coaching?.focus.length ? question.coaching.focus : ['than','since','by','until','despite','although','been','to']
+  const tokens = words.map(word => word.text.toLowerCase())
+  for (const target of targets) {
+    const parts = tokenizeGrammar(target.toLowerCase()).filter(part => /^[a-z0-9]/i.test(part))
+    for (let start = 0; start < tokens.length; start += 1) {
+      if (parts.length && parts.every((part, offset) => tokens[start + offset] === part)) for (let offset = 0; offset < parts.length; offset += 1) indices.add(start + offset)
+    }
+  }
+  if (!indices.size && answerStart >= 0) {
+    if (answerStart > 0) indices.add(answerStart - 1)
+    if (answerStart + 1 < words.length) indices.add(answerStart + 1)
+  }
+  void contextText
+  return indices
+}
+
+function AnnotatedSentence({
   question,
   selected,
   contextText,
+  activeStep = 0,
+  checked = true,
+  onBlankClick,
+  onStep,
 }: {
   question: Question
   selected: string
   contextText?: string
+  activeStep?: number
+  checked?: boolean
+  onBlankClick?: () => void
+  onStep?: (step: number) => void
 }) {
   const lang = useLanguage()
+  const [inspectedWord, setInspectedWord] = useState<number | null>(null)
   const words = labelWords(question, contextText, lang)
-  const tips = spottingRules(question, contextText, lang)
-  const correct = selected === question.answer
-  const answerText = question.choices.find(choice => choice.id === question.answer)?.text ?? ''
-  const selectedText = question.choices.find(choice => choice.id === selected)?.text ?? ''
-
+  const highlights = checked ? stepWordIndexes(question, contextText, activeStep, words) : new Set<number>()
+  const firstAnswer = words.findIndex(word => word.answer)
+  const inspected = inspectedWord === null ? null : words[inspectedWord]
+  const reviewed = reviewedGrammar[question.id]?.split(' ').length === words.filter(word => !word.punctuation).length
   return (
-    <section className={correct ? 'word-grammar-map correct' : 'word-grammar-map wrong'}>
-      <div className="word-map-head">
-        <b>{L(lang, 'Word-by-word grammar map', 'วงและแยกหน้าที่ทุกคำ')}</b>
-        <span>{correct ? L(lang,'correct answer','ตอบถูก') : L(lang,'corrected sentence','ประโยคที่แก้ถูกแล้ว')}</span>
-      </div>
-      <div className="word-map-sentence">
+    <>
+      <h2 id={`sentence-${question.id}`} className="sentence-inline" aria-label={activeStep < 3 ? (contextText ?? question.stem) : correctSentenceForMap(question, contextText)}>
         {words.map((word, index) => word.punctuation
-          ? <span className="grammar-punctuation" key={`${word.text}-${index}`}>{word.text}</span>
+          ? /^[,.;:!?]$/.test(word.text) && index > 0 && !words[index - 1].punctuation ? null : <span className="grammar-punctuation" key={`${word.text}-${index}`}>{word.text}</span>
           : (
-            <span className={`grammar-word ${word.tone}${word.answer ? ' answer' : ''}`} key={`${word.text}-${index}`}>
-              <b>{word.text}</b>
-              <em>{word.pos}</em>
-              {word.role && <small>{word.role}</small>}
-            </span>
+            word.answer && activeStep < 3 && index !== firstAnswer ? null :
+            <button type="button" aria-pressed={inspectedWord === index} className={`sentence-word ${word.answer && !checked ? 'blank' : word.answer && activeStep === 3 ? 'answer' : highlights.has(index) ? 'focus' : ''}`} key={`${word.text}-${index}`} onClick={() => { setInspectedWord(inspectedWord === index ? null : index); if (word.answer && !checked) onBlankClick?.() }}>
+              <b>{word.answer && activeStep < 3 ? '_____' : word.text}{/^[,.;:!?]$/.test(words[index + 1]?.text ?? '') ? words[index + 1].text : ''}</b>
+              <small className="word-pos">{word.answer && !checked ? '?' : word.pos}</small>
+              <small className="word-function">{word.answer && !checked ? L(lang,'blank','ช่องที่ต้องเติม') : word.role}</small>
+            </button>
           ))}
-      </div>
-      {!correct && (
-        <p className="word-map-mistake">
-          <strong>{L(lang,'You chose','คุณเลือก')}:</strong> {selectedText}
-          <span>→</span>
-          <strong>{L(lang,'should be','ควรเป็น')}:</strong> {answerText}
-        </p>
-      )}
-      {tips.length > 0 && (
-        <div className="spotting-rule-box">
-          <strong>{L(lang,'How to spot it next time','ครั้งหน้าดูจากตรงไหน')}</strong>
-          {tips.map(tip => <span key={tip}>• {tip}</span>)}
-        </div>
-      )}
-      {lang === 'th' && question.translationTh && (
-        <div className="question-translation-th">
-          <strong>แปลความหมาย:</strong>
-          <span>{question.translationTh}</span>
-        </div>
-      )}
-    </section>
+      </h2>
+      {checked && onStep && <AnswerWalkthrough question={question} selected={selected} contextText={contextText} activeStep={activeStep} onStep={onStep} />}
+      <div className="sentence-tools"><span>{checked ? L(lang,`Step ${activeStep + 1}/4 · Gold = current focus`, `ขั้น ${activeStep + 1}/4 · สีทอง = คำที่ต้องดูในขั้นนี้`) : L(lang,'Inspect the structure before choosing','ดูโครงสร้างก่อนเลือกคำตอบ')}</span><span>{L(lang,'Tap a word to inspect its role','แตะคำเพื่อดูหน้าที่')}</span></div>
+      <div className="clause-outline">{L(lang,'Main clause','ประโยคหลัก')}: {words.filter(word => /main subject|ประธานหลัก|ประธานแท้/.test(word.role)).map(word => word.answer && activeStep < 3 ? '_____' : word.text).join(' / ') || 'S'} → {words.filter(word => /main verb|กริยาหลัก/.test(word.role)).map(word => word.answer && activeStep < 3 ? '_____' : word.text).join(' ') || 'V'}{words.some(word => /subordinate|อนุประโยค|reduced|ลดรูป/.test(word.role)) && <span> · {L(lang,'Subordinate/reduced clause: see roles under its words','มีอนุประโยค/ส่วนลดรูป: ดูหน้าที่ใต้คำ')}</span>}</div>
+      {inspected && <div className="word-inspector"><b>{inspected.answer && activeStep < 3 ? '_____' : inspected.text} · {inspected.answer && !checked ? '?' : inspected.pos}</b><p>{inspected.answer && !checked ? L(lang,'Identify the blank’s function from the surrounding words.','ลองหาหน้าที่ช่องว่างจากคำรอบข้างก่อน') : inspected.role}</p><small>{L(lang,'The class is what the word is; the function is what it does in this sentence.','ชนิดคำ = คำนี้เป็นอะไร · หน้าที่ = คำนี้ทำอะไรในประโยคนี้')}</small></div>}
+      {!reviewed && <small className="grammar-estimate">{L(lang,'Automatic grammar labels; the explanation is the source for the blank’s function.','ข้อนี้ใช้ป้ายคำอัตโนมัติซึ่งอาจคลาดเคลื่อน ให้ยึดเฉลยในการตัดสินหน้าที่ช่องว่าง')}</small>}
+      {checked && selected !== question.answer && <p className="submitted-answer">{L(lang,'Your answer','คำตอบที่คุณเลือก')}: {question.choices.find(c => c.id === selected)?.text}</p>}
+    </>
   )
 }
 
 function inspectionText(question: Question, choiceId: string, lang: Language) {
   const choice = question.choices.find(item => item.id === choiceId)
   if (!choice) return ''
+  if (lang === 'th' && question.coaching?.choiceReasons[choiceId]) return question.coaching.choiceReasons[choiceId]
   if (choiceId === question.answer) return localizedQuestionExplanation(question, lang)
+  if (question.whyOthers?.[choiceId]) return question.whyOthers[choiceId]
   if (question.part <= 6) {
     return explainChoice(question, choiceId, buildQuestionAnalysis(question, lang), lang)
   }
-  if (lang === 'en' && question.whyOthers?.[choiceId]) return question.whyOthers[choiceId]
   return fallbackWrongExplanation(question, lang)
 }
 
@@ -1300,7 +1297,7 @@ function ChoiceInspection({ question, choiceId }: { question: Question; choiceId
   return (
     <div className={correct ? 'choice-inspection correct' : 'choice-inspection wrong'}>
       <b>{correct ? L(lang,'Why this choice works','ทำไมตัวนี้ถูก') : L(lang,'Why this choice fails','ทำไมตัวนี้ผิด')}</b>
-      {choice && (
+      {choice && question.part < 7 && !choice.text.includes(' ') && (
         <div className="choice-facts">
           <span><strong>{L(lang,'Word class','ชนิดคำ')}:</strong> {pos}</span>
           {lang === 'th' && meaningTh && <span><strong>ความหมาย:</strong> {meaningTh}</span>}
@@ -1343,86 +1340,43 @@ if (import.meta.env.DEV) {
   )
 }
 
-function compactMistakeInsight(question: Question, selected: string, analysis: QuestionAnalysis, lang: Language) {
-  const selectedText = question.choices.find(c => c.id === selected)?.text ?? selected
-  const answerText = question.choices.find(c => c.id === question.answer)?.text ?? question.answer
-  const rule = question.ruleId ?? question.skills[0]
-
-  if (rule === 'connector.clause-vs-phrase') {
-    const wrong = connectorUsage[selectedText.toLowerCase()]
-    const right = connectorUsage[answerText.toLowerCase()]
-    if (wrong && right) {
-      const sameMeaning = wrong.relation === right.relation
-      return lang === 'th'
-        ? `คุณเลือก “${selectedText}” เพราะ${sameMeaning ? `ความหมายใกล้กับ “${answerText}” (${relationLabel(right.relation, lang)}) ซึ่งคิดด้านความหมายถูก` : `ตีความความสัมพันธ์เป็น ${relationLabel(wrong.relation, lang)}`} แต่พลาด “รูปหลังคำเชื่อม”: ${wrong.pattern} ขณะที่โจทย์นี้ต้อง ${right.pattern} จึงตอบ ${answerText}`
-        : `You chose “${selectedText}” because ${sameMeaning ? `its meaning is close to “${answerText}” (${right.relation}), so your meaning was reasonable` : `you read the relation as ${wrong.relation}`}, but the grammar pattern is wrong: ${wrong.pattern}; this sentence needs ${right.pattern}.`
-    }
-  }
-
-  if (rule === 'comparison.patterns' || rule === 'comparison') {
-    return lang === 'th'
-      ? `คุณเลือก “${selectedText}” เพราะมองว่าเป็นการเปรียบเทียบ แต่พลาด pattern หลักของโจทย์: ${analysis.memory} จึงต้องใช้ “${answerText}”`
-      : `You recognized a comparison, but missed the exact pattern: ${analysis.memory}. Therefore the answer is “${answerText}”.`
-  }
-
-  if (rule.startsWith('wordform.') || rule === 'part-of-speech' || question.skills.includes('part-of-speech')) {
-    return lang === 'th'
-      ? `คุณเลือก “${selectedText}” (${inferWordClass(selectedText)}) แต่ช่องนี้ต้องการ ${analysis.needed} — ให้ดู “หน้าที่ของช่องว่าง” ก่อนแปลความหมาย`
-      : `You chose “${selectedText}” (${inferWordClass(selectedText)}), but the blank needs ${analysis.needed}. Identify the blank's job before translating.`
-  }
-
-  if (rule === 'subject-verb' || question.skills.includes('subject-verb')) {
-    return lang === 'th'
-      ? `คุณน่าจะตามคำนามที่อยู่ใกล้ช่องว่างมากเกินไป ให้ย้อนหา head subject ที่ไฮไลต์ด้านบน แล้วผันกริยาตามประธานแท้ จึงได้ “${answerText}”`
-      : `You likely followed the noun nearest the blank. Use the highlighted head subject instead; that gives “${answerText}”.`
-  }
-
-  if (rule === 'vocab.business-collocation' || question.skills.includes('collocation')) {
-    return lang === 'th'
-      ? `รูปคำอาจถูกไวยากรณ์เหมือนกันหลายข้อ แต่ “${selectedText}” ไม่จับคู่กับคำรอบข้างแบบธรรมชาติ ข้อนี้ต้องดู collocation จึงเป็น “${answerText}”`
-      : `Several choices may be grammatically possible, but “${selectedText}” is not the natural collocation here. The correct collocation uses “${answerText}”.`
-  }
-
-  return lang === 'th'
-    ? `คุณเลือก “${selectedText}” แต่โจทย์ต้องการ ${analysis.needed} จึงต้องเป็น “${answerText}”`
-    : `You chose “${selectedText}”, but the blank needs ${analysis.needed}; therefore choose “${answerText}”.`
-}
-
-function CompactMistakeCoach({
-  question,
-  selected,
-  contextText,
-}: {
-  question: Question
-  selected: string
-  contextText?: string
-}) {
+function AnswerWalkthrough({ question, selected, contextText, activeStep, onStep }: { question: Question; selected: string; contextText?: string; activeStep: number; onStep: (step: number) => void }) {
   const lang = useLanguage()
-  const analysis = buildQuestionAnalysis(question, lang)
+  const analysis = buildQuestionAnalysis({ ...question, stem: contextText ?? question.stem }, lang)
+  const authored = lang === 'th' ? question.coaching : undefined
+  const reading = question.part === 7
+  const words = labelWords(question, contextText, lang)
+  const mainSubject = words.filter(word => /main subject|ประธานหลัก|ประธานแท้/.test(word.role)).map(word => word.answer ? '_____' : word.text).join(' + ') || 'S'
+  const mainVerb = words.filter(word => /main verb|กริยาหลัก/.test(word.role) || word.role === grammarFunctions.AUX[lang === 'th' ? 0 : 1]).map(word => word.answer ? '_____' : word.text).join(' ') || 'V'
+  const object = words.filter(word => /main object|กรรมหลัก/.test(word.role)).map(word => word.answer ? '_____' : word.text).join(' + ')
+  const complement = words.filter(word => /complement|เติมเต็ม/.test(word.role)).map(word => word.answer ? '_____' : word.text).join(' + ')
+  const subordinate = words.filter(word => /subordinate|อนุประโยค|reduced|ลดรูป/.test(word.role)).map(word => word.answer ? '_____' : word.text).join(' → ')
+  const overview = reading
+    ? L(lang, 'Read the question first, then identify each document’s purpose, sender, dates, and conditions. Connect information across documents before comparing choices.', 'อ่านคำถามก่อน แล้วแยกว่าแต่ละเอกสารใครเขียน เพื่ออะไร วันไหน และมีเงื่อนไขอะไร เชื่อมข้อมูลข้ามเอกสารก่อนเทียบตัวเลือก')
+    : question.id === 'cmp-1'
+      ? L(lang, 'sales is the subject; were is a linking verb. This quarter’s tells whose sales; significantly modifies their degree. The comparison than [was] expected is reduced. Read the whole statement: this quarter’s sales differed from expectations.', 'ภาพรวม: sales เป็นประธาน → were เป็น linking verb → ช่องว่างบอกลักษณะยอดขาย ส่วน This quarter’s ขยาย sales, significantly บอกระดับ และ than [was] expected เป็นส่วนเปรียบเทียบที่ลดรูป ความหมายทั้งประโยคคือยอดขายไตรมาสนี้เทียบกับที่คาดไว้')
+      : L(lang, `Main structure: ${mainSubject} → ${mainVerb}${object ? `; object to follow: ${object}` : ''}${complement ? `; complement to follow: ${complement}` : ''}. ${subordinate ? `Separate the subordinate/reduced clause: ${subordinate}. ` : ''}Follow the modifiers under each word: which noun, verb, or adjective do they describe? Place the blank in this structure before comparing choices.`, `แกนหลัก: ${mainSubject} → ${mainVerb}${object ? `; กรรมที่ตามดู: ${object}` : ''}${complement ? `; ส่วนเติมเต็มที่ตามดู: ${complement}` : ''} ${subordinate ? `แยกอนุประโยค/ส่วนลดรูปออกมาดู: ${subordinate} ` : ''}ไล่คำขยายตามป้ายใต้คำ: ขยาย N., V. หรือ Adj. ตัวไหน? แล้ววางช่องว่างลงในโครงสร้างนี้ก่อนเทียบตัวเลือก`)
+  const steps = [overview, ...(authored?.steps ?? (reading ? [
+    L(lang, 'Identify what the question asks: purpose, detail, or inference.', 'แยกว่าถามจุดประสงค์ รายละเอียด หรือสิ่งที่อนุมาน'),
+    question.evidence ? `${L(lang, 'Find this evidence', 'หาและอ่านหลักฐานนี้')}: “${question.evidence}”` : question.explanation,
+    localizedQuestionExplanation(question, lang),
+  ] : [analysis.steps[0], analysis.steps[1], localizedQuestionExplanation(question, lang)]))]
+  const popupId = `coach-${question.id}`
   return (
-    <div className="compact-mistake-coach" aria-live="polite">
-      <WordLevelGrammarMap question={question} selected={selected} contextText={contextText} />
-      <div className="compact-mistake-lines">
-        <p><strong>{L(lang, 'Blank needs:', 'ช่องว่างต้องเป็น:')}</strong> {analysis.needed}</p>
-        <p className="mistake-why"><strong>{L(lang, 'Your mistake:', 'จุดที่เข้าใจผิด:')}</strong> {compactMistakeInsight(question, selected, analysis, lang)}</p>
-        <p className="mini-memory"><strong>{L(lang, 'Remember:', 'จำสั้น ๆ:')}</strong> {analysis.memory}</p>
+    <div className="thinking-control">
+      <button className="thinking-launcher" type="button" popoverTarget={popupId} onClick={() => document.getElementById(`sentence-${question.id}`)?.scrollIntoView({ behavior:'smooth', block:'start' })}>{L(lang,'Show thinking','ดูวิธีคิด')} · {activeStep + 1}/4</button>
+      <div id={popupId} className="thinking-popover" popover="auto" role="dialog" aria-labelledby={`${popupId}-title`}>
+        <header><strong id={`${popupId}-title`}>{L(lang,'How to reach the answer','คิดอย่างไรให้ถึงคำตอบ')}</strong><button type="button" popoverTarget={popupId} popoverTargetAction="hide" aria-label={L(lang,'Close','ปิด')}>×</button></header>
+        <div className="thinking-body"><div className="thinking-step" aria-live="polite"><small>{L(lang,'Step','ขั้น')} {activeStep + 1}/4 · {L(lang,'Look at the circled words above','ดูคำที่วงบนโจทย์')}</small><h3>{[L(lang,'Read the whole structure','มองภาพรวมประโยค'), L(lang,'Find the clue','หาจุดสังเกต'), L(lang,'Decide the function','ตัดสินหน้าที่ / ความสัมพันธ์'), L(lang,'Choose and check','เลือกแล้วเช็ก')][activeStep]}</h3><p>{steps[activeStep]}</p></div>
+        {activeStep === 3 && <>
+          {selected !== question.answer && <div className="choice-trap"><b>{L(lang,'Why your choice fails','ทำไมตัวที่คุณเลือกใช้ไม่ได้')}</b><p>{inspectionText(question, selected, lang)}</p></div>}
+          <p className="memory-line"><b>{L(lang,'Remember','จำเป็นชุด')}:</b> {authored?.memory ?? spottingRules(question, contextText, lang)[0] ?? (reading ? L(lang,'Choose what the documents support, including conditions and exceptions.','ตอบจากหลักฐาน พร้อมเช็กเงื่อนไขและข้อยกเว้น') : analysis.memory)}</p>
+          {question.translationTh && lang === 'th' && <details><summary>แปลประโยค</summary><p>{question.translationTh}</p></details>}
+        </>}</div>
+        <footer><button type="button" disabled={activeStep === 0} onClick={() => onStep(activeStep - 1)}>{L(lang,'Back','ย้อนกลับ')}</button>{activeStep < 3 ? <button type="button" className="thinking-next" onClick={event => { event.preventDefault(); onStep(activeStep + 1) }}>{L(lang,'Next step','ขั้นถัดไป')} →</button> : <button type="button" className="thinking-next" popoverTarget={popupId} popoverTargetAction="hide">{L(lang,'Done','เข้าใจแล้ว')} ✓</button>}</footer>
       </div>
     </div>
   )
-}
-
-function selectedChoiceExplanation(question: Question, selected: string, lang: Language) {
-  const selectedText = question.choices.find(c => c.id === selected)?.text ?? ''
-  const answerText = question.choices.find(c => c.id === question.answer)?.text ?? ''
-  const correct = selected === question.answer
-  if (correct) {
-    return lang === 'th'
-      ? `ถูก — ${localizedQuestionExplanation(question, lang)}`
-      : `Correct. ${question.explanation}`
-  }
-  return lang === 'th'
-    ? `คุณเลือก ${selected}. ${selectedText} แต่คำตอบคือ ${question.answer}. ${answerText}`
-    : `You chose ${selected}. ${selectedText}; the correct answer is ${question.answer}. ${answerText}.`
 }
 
 function lineKey(row: string[], index: number) {
@@ -1493,9 +1447,7 @@ function buildVocabCards(
     const context = passage
       ? activeContextForBlank(passage.body, question.stem)
       : question.stem
-    const sentence = context.includes('_____')
-      ? context.replace(/\[\d+\]\s*_____/, answerChoice.text).replace(/_____/, answerChoice.text)
-      : context
+    const sentence = correctSentenceForMap(question, context)
     const next: VocabCard = {
       key,
       word:selectedChoice.text,
@@ -1772,20 +1724,15 @@ function PassageVisual({ passage }: { passage: Passage }) {
   )
 }
 
-function highlightPassageEvidence(text: string, evidence?: string) {
+function highlightPassageEvidence(text: string, evidence?: string | string[]) {
   if (!evidence) return text
-  const index = text.toLowerCase().indexOf(evidence.toLowerCase())
-  if (index < 0) return text
-  return (
-    <>
-      {text.slice(0, index)}
-      <mark className="passage-evidence-hit">{text.slice(index, index + evidence.length)}</mark>
-      {text.slice(index + evidence.length)}
-    </>
-  )
+  const targets = (Array.isArray(evidence) ? evidence : [evidence]).filter(Boolean)
+  if (!targets.length) return text
+  const pattern = new RegExp(`(${targets.map(target => target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi')
+  return text.split(pattern).map((piece,index) => index % 2 ? <mark key={index} className="passage-evidence-hit">{piece}</mark> : piece)
 }
 
-function PassageText({ passage, evidence }: { passage: Passage; evidence?: string }) {
+function PassageText({ passage, evidence }: { passage: Passage; evidence?: string | string[] }) {
   const lines = passage.body.split('\n')
   const emailHeaders = passage.kind === 'email'
     ? lines.filter(line => /^(From|To|Subject|Date):/i.test(line)).slice(0, 4)
@@ -1830,19 +1777,22 @@ function PassageDocument({
   question,
   selected,
   checked,
+  activeStep,
   onBlankClick,
+  onStep,
 }: {
   passage: Passage
   part: Part
   question: Question
   selected: string
   checked: boolean
+  activeStep?: number
   onBlankClick?: () => void
+  onStep?: (step: number) => void
 }) {
   const lang = useLanguage()
-  const selectedText = question.choices.find(choice => choice.id === selected)?.text
   return (
-    <article className={`reading-passage doc-${passage.kind}`}>
+    <article id={`reading-${question.id}`} className={`reading-passage doc-${passage.kind}`}>
       <div className="passage-heading">
         <span className="doc-type">{passage.kind.toUpperCase()}</span>
         <span className="passage-instruction">{part === 6
@@ -1852,13 +1802,10 @@ function PassageDocument({
       <h2>{passage.title}</h2>
       {part === 7 && passage.kind !== 'multi' && <PassageVisual passage={passage} />}
       {part === 6
-        ? <div className="passage-copy">{passageWithActiveBlank(passage.body, question.stem, {
-            selectedText,
-            checked,
-            correct: selected === question.answer,
-            onClick: onBlankClick,
-          })}</div>
-        : <PassageText passage={passage} evidence={checked ? question.evidence : undefined} />}
+        ? <div className="passage-copy">{passage.body.split(/(?<=[.!?])\s+(?=[A-Z]|\[\d+\])|\n/).map((line, index) => line.includes(question.stem.match(/\[\d+\]/)?.[0] ?? '@@none@@')
+          ? <div key={index}><AnnotatedSentence key={question.id} question={question} selected={selected} contextText={line} activeStep={activeStep} checked={checked} onBlankClick={onBlankClick} onStep={onStep} /></div>
+          : <div key={index}>{line || '\u00a0'}</div>)}</div>
+        : <PassageText passage={passage} evidence={checked && (activeStep ?? 0) >= 2 ? question.coaching?.focus ?? question.evidence : undefined} />}
       {part === 7 && passage.kind === 'multi' && passage.visual && (
         <div className="multi-reference-document">
           <span>{L(lang, 'REFERENCE DOCUMENT', 'เอกสารประกอบ')}</span>
@@ -1881,7 +1828,6 @@ function App() {
   const [remoteQuestions, setRemoteQuestions] = useState<Question[]>([])
   const [remotePassages, setRemotePassages] = useState<Passage[]>([])
   const [lessonSkill, setLessonSkill] = useState<SkillId | null>(null)
-  const [quickPart5, setQuickPart5] = useState(false)
   const [lang, setLang] = useState<Language>(() => localStorage.getItem(LANG_STORAGE_KEY) === 'en' ? 'en' : 'th')
 
   const allPart5 = useMemo(
@@ -1953,15 +1899,11 @@ function App() {
   const navigate = (next: View) => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
     setView(next)
-    if (next !== 'part5') {
-      setLessonSkill(null)
-      setQuickPart5(false)
-    }
+    setLessonSkill(null)
   }
 
   const startLesson = (skill: SkillId) => {
-    setView('part5')
-    setQuickPart5(false)
+    setView('learn')
     setLessonSkill(skill)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -1969,7 +1911,6 @@ function App() {
   const startQuickPart5 = () => {
     setView('part5')
     setLessonSkill(null)
-    setQuickPart5(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -1998,31 +1939,11 @@ function App() {
               vocabCount={vocabCardCount}
             />
           )}
-          {view === 'part5' && (
-            lessonSkill && lessonBySkill[lessonSkill] ? (
-              <LessonSession
-                lesson={lessonBySkill[lessonSkill]!}
-                state={state}
-                setState={setState}
-                pool={allPart5}
-                onExit={() => setLessonSkill(null)}
-              />
-            ) : quickPart5 ? (
-              <PracticeScreen
-                part={5}
-                state={state}
-                setState={setState}
-                pool={allPart5}
-                onBack={() => setQuickPart5(false)}
-              />
-            ) : (
-              <Part5Hub
-                state={state}
-                startLesson={startLesson}
-                startQuick={startQuickPart5}
-              />
-            )
-          )}
+          {view === 'learn' && (lessonSkill && lessonBySkill[lessonSkill]
+            ? <LessonSession key={lessonSkill} lesson={lessonBySkill[lessonSkill]!} state={state} setState={setState} pool={allPart5} onExit={() => setLessonSkill(null)} />
+            : <Part5Hub state={state} startLesson={startLesson} />)}
+          {view === 'practice' && <PracticeHub state={state} navigate={navigate} counts={{5: allPart5.length, 6: allPart6.length, 7: allPart7.length}} />}
+          {view === 'part5' && <PracticeScreen part={5} state={state} setState={setState} pool={allPart5} onBack={() => navigate('practice')} />}
           {view === 'part6' && (
             <PracticeScreen
               part={6}
@@ -2030,7 +1951,7 @@ function App() {
               setState={setState}
               pool={allPart6}
               passageMap={allPassageById}
-              onBack={() => navigate('home')}
+              onBack={() => navigate('practice')}
               readingSwitch={part => navigate(part === 6 ? 'part6' : 'part7')}
             />
           )}
@@ -2041,7 +1962,7 @@ function App() {
               setState={setState}
               pool={allPart7}
               passageMap={allPassageById}
-              onBack={() => navigate('home')}
+              onBack={() => navigate('practice')}
               readingSwitch={part => navigate(part === 6 ? 'part6' : 'part7')}
             />
           )}
@@ -2128,8 +2049,8 @@ function BottomNav({ view, navigate }: { view: View; navigate: (view: View) => v
   return (
     <nav className="bottom-nav" aria-label={L(lang, 'Main navigation', 'เมนูหลัก')}>
       <NavButton active={view === 'home'} label={L(lang, 'Home', 'หน้าหลัก')} icon="home" onClick={() => navigate('home')} />
-      <NavButton active={view === 'part5'} label={L(lang, 'Learn', 'เรียน')} icon="learn" onClick={() => navigate('part5')} />
-      <NavButton active={view === 'part6' || view === 'part7'} label={L(lang, 'Practice', 'ฝึก')} icon="practice" onClick={() => navigate('part6')} />
+      <NavButton active={view === 'learn'} label={L(lang, 'Learn', 'เรียน')} icon="learn" onClick={() => navigate('learn')} />
+      <NavButton active={['practice','part5','part6','part7','mock'].includes(view)} label={L(lang, 'Practice', 'ฝึก')} icon="practice" onClick={() => navigate('practice')} />
       <NavButton active={view === 'analytics'} label={L(lang, 'Progress', 'ผลลัพธ์')} icon="progress" onClick={() => navigate('analytics')} />
     </nav>
   )
@@ -2268,6 +2189,7 @@ function Home({
         <strong>{L(lang, 'Start', 'เริ่ม')} ›</strong>
       </button>
 
+      <p className="build-version">v{import.meta.env.VITE_APP_VERSION} · {import.meta.env.VITE_BUILD_ID}</p>
       <div className="home-spacer" />
     </div>
   )
@@ -2356,14 +2278,24 @@ function TaskCard({
   )
 }
 
+function PracticeHub({ state, navigate, counts }: { state: TrainerState; navigate: (view: View) => void; counts: Record<Part, number> }) {
+  const lang = useLanguage()
+  return <div className="screen practice-hub">
+    <div className="screen-intro"><span className="tiny-label">READING PRACTICE</span><h1>{L(lang,'Practice with a purpose','ฝึกให้แม่นทีละจุด')}</h1><p>{L(lang,'Choose a part. Start with challenging questions, or switch to adaptive review. Explanations appear after you submit.','เลือกพาร์ต เริ่มด้วยโจทย์เข้มข้น หรือเปลี่ยนเป็นทวนจุดอ่อน เฉลยและจุดสังเกตจะเปิดหลังส่งคำตอบ')}</p></div>
+    <div className="part-cards-mobile">
+      {([5,6,7] as const).map(part => <PracticePartCard key={part} className={part === 5 ? 'mint' : part === 6 ? 'sky' : 'sun'} part={String(part)} title={part === 5 ? L(lang,'Incomplete Sentences','เติมคำในประโยค') : part === 6 ? L(lang,'Text Completion','เติมข้อความ') : L(lang,'Reading Comprehension','อ่านจับใจความ')} count={counts[part]} progress={partAccuracy(state,part)} onClick={() => navigate(part === 5 ? 'part5' : part === 6 ? 'part6' : 'part7')} />)}
+    </div>
+    <section className="practice-roadmap"><h2>{L(lang,'One repeatable method','ใช้วิธีคิดเดียวกันทุกข้อ')}</h2><p>{L(lang,'Structure → meaning → eliminate → verify. For reading, locate evidence before choosing.','โครงสร้าง → ความหมาย → ตัดตัวเลือก → ตรวจซ้ำ ส่วนโจทย์อ่านให้หาหลักฐานก่อนเลือก')}</p><small>{L(lang,'Original TOEIC-style practice, with business contexts and plausible distractors.','โจทย์แต่งใหม่ในรูปแบบ TOEIC เน้นบริบทธุรกิจและตัวลวงที่ใกล้เคียง')}</small></section>
+    <button className="mock-banner" onClick={() => navigate('mock')}><span><b>{L(lang,'Reading simulation · 75 minutes','จำลองสอบ Reading · 75 นาที')}</b><small>Part 5: 30 · Part 6: 16 · Part 7: 54</small></span><strong>›</strong></button>
+  </div>
+}
+
 function Part5Hub({
   state,
   startLesson,
-  startQuick,
 }: {
   state: TrainerState
   startLesson: (skill: SkillId) => void
-  startQuick: () => void
 }) {
   const lang = useLanguage()
   const focus = nextFocusSkill(state)
@@ -2380,7 +2312,7 @@ function Part5Hub({
   return (
     <div className="screen learn-screen">
       <div className="screen-intro">
-        <span className="tiny-label">{L(lang, 'PART 5 · LEARN BEFORE YOU TEST', 'PART 5 · เรียนให้เข้าใจก่อนทำจริง')}</span>
+        <span className="tiny-label">{L(lang, 'LEARN · GRAMMAR & READING', 'เรียน · หลักไวยากรณ์และเทคนิค Reading')}</span>
         <h1>{L(lang, 'Fix the pattern, then prove it.', 'แก้จุดอ่อนให้เข้าใจก่อน แล้วค่อยพิสูจน์ด้วยโจทย์จริง')}</h1>
         <p>{L(lang, 'Every focused lesson gives you 5 fully explained examples first, followed by a 10-question mastery check.', 'แต่ละบทจะสอนด้วยตัวอย่างอธิบายละเอียด 5 ข้อก่อน แล้วให้ทำแบบวัดความแม่น 10 ข้อ')}</p>
       </div>
@@ -2394,13 +2326,13 @@ function Part5Hub({
         <div className={overallMastery === null ? 'level-orbit unassessed' : 'level-orbit'}><span>{overallMastery === null ? '—' : `${Math.round(overallMastery)}%`}</span></div>
       </div>
 
-      <button className="quick-drill" onClick={startQuick}>
-        <span className="quick-icon">⚡</span>
-        <span><b>{L(lang, 'Quick adaptive drill', 'ฝึกด่วนแบบ Adaptive')}</b><small>{L(lang, 'Jump straight into mixed Part 5 questions', 'เข้าโจทย์ Part 5 แบบผสมทันที')}</small></span>
-        <strong>›</strong>
-      </button>
-
-      <SectionTitle title={L(lang, 'Recommended lessons', 'บทเรียนที่แนะนำ')} />
+      <SectionTitle title={L(lang, 'Part 5 · Focused lessons', 'Part 5 · บทเรียนเฉพาะจุด')} />
+      <div className="function-guide">
+        <div><b>N.</b><span>{L(lang,'Subject / object / after a preposition','ประธาน / กรรม / หลัง Prep.')}</span><code>the final approval</code></div>
+        <div><b>Adj.</b><span>{L(lang,'Describe a noun or a state','ขยาย N. / บอกสภาพหลัง linking V.')}</span><code>a detailed report</code></div>
+        <div><b>Adv.</b><span>{L(lang,'Modify V. / Adj. / Adv.','ขยาย V. / Adj. / Adv.')}</span><code>remarkably detailed</code></div>
+        <div><b>V.</b><span>{L(lang,'Check subject, tense and voice','เช็กประธาน เวลา และ voice')}</span><code>must be approved</code></div>
+      </div>
       <div className="lesson-list">
         {sorted.map(lesson => {
           const assessment = skillAssessment(state, lesson.skill)
@@ -2430,7 +2362,10 @@ function Part5Hub({
         })}
       </div>
 
-      <CourseMemoryBank />
+      <section className="reading-lessons"><SectionTitle title={L(lang,'Part 6 & 7 · Reading method','Part 6 และ 7 · วิธีอ่าน')} />
+        {readingCourseChapters.filter(chapter => chapter.id >= 27).map(chapter => <details className="course-chapter" key={chapter.id}><summary><span>Part {chapter.id === 27 ? 6 : 7}</span><b>{localizedChapterTitle(chapter.id, chapter.title, lang)}</b></summary><div className="course-chapter-body"><ol>{localizedChapterTips(chapter.id, chapter.memorize, lang).map(tip => <li key={tip}>{tip}</li>)}</ol><small>{L(lang,'From your course','จากบทเรียนเดิม')} · {L(lang,'Chapter','บท')} {chapter.id}</small></div></details>)}
+      </section>
+      <details className="course-memory-toggle"><summary>{L(lang,'Open the full course memory bank','เปิดคลังสรุปบทเรียนทั้งหมด')}</summary><CourseMemoryBank /></details>
     </div>
   )
 }
@@ -2532,7 +2467,7 @@ function LessonSession({
         </div>
         <div className="strategy-strip"><b>{L(lang, 'Strategy:', 'วิธีคิด:')}</b> {lessonText.strategy[exampleIndex % lessonText.strategy.length]}</div>
         {courseRefs[0] && (
-          <section className="lesson-course-note">
+          <details className="lesson-course-note"><summary>{L(lang,'Review the course rule','ทวนหลักจากบทที่เคยเรียน')}</summary>
             <div className="lesson-course-head">
               <span>{L(lang, 'YOUR COURSE', 'อ้างอิงจากบทที่คุณเรียนจริง')}</span>
               <b>{L(lang, 'Chapter', 'บทที่')} {courseRefs[0].id} · {localizedChapterTitle(courseRefs[0].id, courseRefs[0].title, lang)}</b>
@@ -2541,25 +2476,12 @@ function LessonSession({
               <strong>{L(lang, 'Memorize', 'ต้องท่องจำ')}</strong>
               <ul>{localizedChapterTips(courseRefs[0].id, courseRefs[0].memorize, lang).slice(0, 3).map(item => <li key={item}>{item}</li>)}</ul>
             </div>
-          </section>
+          </details>
         )}
-        <section className="worked-card">
-          <span className="difficulty-pill">{L(lang, 'Level', 'ระดับ')} {example.difficulty}</span>
-          <h2>{example.stem}</h2>
-          <div className="choices worked">
-            {example.choices.map(choice => (
-              <div key={choice.id} className={choice.id === example.answer ? 'choice correct fixed' : 'choice fixed'}>
-                <span>{choice.id}</span><b>{choice.text}</b>{choice.id === example.answer && <strong>✓</strong>}
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="teaching-card">
-          <div className="teach-row"><span className="teach-icon clue">1</span><div><b>{L(lang, 'Spot the clue', 'จับจุดสังเกต')}</b><p>{exampleText.clue}</p></div></div>
-          <div className="teach-row"><span className="teach-icon rule">2</span><div><b>{L(lang, 'Apply the rule', 'ใช้กฎนี้')}</b><p>{exampleText.rule}</p></div></div>
-          <div className="teach-row"><span className="teach-icon why">3</span><div><b>{L(lang, 'Why this answer', 'ทำไมข้อนี้ตอบแบบนี้')}</b><p>{exampleText.explanation}</p></div></div>
-          <div className="trap-box"><b>{L(lang, 'Common trap', 'กับดักที่พบบ่อย')}</b><p>{exampleText.trap}</p></div>
-        </section>
+        <QuestionCard key={example.id} question={{ ...example, part: 5, skills: [lesson.skill], explanation: example.explanation, explanationTh: exampleText.explanation,
+          coaching: { focus: example.clue.match(/[“”]([^“”]+)[“”]/)?.slice(1) ?? [], steps: [exampleText.clue, exampleText.rule, exampleText.explanation], memory: exampleText.rule, choiceReasons: { [example.answer]: exampleText.explanation } },
+        }} selected={example.answer} checked onSelect={() => undefined} />
+        <button className="back-link" onClick={() => { setPhase('practice'); startedAt.current = performance.now() }}>{L(lang,'Already know this? Go to mastery check','จำหลักได้แล้ว → ไปวัดความแม่น')}</button>
         <button className="big-next" onClick={() => {
           if (exampleIndex < lesson.workedExamples.length - 1) {
             setExampleIndex(i => i + 1)
@@ -2785,11 +2707,18 @@ function DailyPartComplete({
   )
 }
 
+function practicePool(questions: Question[], exam: boolean) {
+  if (!exam) return questions
+  const passageIds = new Set(questions.filter(q => q.difficulty >= 3).map(q => q.passageId).filter(Boolean))
+  const challenging = questions.filter(q => q.passageId ? passageIds.has(q.passageId) : q.difficulty >= 3)
+  return challenging.length ? challenging : questions
+}
+
 function PracticeScreen({
   part,
   state,
   setState,
-  pool,
+  pool: sourcePool,
   passageMap,
   onBack,
   readingSwitch,
@@ -2803,14 +2732,16 @@ function PracticeScreen({
   readingSwitch?: (part: 6 | 7) => void
 }) {
   const lang = useLanguage()
+  const [exam, setExam] = useState(true)
+  const pool = useMemo(() => practicePool(sourcePool, exam), [sourcePool, exam])
   const activePassageMap = passageMap ?? passageById
   const [question, setQuestion] = useState<Question>(() => firstQuestionOfPickedPassage(state, pool, activePassageMap))
   const [selected, setSelected] = useState('')
   const [checked, setChecked] = useState(false)
+  const [coachingStep, setCoachingStep] = useState(0)
   const [elapsed, setElapsed] = useState(0)
   const [reason, setReason] = useState<ErrorReason | ''>('')
   const [confidence, setConfidence] = useState<1 | 2 | 3 | 0>(0)
-  const [part6PickerOpen, setPart6PickerOpen] = useState(false)
   const [extraPractice, setExtraPractice] = useState(false)
   const startedAt = useRef(performance.now())
 
@@ -2818,9 +2749,9 @@ function PracticeScreen({
     setQuestion(firstQuestionOfPickedPassage(state, pool, activePassageMap))
     setSelected('')
     setChecked(false)
+    setCoachingStep(0)
     setReason('')
     setConfidence(0)
-    setPart6PickerOpen(false)
     setExtraPractice(false)
     startedAt.current = performance.now()
     // reset only when pool/part changes
@@ -2829,8 +2760,8 @@ function PracticeScreen({
 
   const passage = question?.passageId ? activePassageMap[question.passageId] : undefined
   const passageQuestionIds = passage?.questions.filter(id => pool.some(q => q.id === id)) ?? []
-  const passageQuestionIndex = passageQuestionIds.indexOf(question.id)
-  const questionContext = part === 6 && passage ? activeContextForBlank(passage.body, question.stem) : question.stem
+  const passageQuestionIndex = passageQuestionIds.indexOf(question?.id ?? '')
+  const questionContext = part === 6 && passage && question ? activeContextForBlank(passage.body, question.stem) : question?.stem
   if (!question) return <div className="screen"><div className="empty-state">{L(lang, 'No questions available.', 'ยังไม่มีโจทย์ในชุดนี้')}</div></div>
 
   const targets = dailyTargets(state)
@@ -2852,10 +2783,10 @@ function PracticeScreen({
     if (!extraPractice && goalReached && passageBoundary) {
       setSelected('')
       setChecked(false)
+      setCoachingStep(0)
       setElapsed(0)
       setReason('')
       setConfidence(0)
-      setPart6PickerOpen(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
@@ -2864,10 +2795,10 @@ function PracticeScreen({
     setQuestion(sequential ?? firstQuestionOfPickedPassage(state, pool, activePassageMap, question.passageId))
     setSelected('')
     setChecked(false)
+    setCoachingStep(0)
     setElapsed(0)
     setReason('')
     setConfidence(0)
-    setPart6PickerOpen(false)
     startedAt.current = performance.now()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -2911,6 +2842,7 @@ function PracticeScreen({
         </div>
       )}
 
+      <label className="practice-mode">{L(lang,'Question difficulty','ความเข้มข้นของโจทย์')}<select aria-label={L(lang,'Question difficulty','ความเข้มข้นของโจทย์')} value={exam ? 'exam' : 'adaptive'} onChange={event => setExam(event.target.value === 'exam')}><option value="exam">{L(lang,'Challenge · Level 3–5','เข้มข้น · ระดับ 3–5')}</option><option value="adaptive">{L(lang,'Adaptive · All levels','ปรับตามจุดอ่อน · ทุกระดับ')}</option></select></label>
       <div className="practice-progress">
         <Progress value={partDone / Math.max(1, partTarget) * 100} />
         <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}{extraPractice ? L(lang, ' · extra', ' · ฝึกเพิ่ม') : ''}</span>
@@ -2923,62 +2855,14 @@ function PracticeScreen({
           question={question}
           selected={selected}
           checked={checked}
-          onBlankClick={part === 6 ? () => setPart6PickerOpen(true) : undefined}
+          activeStep={coachingStep}
+          onStep={setCoachingStep}
+          onBlankClick={part === 6 ? () => document.getElementById('active-question')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) : undefined}
         />
       )}
 
-      {part === 6 ? (
-        <>
-          <button className="part6-answer-trigger" onClick={() => setPart6PickerOpen(true)}>
-            <span>{question.stem.match(/\[(\d+)\]/)?.[0] ?? '[ ]'}</span>
-            <b>{selected
-              ? question.choices.find(choice => choice.id === selected)?.text
-              : L(lang, 'Tap the blank above to choose an answer', 'แตะช่องว่างด้านบนเพื่อเลือกคำตอบ')}</b>
-            <strong>›</strong>
-          </button>
-
-          {part6PickerOpen && (
-            <div className="answer-sheet-backdrop" role="presentation" onClick={() => setPart6PickerOpen(false)}>
-              <section className="answer-sheet" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
-                <div className="answer-sheet-head">
-                  <div>
-                    <span>{L(lang, 'Part 6 answer', 'ตอบ Part 6')}</span>
-                    <b>{question.stem}</b>
-                  </div>
-                  <button onClick={() => setPart6PickerOpen(false)} aria-label={L(lang, 'Close', 'ปิด')}>×</button>
-                </div>
-                <QuestionCard question={question} selected={selected} checked={checked} onSelect={setSelected} contextText={questionContext} />
-                {!checked ? (
-                  <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
-                ) : (
-                  <FeedbackCard
-                    question={question}
-                    selected={selected}
-                    correct={selected === question.answer}
-                    elapsed={elapsed}
-                    reason={reason}
-                    onReason={r => {
-                      setReason(r)
-                      setState(current => addFeedbackToLatest(current, r, confidence || undefined))
-                    }}
-                    confidence={confidence}
-                    onConfidence={value => {
-                      setConfidence(value)
-                      setState(current => addFeedbackToLatest(current, reason || undefined, value))
-                    }}
-                    onNext={next}
-                    nextLabel={!extraPractice && goalReached && passageBoundary
-                      ? L(lang, 'Finish today’s target', 'จบตามเป้าหมายวันนี้')
-                      : L(lang, 'Next blank', 'ช่องถัดไป')}
-                  />
-                )}
-              </section>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          <QuestionCard question={question} selected={selected} checked={checked} onSelect={setSelected} contextText={questionContext} />
+      <div id="active-question">
+          <QuestionCard question={question} selected={selected} checked={checked} onSelect={setSelected} contextText={questionContext} activeStep={coachingStep} onStep={setCoachingStep} />
           {!checked ? (
             <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
           ) : (
@@ -3003,8 +2887,7 @@ function PracticeScreen({
                 : L(lang, 'Next question', 'ข้อถัดไป')}
             />
           )}
-        </>
-      )}
+      </div>
     </div>
   )
 }
@@ -3015,43 +2898,43 @@ function QuestionCard({
   checked,
   onSelect,
   contextText,
+  activeStep,
+  onStep,
+  showGrammar = true,
 }: {
   question: Question
   selected: string
   checked: boolean
   onSelect: (id: string) => void
   contextText?: string
+  activeStep?: number
+  onStep?: (step: number) => void
+  showGrammar?: boolean
 }) {
   const lang = useLanguage()
   const [inspectedChoice, setInspectedChoice] = useState('')
+  const [localStep, setLocalStep] = useState(0)
+  const step = activeStep ?? localStep
+  const chooseStep = (nextStep: number) => {
+    (onStep ?? setLocalStep)(nextStep)
+    if (question.part === 7) document.getElementById(nextStep === 2 ? `reading-${question.id}` : `sentence-${question.id}`)?.scrollIntoView({ behavior:'smooth', block:'start' })
+  }
 
   useEffect(() => {
     setInspectedChoice('')
   }, [question.id])
 
-  const correct = checked && selected === question.answer
-
   return (
     <section className="mobile-question-card">
       <div className="question-badges">
-        <span className="question-skill">{question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ')}</span>
+        <span className="question-skill">{checked ? question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ') : `Part ${question.part}`}</span>
         <span className="difficulty-badge">{L(lang, 'Level', 'ระดับ')} {question.difficulty}</span>
       </div>
 
-      <h2>{question.stem}</h2>
+      {!showGrammar ? <h2>{question.stem}</h2> : question.part !== 6
+        ? <AnnotatedSentence key={question.id} question={question} selected={selected} contextText={contextText} activeStep={step} checked={checked} onStep={chooseStep} />
+        : null}
 
-      {checked && question.part <= 6 && (
-        correct
-          ? <WordLevelGrammarMap question={question} selected={selected} contextText={contextText} />
-          : <CompactMistakeCoach question={question} selected={selected} contextText={contextText} />
-      )}
-
-      {checked && question.part === 7 && (
-        <details className="p7-question-grammar">
-          <summary>{L(lang,'Show grammar map of this question','ดู Grammar map ของคำถามนี้')}</summary>
-          <WordLevelGrammarMap question={question} selected={selected} contextText={question.stem} />
-        </details>
-      )}
 
       {checked && (
         <p className="inspect-choice-hint">{L(
@@ -3083,20 +2966,6 @@ function QuestionCard({
 
               {inspecting && <ChoiceInspection question={question} choiceId={choice.id} />}
 
-              {checked && selectedChoice && question.part === 7 && !inspecting && (
-                <div className={`inline-choice-feedback ${choice.id === question.answer ? 'correct' : 'wrong'}`} aria-live="polite">
-                  <b>{choice.id === question.answer
-                    ? L(lang, 'Why this is correct', 'ทำไมข้อนี้ถูก')
-                    : L(lang, 'Why this is wrong', 'ทำไมข้อนี้ผิด')}</b>
-                  <p className="answer-result-summary">{selectedChoiceExplanation(question, selected, lang)}</p>
-                  {question.evidence && (
-                    <div className="inline-evidence">
-                      <strong>{L(lang, 'Evidence in the passage', 'หลักฐานในบทความ')}</strong>
-                      <span>“{question.evidence}”</span>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )
         })}
@@ -3140,7 +3009,7 @@ function FeedbackCard({
         <div>
           <b>{correct ? L(lang, 'Correct!', 'ถูกต้อง!') : L(lang, 'Not quite right!', 'ยังไม่ถูก')}</b>
           <small>{correct
-            ? L(lang, `Nice pattern recognition · ${formatTime(elapsed)}`, `จับรูปแบบได้ดี · ${formatTime(elapsed)}`)
+            ? L(lang, `Correct answer · ${formatTime(elapsed)}`, `ตอบถูก · ${formatTime(elapsed)}`)
             : L(
                 lang,
                 `You chose ${selected}. ${selectedText} · Correct: ${question.answer}. ${answerText}`,
@@ -3148,13 +3017,6 @@ function FeedbackCard({
               )}</small>
         </div>
       </div>
-      {question.part === 7 && (
-        <p className="feedback-inline-note">{L(
-          lang,
-          'The explanation and passage evidence are shown directly under your selected answer.',
-          'คำอธิบายและหลักฐานจากบทความอยู่ใต้ตัวเลือกที่คุณกด',
-        )}</p>
-      )}
       {!correct && courseRefs[0] && (
         <details className="mistake-study-card mistake-study-collapsible">
           <summary>
@@ -3343,8 +3205,8 @@ function MockTest({ setState }: { setState: StateSetter }) {
         <Progress value={(index + 1) / 100 * 100} />
         <strong className={remaining < 600 ? 'urgent' : ''}>{mm}:{ss}</strong>
       </div>
-      {passage && <article className="reading-passage"><span className="doc-type">PART {q.part}</span><h2>{passage.title}</h2><div>{passage.body}</div></article>}
-      <QuestionCard question={q} selected={selected} checked={false} onSelect={setSelected} />
+      {passage && <article className="reading-passage"><span className="doc-type">PART {q.part}</span><h2>{passage.title}</h2><PassageVisual passage={passage} /><PassageText passage={passage} /></article>}
+      <QuestionCard question={q} selected={selected} checked={false} onSelect={setSelected} showGrammar={false} />
       <button className="big-next" disabled={!selected} onClick={next}>{index === 99 ? L(lang, 'Finish', 'ส่งคำตอบ') : L(lang, 'Next', 'ข้อถัดไป')} <span>›</span></button>
       <small className="mock-note">{L(lang, 'No answer feedback during simulation.', 'โหมดจำลองสอบจะยังไม่เฉลยระหว่างทำ')}</small>
     </div>
