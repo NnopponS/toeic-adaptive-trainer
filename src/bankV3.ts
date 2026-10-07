@@ -97,17 +97,43 @@ const seeds: Seed[] = [
   ['The hotel offers a complimentary shuttle for the _____ of conference guests.', ['convenience','conviction','conversion','conversation'], 'A', ['vocabulary','collocation'], 2, 'The fixed phrase “for the convenience of” means to make something easier for someone.'],
 ]
 
-export const extraPart5V3: Question[] = seeds.map((seed, index) => ({
-  id: `v3-p5-${String(index + 1).padStart(3, '0')}`,
-  part: 5,
-  stem: seed[0],
-  choices: c(...seed[1]),
-  answer: seed[2],
-  skills: seed[3],
-  difficulty: seed[4],
-  explanation: seed[5],
-  source: 'core',
-}))
+export const extraPart5V3: Question[] = seeds.map((seed, index) => {
+  const base: Question = {
+    id: `v3-p5-${String(index + 1).padStart(3, '0')}`,
+    part: 5,
+    stem: seed[0],
+    choices: c(...seed[1]),
+    answer: seed[2],
+    skills: seed[3],
+    difficulty: seed[4],
+    explanation: seed[5],
+    source: 'core',
+    ruleId: seed[3].includes('collocation') ? 'vocab.business-collocation'
+      : seed[3].includes('part-of-speech') ? 'part-of-speech'
+      : seed[3][0],
+  }
+
+  if (seed[0] === 'The director asked each department to _____ its spending for the next quarter.') {
+    return {
+      ...base,
+      explanationTh:'หลัง “asked each department to” ต้องเป็น V1 และความหมายต้องเข้ากับ spending: estimate spending = ประมาณการค่าใช้จ่ายสำหรับไตรมาสหน้า',
+      translationTh:'ผู้อำนวยการขอให้แต่ละแผนกประมาณการค่าใช้จ่ายของตนสำหรับไตรมาสหน้า',
+      choiceTranslationsTh:{
+        A:'estimate = ประมาณ/คาดคะเน',
+        B:'esteem = ยกย่อง/เคารพ',
+        C:'establishing = การกำลังก่อตั้ง/จัดตั้ง (V-ing)',
+        D:'estate = ทรัพย์สิน/ที่ดิน/กองมรดก (N.)',
+      },
+      whyOthers:{
+        B:'“Esteem” can be a verb, but it means respect or admire; you do not “esteem spending.”',
+        C:'After infinitive “to,” use V1. “Establishing” is V-ing, and its meaning is also wrong here.',
+        D:'“Estate” is a noun meaning property/land/assets. After infinitive “to,” the sentence needs a base verb.',
+      },
+    }
+  }
+
+  return base
+})
 
 export const extraPassagesV3: Passage[] = [
   {
