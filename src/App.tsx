@@ -727,9 +727,9 @@ const grammarModals = new Set(['can','could','may','might','must','shall','shoul
 const grammarBe = new Set(['am','is','are','was','were','be','been','being'])
 const grammarHave = new Set(['have','has','had'])
 const grammarDo = new Set(['do','does','did'])
-const grammarConjunctions = new Set(['and','but','or','nor','although','though','because','if','unless','while','whereas','when','whenever','before','after','since','once','whether','so','yet'])
+const grammarConjunctions = new Set(['and','but','or','nor','although','though','because','if','unless','while','whereas','when','whenever','before','after','since','once','whether','so','yet','as','than'])
 const grammarPrepositions = new Set(['in','on','at','by','for','from','with','without','of','to','into','onto','over','under','between','among','through','throughout','during','despite','beside','near','within','across','about','against','around','behind','beyond','until','upon'])
-const grammarAdverbs = new Set(['not','very','too','so','quite','rather','almost','nearly','only','also','already','still','just','even','more','most','less','least','well','soon','now','then','today','tomorrow','yesterday','here','there','approximately','especially','generally','normally','usually','often','always','never','immediately','currently','recently','finally','carefully','quickly','slowly','properly','efficiently','successfully'])
+const grammarAdverbs = new Set(['not','very','too','so','quite','rather','almost','nearly','only','also','already','still','just','even','more','most','less','least','well','soon','now','then','today','tomorrow','yesterday','here','there','approximately','especially','generally','normally','usually','often','always','never','immediately','currently','recently','finally','carefully','quickly','slowly','properly','efficiently','successfully','once','twice'])
 const grammarAdjectives = new Set(['new','previous','current','final','available','important','necessary','additional','large','small','high','low','effective','efficient','reliable','expensive','helpful','required','interested','interesting','experienced','senior','major','public','private','original','corrected','revised','shared','technical','medical','regional','monthly','daily','annual','local','international','full','free','late','early','open','closed','ready'])
 const grammarVerbLexicon = new Set(['respond','responded','submit','submitted','complete','completed','conduct','construct','contain','contact','develop','raise','open','improve','interact','rise','rises','benefit','benefits','attend','hold','held','stop','use','return','returned','need','collect','summarize','identify','identified','schedule','scheduled','send','sent','arrive','receive','received','increase','hire','begin','began','finish','finished','offer','offered','reserve','reserved','prepare','print','install','installed','move','moved','require','requires','work','works','plan','plans','agree','agreed','replace','report','launch','streamline','process','processes','inspect','inspected','explain','explained','operate','operated','provide','provided','include','included','sign','signed','meet','met','review','reviewed','release','released'])
 
@@ -942,6 +942,15 @@ function labelWords(question: Question, contextText: string | undefined, lang: L
       if (head >= 0) {
         words[head].role = L(lang, 'comparison target head', 'คำนามหลักที่นำมาเปรียบเทียบ')
         words[head].tone = 'object'
+        for (let i = lastMarker + 1; i < head; i += 1) {
+          if (words[i].pos === 'Det.' || words[i].pos === 'Poss. Det.') {
+            words[i].role = L(lang, 'comparison target determiner', 'ตัวกำหนดของสิ่งที่นำมาเปรียบเทียบ')
+            words[i].tone = 'object'
+          } else if (words[i].pos === 'Adj.' || words[i].pos === 'Poss. N.' || words[i].pos === 'N.') {
+            words[i].role = L(lang, 'comparison target modifier', 'คำขยายสิ่งที่นำมาเปรียบเทียบ')
+            words[i].tone = 'object'
+          }
+        }
       }
     }
     words.forEach(token => {
