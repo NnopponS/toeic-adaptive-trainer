@@ -2875,3 +2875,7 @@ button.choice:hover:not(:disabled),
   .flashcard {padding:17px;min-height:400px}
   .flashcard-front h1 {font-size:2rem}
 }
+
+.multi-reference-document{margin-top:12px;padding-top:11px;border-top:1px dashed #d8e4eb}
+.multi-reference-document>span{display:inline-block;margin-bottom:5px;padding:3px 6px;border-radius:5px;background:#edf5fb;color:#47769b;font-size:.58rem;font-weight:950;letter-spacing:.08em}
+.multi-reference-document .passage-visual{margin-top:0;margin-bottom:0}
