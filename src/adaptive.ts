@@ -225,6 +225,9 @@ export function questionWeight(state: TrainerState, q: Question) {
       if ((a.errorReason === 'rushed' || a.errorReason === 'guess') && q.difficulty <= 3) return sum + 5
       return sum + 2
     }, 0)
+  const uncertaintyBonus = attempts.slice(0, 12)
+    .filter(a => a.correct && a.confidence && a.confidence < 3 && a.skills.some(skill => q.skills.includes(skill)))
+    .reduce((sum, a) => sum + (a.confidence === 1 ? 14 : 7), 0)
   const spacingBonus = rule?.lastPracticedAt && Date.now() - rule.lastPracticedAt > 86_400_000 ? 14 : 0
   const freshBonus = questionExposure === 0 ? 10 : 0
 
@@ -243,6 +246,7 @@ export function questionWeight(state: TrainerState, q: Question) {
       + speedBonus
       + remediationBonus
       + feedbackBonus
+      + uncertaintyBonus
       + spacingBonus
       + freshBonus
       - streakRelief
@@ -572,6 +576,7 @@ export function buildAgentSummary(state: TrainerState) {
     lessonResults: s.lessonResults,
     mistakeReasons: mistakeReasons(s),
     recentMistakes: s.attempts.filter(a => !a.correct).slice(0, 40),
+    recentUncertainCorrect: s.attempts.filter(a => a.correct && a.confidence && a.confidence < 3).slice(0, 40),
   }
 }
 
