@@ -33,6 +33,7 @@ export const emptyState = (): TrainerState => ({
   studyDates: [],
   lessonResults: {},
   ruleStats: {},
+  vocabReview: {},
   mockCompletions: 0,
 })
 
@@ -47,6 +48,7 @@ export function normalizeState(input?: Partial<TrainerState> | null): TrainerSta
     studyDates: Array.isArray(input?.studyDates) ? input!.studyDates! : [],
     lessonResults: input?.lessonResults ?? {},
     ruleStats: input?.ruleStats ?? {},
+    vocabReview: input?.vocabReview ?? {},
     mockCompletions: input?.mockCompletions ?? 0,
     xp: input?.xp ?? 0,
   }
@@ -63,6 +65,13 @@ export function recordAttempt(
   const next = structuredClone(normalizeState(state))
   const now = Date.now()
 
+  const vocabSelected = (question.skills.includes('vocabulary') || question.skills.includes('collocation'))
+    ? question.choices.find(choice => choice.id === selected)?.text
+    : undefined
+  const vocabAnswer = (question.skills.includes('vocabulary') || question.skills.includes('collocation'))
+    ? question.choices.find(choice => choice.id === question.answer)?.text
+    : undefined
+
   next.attempts.unshift({
     questionId: question.id,
     part: question.part,
@@ -76,6 +85,8 @@ export function recordAttempt(
     difficulty: question.difficulty,
     ruleId: question.ruleId ?? question.skills[0],
     chapterIds: question.chapterIds,
+    vocabSelected,
+    vocabAnswer,
   })
   next.attempts = next.attempts.slice(0, 1600)
   next.totalAnswered += 1
@@ -149,6 +160,20 @@ export function addFeedbackToLatest(state: TrainerState, reason?: ErrorReason, c
   if (!state.attempts.length) return state
   const next = structuredClone(normalizeState(state))
   next.attempts[0] = { ...next.attempts[0], errorReason: reason, confidence }
+  return next
+}
+
+export function markVocabReview(state: TrainerState, word: string, knewIt: boolean) {
+  const next = structuredClone(normalizeState(state))
+  const key = word.trim().toLowerCase()
+  if (!key) return next
+  const old = next.vocabReview[key] ?? { seen:0, hard:0, known:0 }
+  next.vocabReview[key] = {
+    seen: old.seen + 1,
+    hard: old.hard + (knewIt ? 0 : 1),
+    known: old.known + (knewIt ? 1 : 0),
+    lastAt: Date.now(),
+  }
   return next
 }
 
@@ -230,6 +255,16 @@ export function questionWeight(state: TrainerState, q: Question) {
     .reduce((sum, a) => sum + (a.confidence === 1 ? 14 : 7), 0)
   const spacingBonus = rule?.lastPracticedAt && Date.now() - rule.lastPracticedAt > 86_400_000 ? 14 : 0
   const freshBonus = questionExposure === 0 ? 10 : 0
+  const normalizedChoices = q.choices.map(choice => choice.text.trim().toLowerCase())
+  const vocabReviewBonus = Object.entries(s.vocabReview ?? {}).reduce((sum, [word, review]) => {
+    if (!normalizedChoices.includes(word)) return sum
+    return sum + Math.min(28, review.hard * 9 + Math.max(0, review.seen - review.known) * 3)
+  }, 0)
+  const recentWrongVocabBonus = attempts.slice(0, 80)
+    .filter(a => !a.correct && a.vocabSelected && normalizedChoices.includes(a.vocabSelected.toLowerCase()))
+    .reduce((sum) => sum + 7, 0)
+  const authenticPart7Bonus = q.part === 7 && q.id.startsWith('v7-p7-') ? 30 : 0
+  const part7DepthBonus = q.part === 7 ? Math.max(0, q.difficulty - 2) * 7 : 0
 
   const recentQuestionPenalty = lastQuestionIndex >= 0 && lastQuestionIndex < 8 ? 90 : lastQuestionIndex >= 8 && lastQuestionIndex < 24 ? 24 : 0
   const interleavePenalty = recentSameRule >= 3 ? 26 : recentSameRule === 2 ? 10 : 0
@@ -249,6 +284,10 @@ export function questionWeight(state: TrainerState, q: Question) {
       + uncertaintyBonus
       + spacingBonus
       + freshBonus
+      + vocabReviewBonus
+      + recentWrongVocabBonus
+      + authenticPart7Bonus
+      + part7DepthBonus
       - streakRelief
       - recentQuestionPenalty
       - interleavePenalty
@@ -577,6 +616,8 @@ export function buildAgentSummary(state: TrainerState) {
     mistakeReasons: mistakeReasons(s),
     recentMistakes: s.attempts.filter(a => !a.correct).slice(0, 40),
     recentUncertainCorrect: s.attempts.filter(a => a.correct && a.confidence && a.confidence < 3).slice(0, 40),
+    vocabReview: s.vocabReview,
+    recentWrongVocabulary: s.attempts.filter(a => !a.correct && a.vocabSelected).slice(0, 40),
   }
 }
 
