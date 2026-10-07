@@ -1059,6 +1059,12 @@ function WordLevelGrammarMap({
           {tips.map(tip => <span key={tip}>• {tip}</span>)}
         </div>
       )}
+      {lang === 'th' && question.translationTh && (
+        <div className="question-translation-th">
+          <strong>แปลความหมาย:</strong>
+          <span>{question.translationTh}</span>
+        </div>
+      )}
     </section>
   )
 }
@@ -1081,6 +1087,9 @@ function ChoiceInspection({ question, choiceId }: { question: Question; choiceId
     <div className={correct ? 'choice-inspection correct' : 'choice-inspection wrong'}>
       <b>{correct ? L(lang,'Why this choice works','ทำไมตัวนี้ถูก') : L(lang,'Why this choice fails','ทำไมตัวนี้ผิด')}</b>
       <p>{inspectionText(question, choiceId, lang)}</p>
+      {lang === 'th' && question.choiceTranslationsTh?.[choiceId] && (
+        <small className="choice-th-meaning"><strong>ความหมาย:</strong> {question.choiceTranslationsTh[choiceId]}</small>
+      )}
       {question.part === 7 && question.evidence && correct && (
         <small><strong>{L(lang,'Evidence','หลักฐาน')}:</strong> “{question.evidence}”</small>
       )}
@@ -1248,7 +1257,20 @@ function PassageVisual({ passage }: { passage: Passage }) {
   )
 }
 
-function PassageText({ passage }: { passage: Passage }) {
+function highlightPassageEvidence(text: string, evidence?: string) {
+  if (!evidence) return text
+  const index = text.toLowerCase().indexOf(evidence.toLowerCase())
+  if (index < 0) return text
+  return (
+    <>
+      {text.slice(0, index)}
+      <mark className="passage-evidence-hit">{text.slice(index, index + evidence.length)}</mark>
+      {text.slice(index + evidence.length)}
+    </>
+  )
+}
+
+function PassageText({ passage, evidence }: { passage: Passage; evidence?: string }) {
   const lines = passage.body.split('\n')
   const emailHeaders = passage.kind === 'email'
     ? lines.filter(line => /^(From|To|Subject|Date):/i.test(line)).slice(0, 4)
@@ -1263,10 +1285,10 @@ function PassageText({ passage }: { passage: Passage }) {
         <div className="email-meta">
           {emailHeaders.map(line => {
             const [label, ...rest] = line.split(':')
-            return <div key={line}><b>{label}</b><span>{rest.join(':').trim()}</span></div>
+            return <div key={line}><b>{label}</b><span>{highlightPassageEvidence(rest.join(':').trim(), evidence)}</span></div>
           })}
         </div>
-        <div className="passage-copy">{body}</div>
+        <div className="passage-copy">{highlightPassageEvidence(body, evidence)}</div>
       </>
     )
   }
@@ -1275,13 +1297,13 @@ function PassageText({ passage }: { passage: Passage }) {
     return (
       <div className="multi-document">
         {passage.body.split(/\n\n+/).map((block, index) => (
-          <div className="multi-doc-section" key={index}>{block}</div>
+          <div className="multi-doc-section" key={index}>{highlightPassageEvidence(block, evidence)}</div>
         ))}
       </div>
     )
   }
 
-  return <div className="passage-copy">{passage.body}</div>
+  return <div className="passage-copy">{highlightPassageEvidence(passage.body, evidence)}</div>
 }
 
 function PassageDocument({
@@ -1318,7 +1340,7 @@ function PassageDocument({
             correct: selected === question.answer,
             onClick: onBlankClick,
           })}</div>
-        : <PassageText passage={passage} />}
+        : <PassageText passage={passage} evidence={checked ? question.evidence : undefined} />}
       {passage.sourceLabel && <small className="passage-source-label">{passage.sourceLabel}</small>}
     </article>
   )
@@ -2265,6 +2287,7 @@ function PracticeScreen({
       setChecked(false)
       setElapsed(0)
       setReason('')
+      setConfidence(0)
       setPart6PickerOpen(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return

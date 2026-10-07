@@ -40,6 +40,8 @@ export interface Question {
   difficulty: 1 | 2 | 3 | 4 | 5
   explanation: string
   explanationTh?: string
+  translationTh?: string
+  choiceTranslationsTh?: Record<string, string>
   evidence?: string
   whyOthers?: Record<string, string>
   passageId?: string

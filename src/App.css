@@ -2634,3 +2634,24 @@ button.choice:hover:not(:disabled),
   .grammar-word b { font-size:.92rem; }
   .grammar-word small { max-width:88px; font-size:.49rem; }
 }
+
+.question-translation-th {
+  display:grid;
+  gap:3px;
+  margin-top:10px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:#f7f3ff;
+  border:1px solid #e3d9f4;
+  color:#5d5277;
+}
+.question-translation-th strong { font-size:.72rem; color:#6f57a1; }
+.question-translation-th span { font-size:.78rem; line-height:1.48; }
+.choice-th-meaning { display:block; margin-top:5px; color:#6c5b85 !important; }
+.passage-evidence-hit {
+  background:#fff0a8;
+  color:inherit;
+  border-radius:4px;
+  padding:1px 2px;
+  box-shadow:0 0 0 2px rgba(244,188,48,.16);
+}
