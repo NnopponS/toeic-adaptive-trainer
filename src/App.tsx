@@ -1058,12 +1058,10 @@ function inspectionText(question: Question, choiceId: string, lang: Language) {
   const choice = question.choices.find(item => item.id === choiceId)
   if (!choice) return ''
   if (choiceId === question.answer) return localizedQuestionExplanation(question, lang)
-  if (lang === 'en' && question.whyOthers?.[choiceId]) return question.whyOthers[choiceId]
-  if (question.skills.includes('part-of-speech')) {
-    return lang === 'th'
-      ? `“${choice.text}” เป็น ${inferWordClass(choice.text)} แต่ต้องเช็กกับตำแหน่งที่ไฮไลต์ใน Grammar map ว่าช่องนี้ต้องทำหน้าที่อะไร`
-      : `“${choice.text}” is ${inferWordClass(choice.text)}; compare that with the highlighted blank's required role.`
+  if (question.part <= 6) {
+    return explainChoice(question, choiceId, buildQuestionAnalysis(question, lang), lang)
   }
+  if (lang === 'en' && question.whyOthers?.[choiceId]) return question.whyOthers[choiceId]
   return fallbackWrongExplanation(question, lang)
 }
 
