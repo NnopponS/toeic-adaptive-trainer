@@ -1097,6 +1097,35 @@ function ChoiceInspection({ question, choiceId }: { question: Question; choiceId
   )
 }
 
+
+if (import.meta.env.DEV) {
+  const grammarMapSelfCheck: Question = {
+    id:'grammar-map-self-check',
+    part:5,
+    stem:'The new warehouse is nearly twice as large _____ the company’s previous facility.',
+    choices:[
+      {id:'A',text:'than'},{id:'B',text:'as'},{id:'C',text:'like'},{id:'D',text:'from'},
+    ],
+    answer:'B',
+    skills:['comparison'],
+    difficulty:2,
+    explanation:'twice as + adjective + as',
+    ruleId:'comparison.patterns',
+  }
+  const tags = labelWords(grammarMapSelfCheck, grammarMapSelfCheck.stem, 'en')
+  const byText = (value:string) => tags.filter(item => item.text.toLowerCase() === value.toLowerCase())
+  console.assert(
+    byText('warehouse').some(item => item.role.includes('SUBJECT'))
+      && byText('is').some(item => item.role.includes('verb'))
+      && byText('nearly').some(item => item.pos === 'Adv.')
+      && byText('twice').some(item => item.role === 'multiplier')
+      && byText('large').some(item => item.pos === 'Adj.')
+      && byText('as').some(item => item.answer)
+      && byText('facility').some(item => item.role.includes('comparison target')),
+    'word-level grammar map self-check failed',
+  )
+}
+
 function compactMistakeInsight(question: Question, selected: string, analysis: QuestionAnalysis, lang: Language) {
   const selectedText = question.choices.find(c => c.id === selected)?.text ?? selected
   const answerText = question.choices.find(c => c.id === question.answer)?.text ?? question.answer
@@ -1953,6 +1982,7 @@ function LessonSession({
   const [score, setScore] = useState(0)
   const [times, setTimes] = useState<number[]>([])
   const [reason, setReasonState] = useState<ErrorReason | ''>('')
+  const [lessonConfidence, setLessonConfidence] = useState<1 | 2 | 3 | 0>(0)
   const startedAt = useRef(performance.now())
   const courseRefs = chaptersForSkill(lesson.skill)
 
@@ -1965,6 +1995,7 @@ function LessonSession({
     setScore(0)
     setTimes([])
     setReasonState('')
+    setLessonConfidence(0)
     startedAt.current = performance.now()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -2085,6 +2116,7 @@ function LessonSession({
     setSelected('')
     setChecked(false)
     setReasonState('')
+    setLessonConfidence(0)
     startedAt.current = performance.now()
   }
 
@@ -2112,7 +2144,12 @@ function LessonSession({
           reason={reason}
           onReason={r => {
             setReasonState(r)
-            setState(current => addFeedbackToLatest(current, r))
+            setState(current => addFeedbackToLatest(current, r, lessonConfidence || undefined))
+          }}
+          confidence={lessonConfidence}
+          onConfidence={value => {
+            setLessonConfidence(value)
+            setState(current => addFeedbackToLatest(current, reason || undefined, value))
           }}
           onNext={next}
           nextLabel={practiceIndex === practiceQuestions.length - 1 ? L(lang, 'See result', 'ดูผลลัพธ์') : L(lang, 'Next question', 'ข้อถัดไป')}
