@@ -1247,6 +1247,20 @@ function AnnotatedSentence({
   const firstAnswer = words.findIndex(word => word.answer)
   const inspected = inspectedWord === null ? null : words[inspectedWord]
   const reviewed = reviewedGrammar[question.id]?.split(' ').length === words.filter(word => !word.punctuation).length
+  if (!checked) {
+    return (
+      <h2 id={`sentence-${question.id}`} className="sentence-inline sentence-exam" aria-label={contextText ?? question.stem}>
+        {words.map((word, index) => word.punctuation
+          ? /^[,.;:!?]$/.test(word.text) && index > 0 && !words[index - 1].punctuation ? null : <span className="grammar-punctuation" key={`${word.text}-${index}`}>{word.text}</span>
+          : word.answer && index !== firstAnswer ? null
+            : word.answer
+              ? onBlankClick
+                ? <button type="button" className="exam-blank" key={`${word.text}-${index}`} onClick={onBlankClick} aria-label={L(lang,'Answer blank','ช่องว่างคำตอบ')}>_____</button>
+                : <span className="exam-blank" key={`${word.text}-${index}`}>_____</span>
+              : <span className="exam-word" key={`${word.text}-${index}`}>{word.text}{/^[,.;:!?]$/.test(words[index + 1]?.text ?? '') ? words[index + 1].text : ''}</span>)}
+      </h2>
+    )
+  }
   return (
     <>
       <h2 id={`sentence-${question.id}`} className="sentence-inline" aria-label={activeStep < 3 ? (contextText ?? question.stem) : correctSentenceForMap(question, contextText)}>
@@ -2169,25 +2183,45 @@ function Part5Hub({ state, setState, startLesson, navigate }: {
 
 function MemoryCard({card,state,setState,onNext}: {card:CourseCard;state:TrainerState;setState:StateSetter;onNext:()=>void}) {
   const lang=useLanguage()
-  const [quiz,setQuiz]=useState(false)
   const [revealed,setRevealed]=useState(false)
   const [studied,setStudied]=useState(false)
   const source=courseSources.find(s=>s.id===card.chapter)
   const review=state.vocabReview[`card:${card.id}`]
   const mark=(knew:boolean)=>{setState(current=>markVocabReview(current,`card:${card.id}`,knew));setStudied(true)}
   const patternRow=(pattern:string)=>{const [a,b]=pattern.split('→');return <div key={pattern}><b>{a}</b>{b && <><span aria-hidden="true">→</span><span>{b}</span></>}</div>}
-  return <article className="memory-card" key={card.id}>
-    <div className="memory-card-top"><span className="eyebrow">{L(lang,'CHAPTER','บท')} {card.chapter<=28?card.chapter:'＋'} · {L(lang,'RECALL','ลองนึก')}</span><span className="recall-status">{review?.known ? L(lang,`${review.known} recalls`,`${review.known} ครั้งที่จำได้`) : L(lang,'Fresh pattern','เริ่มจำ pattern')}</span></div>
-    <h2>{quiz && !revealed && card.id.startsWith('chunk-') ? card.prompt.split(' : ')[0] : card.title}</h2>
-    {(!quiz || revealed) && <><div className="memory-hook"><span aria-hidden="true">✦</span><p>{card.memory}</p></div>
-    <div className="pattern-map">{card.patterns.slice(0,4).map(patternRow)}</div>
-    {card.patterns.length>4 && <details className="more-patterns"><summary>{L(lang,`See ${card.patterns.length-4} more patterns`,`ดูอีก ${card.patterns.length-4} รูปแบบ`)}</summary><div className="pattern-map">{card.patterns.slice(4).map(patternRow)}</div></details>}
-    {card.example && <div className="memory-example"><small>{L(lang,'SEE IT IN A SENTENCE','ดูในประโยคจริง')}</small><p>{card.example}</p></div>}</>}
-    {!quiz ? <button className="recall-start" onClick={()=>setQuiz(true)}>{L(lang,'Hide the note · try recalling','ปิดโน้ต · ลองนึกด้วยตัวเอง')} →</button> : <div className="recall-box"><span className="tiny-label">{L(lang,'RECALL BEFORE REVEALING','นึกคำตอบโดยไม่เปิดโน้ต')}</span><h3>{card.prompt}</h3>
-      {!revealed ? <button className="recall-reveal" onClick={()=>setRevealed(true)}>{L(lang,'Reveal and check','เปิดคำตอบแล้วเช็กตัวเอง')} ↗</button> : <div className="recall-answer" aria-live="polite"><p>{card.answer}</p>{!studied ? <div className="recall-actions"><button onClick={()=>mark(false)}>{L(lang,'Needs another look','ยังจำไม่ได้')}</button><button onClick={()=>mark(true)}>{L(lang,'Recalled it','นึกได้เอง')} ✓</button></div> : <div className="recall-saved"><span>✓ {L(lang,'Review scheduled','จัดรอบทบทวนให้แล้ว')}</span><button onClick={onNext}>{L(lang,'Next card','การ์ดถัดไป')} →</button></div>}</div>}
-    </div>}
-    <details className="card-source"><summary>{L(lang,'Source & review timing','อ้างอิง & รอบทบทวน')}</summary><small>{source?.file} · {L(lang,'pages','หน้า')} {card.pages}<br/>{L(lang,'Original summary. Recall again in 1, 3 or 7 days based on your recalls.','สรุปและตัวอย่างเขียนใหม่ · ทวนใน 1, 3 หรือ 7 วันตามผลที่นึกได้')}</small></details>
-  </article>
+  return <div className="memory-card-shell" key={card.id}>
+    <article className={`memory-card ${revealed ? 'memory-card-back' : 'memory-card-front'}`}>
+      <div className="memory-card-top">
+        <span className="flashcard-chapter">{L(lang,'CHAPTER','บท')} {card.chapter<=28?card.chapter:'＋'}</span>
+        <span className="recall-status">{review?.known ? L(lang,`${review.known} recalls`,`จำได้ ${review.known} ครั้ง`) : L(lang,'New card','การ์ดใหม่')}</span>
+      </div>
+
+      {!revealed ? <>
+        <div className="flashcard-front-mark" aria-hidden="true"><span>✦</span><strong>Aa</strong></div>
+        <div className="flashcard-front-copy">
+          <span className="eyebrow">{L(lang,'RECALL CARD','การ์ดทบทวน')}</span>
+          <h2>{card.title}</h2>
+          <p className="flashcard-prompt">{card.prompt}</p>
+          <div className="flashcard-instruction"><span aria-hidden="true">◌</span><p>{L(lang,'Answer in your head first. No grammar labels, no hint panel—just recall the pattern.','ลองตอบในใจก่อน ยังไม่เปิดกฎหรือเฉลย แล้วค่อยพลิกการ์ดเช็กตัวเอง')}</p></div>
+        </div>
+        <button className="recall-reveal flashcard-flip" onClick={()=>setRevealed(true)}>{L(lang,'Flip to reveal','พลิกดูด้านหลัง')} <span aria-hidden="true">↗</span></button>
+      </> : <>
+        <div className="flashcard-back-head">
+          <div><span className="eyebrow">{L(lang,'ANSWER + MEMORY HOOK','เฉลย + ทริคจำ')}</span><h2>{card.title}</h2></div>
+          <button className="flashcard-reset" onClick={()=>setRevealed(false)} aria-label={L(lang,'Show card front','กลับด้านหน้า')}>↺</button>
+        </div>
+
+        <div className="flashcard-answer-block" aria-live="polite"><small>{L(lang,'ANSWER','คำตอบ')}</small><p>{card.answer}</p></div>
+        <div className="memory-hook"><span aria-hidden="true">✦</span><div><small>{L(lang,'MEMORY HOOK','ทริคจำ')}</small><p>{card.memory}</p></div></div>
+        <div className="pattern-map">{card.patterns.slice(0,4).map(patternRow)}</div>
+        {card.patterns.length>4 && <details className="more-patterns"><summary>{L(lang,`See ${card.patterns.length-4} more patterns`,`ดูอีก ${card.patterns.length-4} รูปแบบ`)}</summary><div className="pattern-map">{card.patterns.slice(4).map(patternRow)}</div></details>}
+        {card.example && <div className="memory-example"><small>{L(lang,'SEE IT IN A SENTENCE','ดูในประโยคจริง')}</small><p>{card.example}</p></div>}
+
+        {!studied ? <div className="recall-actions flashcard-rating"><div><b>{L(lang,'How did recall feel?','เมื่อกี้นึกได้ไหม?')}</b><small>{L(lang,'Your rating schedules the next review.','ระบบจะใช้คำตอบนี้จัดรอบทบทวนครั้งถัดไป')}</small></div><div><button onClick={()=>mark(false)}>{L(lang,'Needs another look','ยังจำไม่ได้')}</button><button onClick={()=>mark(true)}>{L(lang,'Recalled it','นึกได้เอง')} ✓</button></div></div> : <div className="recall-saved flashcard-saved"><span>✓ {L(lang,'Review scheduled','จัดรอบทบทวนให้แล้ว')}</span><button onClick={onNext}>{L(lang,'Next card','การ์ดถัดไป')} →</button></div>}
+        <details className="card-source"><summary>{L(lang,'Source & review timing','อ้างอิง & รอบทบทวน')}</summary><small>{source?.file} · {L(lang,'pages','หน้า')} {card.pages}<br/>{L(lang,'Original summary. Recall again in 1, 3 or 7 days based on your recalls.','สรุปและตัวอย่างเขียนใหม่ · ทวนใน 1, 3 หรือ 7 วันตามผลที่นึกได้')}</small></details>
+      </>}
+    </article>
+  </div>
 }
 
 function CourseMemoryBank({state,setState,startLesson,navigate}: {state:TrainerState;setState:StateSetter;startLesson:(skill:SkillId)=>void;navigate:(view:View)=>void}) {
@@ -2662,8 +2696,8 @@ function PracticeScreen({
               ? L(lang, 'Text Completion', 'เติมข้อความ')
               : L(lang, 'Reading Comprehension', 'อ่านจับใจความ')}</b>
           <small>{passageQuestionIndex >= 0
-            ? `${L(lang, 'Question', 'ข้อย่อย')} ${passageQuestionIndex + 1}/${passageQuestionIds.length} · `
-            : ''}{question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ')}</small>
+            ? `${L(lang, 'Question', 'ข้อย่อย')} ${passageQuestionIndex + 1}/${passageQuestionIds.length}`
+            : L(lang,'Choose the best answer','เลือกคำตอบที่เหมาะสม')}{checked ? ` · ${question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ')}` : ''}</small>
         </div>
         <span className="practice-part-tag">P{part}</span>
       </div>
@@ -2681,7 +2715,7 @@ function PracticeScreen({
         <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}{extraPractice ? L(lang, ' · extra', ' · ฝึกเพิ่ม') : ''}</span>
       </div>
       <div className="session-status"><b>{L(lang,'SHORT SET','ชุดสั้น')} · {L(lang,'Question','ข้อ')} {session.length + (checked ? 0 : 1)}</b><span>{L(lang,'6+ questions · finish the whole passage','6 ข้อขึ้นไป · ทำให้จบทั้งบทความ')}</span></div>
-      <details className="adaptive-why"><summary>{L(lang,'Why this question?','ทำไมระบบเลือกข้อนี้?')}</summary><p>{L(lang,'Selection balances difficulty with weak skills, missed patterns, confidence, speed, spacing and recent exposure.','ระบบจัดน้ำหนักจากระดับที่ทำได้ จุดอ่อน pattern ที่พลาด ความมั่นใจ เวลา และระยะทบทวน พร้อมลดข้อที่เพิ่งเห็น')} · {question.skills.map(skill=>`${localizedSkill(skill,lang)} ${skillAssessment(state,skill).value??'—'}%`).join(' / ')}</p></details>
+      {checked && <details className="adaptive-why"><summary>{L(lang,'Why this question?','ทำไมระบบเลือกข้อนี้?')}</summary><p>{L(lang,'Selection balances difficulty with weak skills, missed patterns, confidence, speed, spacing and recent exposure.','ระบบจัดน้ำหนักจากระดับที่ทำได้ จุดอ่อน pattern ที่พลาด ความมั่นใจ เวลา และระยะทบทวน พร้อมลดข้อที่เพิ่งเห็น')} · {question.skills.map(skill=>`${localizedSkill(skill,lang)} ${skillAssessment(state,skill).value??'—'}%`).join(' / ')}</p></details>}
 
       {passage && (
         <PassageDocument
@@ -2760,7 +2794,7 @@ function QuestionCard({
     <section className="mobile-question-card">
       <div className="question-badges">
         <span className="question-skill">{checked ? question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ') : `Part ${question.part}`}</span>
-        <span className="difficulty-badge">{L(lang, 'Level', 'ระดับ')} {question.difficulty}</span>
+        {checked && <span className="difficulty-badge">{L(lang, 'Level', 'ระดับ')} {question.difficulty}</span>}
       </div>
 
       {!showGrammar ? <h2>{question.stem}</h2> : question.part !== 6

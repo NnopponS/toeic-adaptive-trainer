@@ -2881,6 +2881,11 @@ button.choice:hover:not(:disabled),
 .multi-reference-document .passage-visual{margin-top:0;margin-bottom:0}
 /* Keep the explanation on the sentence and reveal detail on demand. */
 .sentence-inline { display:block; font-size:clamp(1.15rem,4.5vw,1.65rem); line-height:1.6; margin:18px 0 10px; }
+.sentence-exam { line-height:1.85; color:#18334f; font-weight:760; letter-spacing:.005em; }
+.sentence-exam .exam-word { display:inline; margin-right:.34em; }
+.sentence-exam .exam-blank { display:inline-block; min-width:78px; margin:0 .34em; padding:0 5px 2px; border:0; border-bottom:2px solid #49677d; border-radius:0; background:transparent; color:#49677d; font:inherit; font-weight:800; line-height:1.1; text-align:center; cursor:default; vertical-align:baseline; }
+.sentence-exam button.exam-blank { cursor:pointer; }
+.sentence-exam button.exam-blank:hover, .sentence-exam button.exam-blank:focus-visible { border-bottom-color:#1c8b62; color:#1c8b62; outline:none; }
 .sentence-word { display:inline-flex; flex-direction:column; align-items:center; vertical-align:top; border:1px solid transparent; background:transparent; color:inherit; font:inherit; border-radius:8px; padding:4px 5px; margin:3px 4px 3px 0; cursor:pointer; }
 .sentence-word b { font-size:inherit; font-weight:800; }
 .sentence-word small { font-size:.65rem; line-height:1.2; color:#475569; font-weight:600; }
@@ -3002,33 +3007,58 @@ button.choice:hover:not(:disabled),
 .card-pagination { display:flex; justify-content:space-between; gap:12px; align-items:center; font-size:.71rem; margin-bottom:12px; color:var(--muted); }
 .card-pagination label { display:flex; align-items:center; gap:8px; min-width:0; }
 .card-pagination select { max-width:260px; width:100%; padding:7px; border:1px solid #dde5de; border-radius:8px; background:#fff; color:#425c4f; font-size:.7rem; }
-.memory-card { background:#fff; border:1px solid #dde6dd; border-radius:22px; padding:22px; box-shadow:0 8px 30px #153f2b06; animation:card-in .25s ease both; }
-.memory-card-top { display:flex; justify-content:space-between; gap:8px; align-items:center; }
-.recall-status { color:#8a978f; font-size:.65rem; }
-.memory-card h2 { font-size:1.2rem; margin:16px 0 12px; line-height:1.5; }
-.memory-hook { display:flex; align-items:flex-start; gap:10px; padding:11px 13px; border-radius:11px; background:#fff6df; color:#887039; }
+.memory-card-shell { position:relative; margin:8px 0 22px; isolation:isolate; }
+.memory-card-shell::before, .memory-card-shell::after { content:''; position:absolute; left:18px; right:18px; bottom:-9px; height:42px; border-radius:0 0 24px 24px; border:1px solid #dfe8e0; background:#edf4ee; z-index:-2; }
+.memory-card-shell::after { left:30px; right:30px; bottom:-16px; background:#f5f8f5; z-index:-3; opacity:.9; }
+.memory-card { position:relative; min-height:490px; overflow:hidden; display:flex; flex-direction:column; border:1px solid #d8e5dc; border-radius:28px; padding:26px; box-shadow:0 20px 50px #193f2f14; animation:card-in .28s ease both; }
+.memory-card-front { background:linear-gradient(145deg,#f7fff9 0%,#e9f4ec 58%,#e1eee8 100%); }
+.memory-card-front::before { content:''; position:absolute; width:280px; height:280px; border:46px solid #ffffff73; border-radius:50%; right:-120px; top:-115px; }
+.memory-card-front::after { content:''; position:absolute; inset:0; background-image:radial-gradient(#51786518 1px,transparent 1px); background-size:18px 18px; mask-image:linear-gradient(135deg,transparent 35%,#000 100%); pointer-events:none; }
+.memory-card-back { background:linear-gradient(180deg,#ffffff 0%,#f8fbf8 100%); }
+.memory-card-top { position:relative; z-index:1; display:flex; justify-content:space-between; gap:10px; align-items:center; }
+.flashcard-chapter { display:inline-flex; align-items:center; min-height:30px; padding:0 11px; border-radius:999px; background:#ffffffa8; border:1px solid #d5e2d8; color:#527261; font-size:.64rem; font-weight:800; letter-spacing:.08em; }
+.recall-status { color:#71867a; background:#ffffff80; border:1px solid #dce6de; border-radius:999px; padding:6px 10px; font-size:.65rem; }
+.flashcard-front-mark { position:relative; z-index:1; width:84px; height:84px; margin:42px 0 12px; border-radius:24px; display:grid; place-items:center; background:#fff; box-shadow:0 14px 30px #264c3d16; transform:rotate(-4deg); color:#315d49; }
+.flashcard-front-mark span { position:absolute; top:8px; right:11px; color:#c69236; font-size:1rem; }
+.flashcard-front-mark strong { font-family:Georgia,serif; font-size:2rem; letter-spacing:-.08em; }
+.flashcard-front-copy { position:relative; z-index:1; max-width:520px; }
+.memory-card h2 { font-size:clamp(1.28rem,4.5vw,1.65rem); margin:10px 0 14px; line-height:1.45; letter-spacing:-.025em; color:#193e31; }
+.flashcard-prompt { max-width:560px; margin:0; color:#274d3f; font-size:1rem; line-height:1.8; font-weight:650; }
+.flashcard-instruction { display:flex; align-items:flex-start; gap:10px; margin-top:20px; padding:13px 15px; border-radius:15px; background:#ffffff99; border:1px solid #dae7dd; color:#667d70; }
+.flashcard-instruction > span { color:#b58435; font-size:1.15rem; line-height:1.2; }
+.flashcard-instruction p { margin:0; font-size:.76rem; line-height:1.7; }
+.recall-reveal { border:1px solid #97b19b; border-radius:12px; padding:11px 14px; background:#fff; color:#2e5940; font-size:.78rem; cursor:pointer; }
+.flashcard-flip { position:relative; z-index:1; margin-top:auto; width:100%; min-height:52px; border:0; background:#214d3c; color:#fff; font-weight:800; box-shadow:0 10px 24px #214d3c24; }
+.flashcard-flip span { margin-left:8px; }
+.flashcard-back-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.flashcard-back-head h2 { margin-bottom:6px; }
+.flashcard-reset { flex:0 0 auto; width:40px; height:40px; border-radius:50%; border:1px solid #dce6df; background:#f7faf7; color:#577263; font-size:1.1rem; cursor:pointer; }
+.flashcard-answer-block { margin:10px 0 14px; padding:17px 18px; border-radius:17px; border:1px solid #cfe1d4; background:#eaf6ed; }
+.flashcard-answer-block small, .memory-hook small { display:block; margin-bottom:5px; font-size:.6rem; font-weight:800; letter-spacing:.1em; color:#5c7b69; }
+.flashcard-answer-block p { margin:0; font-size:.9rem; line-height:1.8; font-weight:700; color:#234f3b; }
+.memory-hook { display:flex; align-items:flex-start; gap:11px; padding:13px 15px; border-radius:15px; background:#fff6df; color:#806b38; border:1px solid #f0dfb3; }
+.memory-hook > span { flex:0 0 auto; margin-top:2px; color:#bd8a2f; }
 .memory-hook p { margin:0; font-size:.8rem; line-height:1.75; }
-.pattern-map { margin:15px 0; display:grid; gap:5px; }
-.pattern-map > div { display:grid; grid-template-columns:minmax(0,1fr) 20px minmax(0,1.5fr); gap:8px; padding:9px 10px; border-radius:8px; background:#f5f8f5; font-size:.74rem; align-items:start; overflow-wrap:anywhere; }
-.pattern-map b { font-weight:650; color:#31574a; }
+.pattern-map { margin:15px 0; display:grid; gap:6px; }
+.pattern-map > div { display:grid; grid-template-columns:minmax(0,1fr) 20px minmax(0,1.5fr); gap:8px; padding:10px 11px; border-radius:10px; background:#f3f7f4; border:1px solid #e5ece6; font-size:.74rem; align-items:start; overflow-wrap:anywhere; }
+.pattern-map b { font-weight:700; color:#31574a; }
 .more-patterns { font-size:.73rem; color:#66816d; margin:-3px 0 12px; }
 .more-patterns summary { cursor:pointer; }
 .pattern-map > div > span:nth-child(2) { color:#88a596; }
-.memory-example { padding:12px 0; border-top:1px dashed #e0e7e0; }
+.memory-example { padding:13px 0; border-top:1px dashed #dce6df; }
 .memory-example small { font-size:.6rem; letter-spacing:.1em; color:#8f9e96; }
 .memory-example p { font-size:.86rem; margin:6px 0 0; line-height:1.8; }
-.recall-box { background:#eef5ef; border-radius:13px; padding:15px; margin-top:10px; }
-.recall-start { width:100%; border:0; border-radius:11px; padding:13px; background:#315c43; color:#fff; font-size:.8rem; cursor:pointer; }
-.recall-box .tiny-label { font-size:.62rem; color:#718776; }
-.recall-box h3 { font-size:.84rem; font-weight:650; line-height:1.7; margin:5px 0 12px; }
-.recall-reveal { border:1px solid #97b19b; border-radius:9px; padding:10px 13px; background:#fff; color:#2e5940; font-size:.75rem; }
-.recall-answer { animation:answer-in .24s ease both; }
-.recall-answer p { font-size:.79rem; line-height:1.85; margin:6px 0 14px; }
 .recall-actions, .recall-saved { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.recall-actions button, .recall-saved button { font-size:.73rem; padding:10px 13px; border-radius:9px; border:1px solid #ccdace; background:#fff; color:#49614e; }
+.flashcard-rating { margin-top:8px; padding:14px; border-radius:15px; background:#f8faf8; border:1px solid #e1e8e2; align-items:flex-end; }
+.flashcard-rating > div:first-child { display:grid; gap:3px; }
+.flashcard-rating > div:first-child b { font-size:.78rem; color:#344f42; }
+.flashcard-rating > div:first-child small { font-size:.65rem; color:#819087; }
+.flashcard-rating > div:last-child { display:flex; gap:8px; }
+.recall-actions button, .recall-saved button { font-size:.73rem; padding:10px 13px; border-radius:10px; border:1px solid #ccdace; background:#fff; color:#49614e; cursor:pointer; }
 .recall-actions button:last-child, .recall-saved button { background:#315c43; color:white; border-color:#315c43; }
 .recall-saved span { font-size:.7rem; color:#426c4a; }
-.card-source { margin-top:16px; color:#8c9890; font-size:.66rem; }
+.flashcard-saved { margin-top:10px; padding:12px 14px; border-radius:14px; background:#eef7f0; border:1px solid #d8e8dc; }
+.card-source { margin-top:15px; color:#87958c; font-size:.66rem; }
 .card-source summary, .source-index summary { cursor:pointer; }
 .card-source small { display:block; margin-top:7px; line-height:1.8; overflow-wrap:anywhere; }
 .card-controls { display:flex; justify-content:space-between; margin:13px 0; gap:10px; }
@@ -3094,8 +3124,14 @@ button.choice:hover:not(:disabled),
   .floating-note { font-size:.58rem; right:-5px; bottom:30px; padding:6px 9px; }
   .hero-insight { margin:0 -20px; padding:12px 20px; }
   .hero-copy h1 { font-size:1.65rem; }
-  .memory-card { padding:17px; }
-  .memory-card h2 { font-size:1.04rem; }
+  .memory-card { min-height:455px; padding:19px; border-radius:23px; }
+  .memory-card h2 { font-size:1.12rem; }
+  .flashcard-front-mark { width:70px; height:70px; margin:28px 0 12px; border-radius:20px; }
+  .flashcard-front-mark strong { font-size:1.7rem; }
+  .flashcard-prompt { font-size:.91rem; }
+  .flashcard-rating { align-items:stretch; flex-direction:column; }
+  .flashcard-rating > div:last-child { display:grid; grid-template-columns:1fr 1fr; }
+  .flashcard-rating button { width:100%; }
   .pattern-map > div { font-size:.7rem; grid-template-columns:minmax(0,1fr) 15px minmax(0,1.3fr); }
   .card-pagination select { max-width:205px; }
   .mobile-question-card { padding:16px; }

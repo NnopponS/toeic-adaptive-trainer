@@ -84,7 +84,7 @@ export async function syncCloudState(state: TrainerState) {
     },
     [`${base}/meta`]: {
       schemaVersion: 6,
-      appVersion: '6.0.0',
+      appVersion: '6.0.1',
       adaptiveVersion: 'v9-calibrated-recall',
       lastSyncAt: Date.now(),
       examDate: '2026-10-17',

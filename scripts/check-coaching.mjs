@@ -142,6 +142,8 @@ try {
     }
     const before = renderToStaticMarkup(createElement(QuestionCard, { question: q, selected: '', checked: false, onSelect: () => {} }))
     assert.ok(!before.includes('popover="auto"') && !before.includes('sentence-word answer'), 'no answer leak before submission')
+    assert.ok(before.includes('sentence-exam') && before.includes('_____'), 'practice starts as a normal exam-style sentence')
+    assert.ok(!before.includes('word-pos') && !before.includes('word-function') && !before.includes('sentence-tools') && !before.includes('clause-outline') && !before.includes('grammar-estimate'), 'grammar/POS/function hints stay hidden until submission')
     const overview = renderToStaticMarkup(createElement(QuestionCard, { question:q, selected:q.answer, checked:true, onSelect:()=>{} }))
     assert.ok(overview.includes('มองภาพรวมประโยค') && !overview.includes('เลือกแล้วเช็ก'), 'popup shows just the current step')
   }
@@ -152,6 +154,8 @@ try {
     for (const q of eligible) assert.equal(eligible.filter(x => x.passageId === q.passageId).length, bank.filter(x => x.passageId === q.passageId).length, 'reading sets stay complete')
   }
   const p6 = part6[0]
+  const p6Before = renderToStaticMarkup(createElement(PassageDocument, { passage: passageById[p6.passageId], part: 6, question: p6, selected: '', checked: false }))
+  assert.ok(p6Before.includes('sentence-exam') && p6Before.includes('_____') && !p6Before.includes('word-pos') && !p6Before.includes('sentence-tools'), 'Part 6 stays exam-clean before submission')
   const documentHtml = renderToStaticMarkup(createElement(PassageDocument, { passage: passageById[p6.passageId], part: 6, question: p6, selected: p6.answer, checked: true }))
   assert.ok(documentHtml.includes('sentence-inline') && !documentHtml.includes('answer-sheet'), 'Part 6 annotation stays in document')
   const secondBlank = {...question, part:6, stem:'[2] _____', choices:[{id:'A',text:'reviewed'}]}
