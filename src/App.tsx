@@ -436,6 +436,14 @@ const connectorUsage: Record<string, { type: string; pattern: string; relation: 
 const vocabGlossaryTh: Record<string, string> = {
   promptly:'อย่างรวดเร็ว / โดยทันที',
   prompt:'รวดเร็ว / ทันที',
+  clear:'ชัดเจน (Adj.)',
+  clearly:'อย่างชัดเจน (Adv.)',
+  clarity:'ความชัดเจน (N.)',
+  clarify:'ทำให้ชัดเจน (V.)',
+  review:'การทบทวน / ทบทวน',
+  reviewer:'ผู้ทบทวน / ผู้ตรวจ',
+  reviewing:'กำลังทบทวน (V-ing)',
+  reviewed:'ถูกทบทวนแล้ว / ทบทวนแล้ว (V2/V3)',
   satisfactorily:'อย่างน่าพอใจ',
   satisfaction:'ความพึงพอใจ',
   carefully:'อย่างระมัดระวัง',
@@ -500,7 +508,9 @@ const vocabGlossaryTh: Record<string, string> = {
 }
 
 const vocabPosOverrides: Record<string, string> = {
-  promptly:'adverb', prompt:'adjective / noun', satisfactorily:'adverb', satisfaction:'noun',
+  promptly:'adverb', prompt:'adjective / noun', clear:'adjective', clearly:'adverb', clarity:'noun', clarify:'verb',
+  review:'noun / verb', reviewer:'noun', reviewing:'V-ing', reviewed:'V2 / V3',
+  satisfactorily:'adverb', satisfaction:'noun',
   carefully:'adverb', care:'noun / verb', dependent:'adjective', subject:'adjective / noun / verb',
   inconsistency:'noun', inconvenience:'noun', productivity:'noun', notification:'noun',
   realistic:'adjective', strictly:'adverb', appealing:'adjective', recall:'noun / verb',
@@ -1439,9 +1449,15 @@ function normalizedVocabKey(word: string) {
 
 function isUsefulVocabQuestion(question: Question) {
   if (question.skills.includes('vocabulary')) return true
-  if (!question.skills.includes('collocation')) return false
+  if (question.choiceTranslationsTh && Object.keys(question.choiceTranslationsTh).length) return true
   const commonFunctionWords = new Set(['to','for','at','with','by','in','on','of','from','as','than','during','after','before'])
-  return question.choices.some(choice => choice.text.length > 4 && !commonFunctionWords.has(choice.text.toLowerCase()))
+  if (question.skills.includes('collocation')) {
+    return question.choices.some(choice => choice.text.length > 4 && !commonFunctionWords.has(choice.text.toLowerCase()))
+  }
+  if (question.skills.includes('part-of-speech')) {
+    return question.choices.some(choice => Boolean(vocabGlossaryTh[normalizedVocabKey(choice.text)]))
+  }
+  return false
 }
 
 function choiceMeaningTh(question: Question, choiceId: string) {
