@@ -2919,8 +2919,8 @@ button.choice:hover:not(:disabled),
 .passage-copy .sentence-tools, .passage-copy .grammar-estimate, .passage-copy .submitted-answer { white-space:normal; }
 
 .thinking-control { margin:8px 0; }
-.thinking-launcher { anchor-name:--thinking; border:1px solid #b9d8c9; background:#edf8f2; color:#126344; border-radius:9px; padding:9px 13px; font:inherit; font-size:.8rem; font-weight:750; cursor:pointer; }
-.thinking-popover { position:fixed; position-anchor:--thinking; inset:auto; top:anchor(bottom); left:anchor(left); position-try-fallbacks:flip-block,flip-inline; margin:7px 0; width:min(410px,calc(100vw - 32px)); max-height:min(46vh,360px); overflow:auto; padding:14px; border:1px solid #bfd7cb; border-radius:14px; box-shadow:0 10px 32px #16392d26; background:#f8fcfa; color:#183750; }
+.thinking-launcher { border:1px solid #b9d8c9; background:#edf8f2; color:#126344; border-radius:9px; padding:9px 13px; font:inherit; font-size:.8rem; font-weight:750; cursor:pointer; }
+.thinking-popover { position:fixed; inset:auto 16px 80px; margin:0 auto; width:min(410px,calc(100vw - 32px)); max-height:min(46vh,360px); overflow:auto; padding:14px; border:1px solid #bfd7cb; border-radius:14px; box-shadow:0 10px 32px #16392d26; background:#f8fcfa; color:#183750; }
 .thinking-popover::backdrop { background:transparent; }
 .thinking-popover header, .thinking-popover footer { display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .thinking-popover header { font-size:.85rem; }
@@ -2936,7 +2936,6 @@ button.choice:hover:not(:disabled),
 .thinking-popover .memory-line { border-top:1px dashed #bcd4c6; padding-top:8px; }
 .thinking-popover details { margin:8px 0; font-size:.8rem; }
 .thinking-popover summary, .lesson-course-note summary, .course-memory-toggle summary { cursor:pointer; font-weight:700; }
-@supports not (top:anchor(bottom)) { .thinking-popover { inset:auto 16px 80px; margin:auto; } }
 
 
 .sentence-inline { scroll-margin-top:84px; }
@@ -2944,4 +2943,4 @@ button.choice:hover:not(:disabled),
 .thinking-popover:popover-open { display:flex; flex-direction:column; }
 .thinking-popover header { flex-shrink:0; }
 .thinking-body { flex:1; overflow:auto; min-height:0; }
-@media (max-width:600px) { .thinking-popover { position-anchor:auto; inset:auto 16px 80px; margin:0; width:calc(100vw - 32px); height:min(38vh,260px); } .sentence-inline { font-size:1.45rem; } }
+@media (max-width:600px) { .thinking-popover { inset:auto 16px 80px; margin:0 auto; width:calc(100vw - 32px); height:min(38vh,260px); } .sentence-inline { font-size:1.45rem; } }
