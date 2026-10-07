@@ -393,6 +393,35 @@ const choiceLexicon: Record<string, { pos: string; en: string; th: string }> = {
   be: { pos:'base verb', en:'bare infinitive; it needs a modal/to or another structure', th:'กริยารูป base form ต้องมี modal/to หรือโครงสร้างรองรับ' },
 }
 
+const connectorUsage: Record<string, { type: string; pattern: string; relation: string; th: string }> = {
+  although: { type:'conjunction', pattern:'Although + S + V', relation:'contrast', th:'แม้ว่า + ประโยคเต็ม' },
+  though: { type:'conjunction', pattern:'Though + S + V', relation:'contrast', th:'แม้ว่า + ประโยคเต็ม' },
+  whereas: { type:'conjunction', pattern:'Whereas + S + V', relation:'contrast', th:'ในขณะที่/แต่ + ประโยคเต็ม' },
+  despite: { type:'preposition', pattern:'Despite + N / V-ing', relation:'contrast', th:'แม้ว่า แต่ต้องตามด้วยคำนามหรือ V-ing' },
+  because: { type:'conjunction', pattern:'Because + S + V', relation:'reason', th:'เพราะว่า + ประโยคเต็ม' },
+  'because of': { type:'preposition phrase', pattern:'Because of + N / V-ing', relation:'reason', th:'เพราะ + คำนามหรือ V-ing' },
+  during: { type:'preposition', pattern:'During + N', relation:'time', th:'ระหว่าง + คำนาม' },
+  unless: { type:'conjunction', pattern:'Unless + S + V', relation:'condition', th:'เว้นแต่ + ประโยคเต็ม' },
+  if: { type:'conjunction', pattern:'If + S + V', relation:'condition', th:'ถ้า + ประโยคเต็ม' },
+}
+
+function simpleClauseParts(text: string) {
+  const clean = text.trim().replace(/^[,;]+|[.?!]+$/g, '').trim()
+  if (!clean) return null
+  const verb = /\b(am|is|are|was|were|has|have|had|will|would|can|could|should|must|may|might|do|does|did|[A-Za-z]+ed)\b/i.exec(clean)
+  if (!verb || verb.index <= 0) return null
+  return {
+    subject: clean.slice(0, verb.index).trim(),
+    predicate: clean.slice(verb.index).trim(),
+  }
+}
+
+function relationLabel(relation: string, lang: Language) {
+  const th: Record<string,string> = { contrast:'ความขัดแย้ง', reason:'เหตุผล', time:'เวลา', condition:'เงื่อนไข' }
+  return lang === 'th' ? (th[relation] ?? relation) : relation
+}
+
+
 function inferWordClass(word: string) {
   const value = word.toLowerCase().replace(/[^a-z-]/g, '')
   const known = choiceLexicon[value]
@@ -433,7 +462,62 @@ function buildQuestionAnalysis(question: Question, lang: Language): QuestionAnal
     if (after) segments.push({ text:after, label:L(lang,'after the blank','ส่วนหลังช่องว่าง'), tone:'object' })
   }
 
-  if (rule === 'comparison.patterns' || rule === 'comparison') {
+  if (rule === 'connector.clause-vs-phrase') {
+    const afterPieces = after.split(',').map(value => value.trim()).filter(Boolean)
+    const first = afterPieces[0] ?? ''
+    const second = afterPieces.slice(1).join(', ')
+    const firstClause = simpleClauseParts(first)
+    const secondClause = simpleClauseParts(second)
+    const followingIsClause = Boolean(firstClause)
+
+    if (before) {
+      const beforeClause = simpleClauseParts(before)
+      if (beforeClause) {
+        segments.push({ text:beforeClause.subject, label:L(lang,'subject','ประธาน'), tone:'subject' })
+        segments.push({ text:beforeClause.predicate, label:L(lang,'verb/predicate','กริยา/ภาคแสดง'), tone:'verb' })
+      } else {
+        segments.push({ text:before, label:L(lang,'main clause','ประโยคหลัก'), tone:'modifier' })
+      }
+    }
+
+    segments.push({
+      text:'_____',
+      label:followingIsClause
+        ? L(lang,'needs conjunction','ต้องเป็น conjunction')
+        : L(lang,'needs preposition/phrase connector','ต้องเป็น preposition/phrase connector'),
+      tone:'blank',
+    })
+
+    if (firstClause) {
+      segments.push({ text:firstClause.subject, label:L(lang,'subject','ประธาน'), tone:'subject' })
+      segments.push({ text:firstClause.predicate, label:L(lang,'verb/predicate','กริยา/ภาคแสดง'), tone:'verb' })
+    } else if (first) {
+      segments.push({ text:first, label:L(lang,'noun phrase / V-ing phrase','noun phrase / V-ing'), tone:'object' })
+    }
+
+    if (secondClause) {
+      segments.push({ text:secondClause.subject, label:L(lang,'main-clause subject','ประธานประโยคหลัก'), tone:'subject' })
+      segments.push({ text:secondClause.predicate, label:L(lang,'main-clause verb/predicate','กริยา/ภาคแสดงของประโยคหลัก'), tone:'verb' })
+    } else if (second) {
+      segments.push({ text:second, label:L(lang,'main clause','ประโยคหลัก'), tone:'modifier' })
+    }
+
+    needed = followingIsClause
+      ? L(lang, 'a conjunction that can be followed by a full clause (S + V)', 'conjunction ที่ตามด้วยประโยคเต็ม (S + V)')
+      : L(lang, 'a preposition/phrase connector followed by a noun phrase or V-ing', 'preposition/phrase connector ที่ตามด้วย noun phrase หรือ V-ing')
+
+    memory = L(
+      lang,
+      'Although/Because/Unless + S + V · Despite/Because of/During + noun phrase (or V-ing where natural)',
+      'จำคู่ให้เป็นสูตร: Although/Because/Unless + S + V · Despite/Because of/During + noun phrase (หรือ V-ing ที่ใช้ได้)',
+    )
+
+    steps.push(
+      L(lang, 'Look immediately after the blank: is it a full clause (subject + verb) or a noun phrase?', 'มองหลังช่องว่างก่อนเลยว่าเป็น “ประโยคเต็ม S + V” หรือ “noun phrase”'),
+      L(lang, 'Choose the connector family that matches that structure.', 'เลือกตระกูลคำเชื่อมให้ตรงโครงสร้าง'),
+      L(lang, 'Only after that, check the logical meaning (contrast, reason, time, condition).', 'จากนั้นค่อยเช็กความหมายว่าเป็น ขัดแย้ง / เหตุผล / เวลา / เงื่อนไข'),
+    )
+  } else if (rule === 'comparison.patterns' || rule === 'comparison') {
     const aux = splitSubjectAux(before)
     if (aux) {
       segments.push({ text:aux.subject, label:L(lang,'true subject','ประธานแท้'), tone:'subject' })
@@ -587,6 +671,15 @@ function explainChoice(question: Question, choiceId: string, analysis: QuestionA
 
   if (specific && lang === 'en') return `✗ ${specific}`
 
+  if (rule === 'connector.clause-vs-phrase') {
+    const usage = connectorUsage[word]
+    if (usage) {
+      return lang === 'th'
+        ? `✗ “${choice.text}” เป็น ${usage.type}: ${usage.th} · แต่โจทย์นี้ต้องการ ${analysis.needed}`
+        : `✗ “${choice.text}” is a ${usage.type}: ${usage.pattern}. This blank needs ${analysis.needed}.`
+    }
+  }
+
   if (rule === 'comparison.patterns' || rule === 'comparison') {
     if (lex) return lang === 'th'
       ? `✗ ${lex.pos}: ${lex.th} จึงไม่ตรง pattern ที่โจทย์ต้องการ`
@@ -616,49 +709,82 @@ function explainChoice(question: Question, choiceId: string, analysis: QuestionA
     : `✗ “${choice.text}” does not satisfy the required pattern (${analysis.needed}) or the sentence’s meaning/collocation.`
 }
 
-function DetailedAnswerAnalysis({ question, selected }: { question: Question; selected: string }) {
+function compactMistakeInsight(question: Question, selected: string, analysis: QuestionAnalysis, lang: Language) {
+  const selectedText = question.choices.find(c => c.id === selected)?.text ?? selected
+  const answerText = question.choices.find(c => c.id === question.answer)?.text ?? question.answer
+  const rule = question.ruleId ?? question.skills[0]
+
+  if (rule === 'connector.clause-vs-phrase') {
+    const wrong = connectorUsage[selectedText.toLowerCase()]
+    const right = connectorUsage[answerText.toLowerCase()]
+    if (wrong && right) {
+      const sameMeaning = wrong.relation === right.relation
+      return lang === 'th'
+        ? `คุณเลือก “${selectedText}” เพราะ${sameMeaning ? `ความหมายใกล้กับ “${answerText}” (${relationLabel(right.relation, lang)}) ซึ่งคิดด้านความหมายถูก` : `ตีความความสัมพันธ์เป็น ${relationLabel(wrong.relation, lang)}`} แต่พลาด “รูปหลังคำเชื่อม”: ${wrong.pattern} ขณะที่โจทย์นี้ต้อง ${right.pattern} จึงตอบ ${answerText}`
+        : `You chose “${selectedText}” because ${sameMeaning ? `its meaning is close to “${answerText}” (${right.relation}), so your meaning was reasonable` : `you read the relation as ${wrong.relation}`}, but the grammar pattern is wrong: ${wrong.pattern}; this sentence needs ${right.pattern}.`
+    }
+  }
+
+  if (rule === 'comparison.patterns' || rule === 'comparison') {
+    return lang === 'th'
+      ? `คุณเลือก “${selectedText}” เพราะมองว่าเป็นการเปรียบเทียบ แต่พลาด pattern หลักของโจทย์: ${analysis.memory} จึงต้องใช้ “${answerText}”`
+      : `You recognized a comparison, but missed the exact pattern: ${analysis.memory}. Therefore the answer is “${answerText}”.`
+  }
+
+  if (rule.startsWith('wordform.') || rule === 'part-of-speech' || question.skills.includes('part-of-speech')) {
+    return lang === 'th'
+      ? `คุณเลือก “${selectedText}” (${inferWordClass(selectedText)}) แต่ช่องนี้ต้องการ ${analysis.needed} — ให้ดู “หน้าที่ของช่องว่าง” ก่อนแปลความหมาย`
+      : `You chose “${selectedText}” (${inferWordClass(selectedText)}), but the blank needs ${analysis.needed}. Identify the blank's job before translating.`
+  }
+
+  if (rule === 'subject-verb' || question.skills.includes('subject-verb')) {
+    return lang === 'th'
+      ? `คุณน่าจะตามคำนามที่อยู่ใกล้ช่องว่างมากเกินไป ให้ย้อนหา head subject ที่ไฮไลต์ด้านบน แล้วผันกริยาตามประธานแท้ จึงได้ “${answerText}”`
+      : `You likely followed the noun nearest the blank. Use the highlighted head subject instead; that gives “${answerText}”.`
+  }
+
+  if (rule === 'vocab.business-collocation' || question.skills.includes('collocation')) {
+    return lang === 'th'
+      ? `รูปคำอาจถูกไวยากรณ์เหมือนกันหลายข้อ แต่ “${selectedText}” ไม่จับคู่กับคำรอบข้างแบบธรรมชาติ ข้อนี้ต้องดู collocation จึงเป็น “${answerText}”`
+      : `Several choices may be grammatically possible, but “${selectedText}” is not the natural collocation here. The correct collocation uses “${answerText}”.`
+  }
+
+  return lang === 'th'
+    ? `คุณเลือก “${selectedText}” แต่โจทย์ต้องการ ${analysis.needed} จึงต้องเป็น “${answerText}”`
+    : `You chose “${selectedText}”, but the blank needs ${analysis.needed}; therefore choose “${answerText}”.`
+}
+
+function CompactMistakeCoach({ question, selected }: { question: Question; selected: string }) {
   const lang = useLanguage()
   const analysis = buildQuestionAnalysis(question, lang)
   return (
-    <div className="deep-answer-analysis">
-      <div className="analysis-section">
-        <strong>{L(lang, 'Sentence map', 'แยกโครงสร้างประโยค')}</strong>
-        <div className="syntax-map">
-          {analysis.segments.map((segment, index) => (
-            <span className={`syntax-token ${segment.tone}`} key={`${segment.text}-${index}`}>
-              <b>{segment.text}</b>
-              <small>{segment.label}</small>
-            </span>
-          ))}
-        </div>
+    <div className="compact-mistake-coach" aria-live="polite">
+      <div className="annotated-stem" role="heading" aria-level={2}>
+        {analysis.segments.map((segment, index) => (
+          <span className={`annotated-token ${segment.tone}`} key={`${segment.text}-${index}`}>
+            <b>{segment.text}</b>
+            <small>{segment.label}</small>
+          </span>
+        ))}
       </div>
 
-      <div className="analysis-needed">
-        <span>{L(lang, 'What is missing?', 'ช่องว่างต้องการอะไร?')}</span>
-        <b>{analysis.needed}</b>
+      <div className="compact-mistake-lines">
+        <p><strong>{L(lang, 'Blank needs:', 'ช่องว่างต้องเป็น:')}</strong> {analysis.needed}</p>
+        <p className="mistake-why"><strong>{L(lang, 'Your mistake:', 'จุดที่เข้าใจผิด:')}</strong> {compactMistakeInsight(question, selected, analysis, lang)}</p>
+        <p className="mini-memory"><strong>{L(lang, 'Remember:', 'จำสั้น ๆ:')}</strong> {analysis.memory}</p>
       </div>
 
-      <div className="analysis-section">
-        <strong>{L(lang, 'How to decide', 'วิธีคิดทีละขั้น')}</strong>
-        <ol>{analysis.steps.map(step => <li key={step}>{step}</li>)}</ol>
-      </div>
-
-      <div className="analysis-section">
-        <strong>{L(lang, 'Compare every choice', 'เทียบตัวเลือกทุกข้อ')}</strong>
-        <div className="choice-breakdown">
+      <details className="compact-choice-details">
+        <summary>{L(lang, 'Compare A–D', 'ดูความต่าง A–D')}</summary>
+        <div>
           {question.choices.map(choice => (
-            <div className={choice.id === question.answer ? 'choice-explain correct' : choice.id === selected ? 'choice-explain selected-wrong' : 'choice-explain'} key={choice.id}>
+            <p className={choice.id === question.answer ? 'correct' : choice.id === selected ? 'selected-wrong' : ''} key={choice.id}>
               <b>{choice.id}. {choice.text}</b>
               <span>{explainChoice(question, choice.id, analysis, lang)}</span>
-            </div>
+            </p>
           ))}
         </div>
-      </div>
-
-      <div className="analysis-memory">
-        <strong>{L(lang, 'Memorize this', 'จำสูตรนี้')}</strong>
-        <p>{analysis.memory}</p>
-      </div>
+      </details>
     </div>
   )
 }
@@ -1930,7 +2056,9 @@ function QuestionCard({
         <span className="question-skill">{question.skills.slice(0, 2).map(skill => localizedSkill(skill, lang)).join(' · ')}</span>
         <span className="difficulty-badge">{L(lang, 'Level', 'ระดับ')} {question.difficulty}</span>
       </div>
-      <h2>{question.stem}</h2>
+      {checked && selected && selected !== question.answer && question.part <= 6
+        ? <CompactMistakeCoach question={question} selected={selected} />
+        : <h2>{question.stem}</h2>}
       <div className="choices">
         {question.choices.map(choice => {
           const selectedChoice = selected === choice.id
@@ -1948,15 +2076,12 @@ function QuestionCard({
                 {correctChoice && <strong>✓</strong>}
                 {wrongChoice && <strong>×</strong>}
               </button>
-              {checked && selectedChoice && (
+              {checked && selectedChoice && question.part === 7 && (
                 <div className={`inline-choice-feedback ${choice.id === question.answer ? 'correct' : 'wrong'}`} aria-live="polite">
                   <b>{choice.id === question.answer
                     ? L(lang, 'Why this is correct', 'ทำไมข้อนี้ถูก')
                     : L(lang, 'Why this is wrong', 'ทำไมข้อนี้ผิด')}</b>
                   <p className="answer-result-summary">{selectedChoiceExplanation(question, selected, lang)}</p>
-                  {choice.id !== question.answer && question.part <= 6 && (
-                    <DetailedAnswerAnalysis question={question} selected={selected} />
-                  )}
                   {question.evidence && (
                     <div className="inline-evidence">
                       <strong>{L(lang, 'Evidence in the passage', 'หลักฐานในบทความ')}</strong>
@@ -2011,28 +2136,31 @@ function FeedbackCard({
               )}</small>
         </div>
       </div>
-      <p className="feedback-inline-note">{L(
-        lang,
-        'The full explanation is shown directly under the answer you selected.',
-        'คำอธิบายเต็มอยู่ใต้ตัวเลือกที่คุณกดแล้ว เพื่อไม่ต้องเลื่อนหา',
-      )}</p>
+      {question.part === 7 && (
+        <p className="feedback-inline-note">{L(
+          lang,
+          'The explanation and passage evidence are shown directly under your selected answer.',
+          'คำอธิบายและหลักฐานจากบทความอยู่ใต้ตัวเลือกที่คุณกด',
+        )}</p>
+      )}
       {!correct && courseRefs[0] && (
-        <div className="mistake-study-card">
-          <div className="mistake-study-head">
-            <span>{L(lang, 'Review this chapter', 'กลับไปอ่านบทนี้')}</span>
+        <details className="mistake-study-card mistake-study-collapsible">
+          <summary>
+            <span>{L(lang, 'Review chapter', 'ทบทวนบทนี้')}</span>
             <b>{L(lang, 'Chapter', 'บทที่')} {courseRefs[0].id} · {localizedChapterTitle(courseRefs[0].id, courseRefs[0].title, lang)}</b>
+          </summary>
+          <div className="mistake-study-body">
+            <strong>{L(lang, 'What to memorize next', 'สิ่งที่ต้องท่องจำเพิ่ม')}</strong>
+            <ul>{localizedChapterTips(courseRefs[0].id, courseRefs[0].memorize, lang).slice(0, 4).map(item => <li key={item}>{item}</li>)}</ul>
+            {courseRefs.length > 1 && (
+              <div className="related-chapters">
+                <span>{L(lang, 'Related:', 'บทที่เกี่ยวข้อง:')}</span>
+                {courseRefs.slice(1, 4).map(chapter => <b key={chapter.id}>{L(lang, 'Ch.', 'บท')} {chapter.id} {localizedChapterTitle(chapter.id, chapter.title, lang)}</b>)}
+              </div>
+            )}
+            <small>{L(lang, 'Source', 'อ้างอิงจาก')}: content-TOEIC/TOEIC/{courseRefs[0].file}</small>
           </div>
-          <p className="mistake-study-section">{lang === 'th' ? `บทที่ ${courseRefs[0].id} · ${localizedChapterTitle(courseRefs[0].id, courseRefs[0].title, lang)}` : courseRefs[0].sections.join(' · ')}</p>
-          <strong>{L(lang, 'What to memorize next', 'สิ่งที่ต้องท่องจำเพิ่ม')}</strong>
-          <ul>{localizedChapterTips(courseRefs[0].id, courseRefs[0].memorize, lang).slice(0, 4).map(item => <li key={item}>{item}</li>)}</ul>
-          {courseRefs.length > 1 && (
-            <div className="related-chapters">
-              <span>{L(lang, 'Related:', 'บทที่เกี่ยวข้อง:')}</span>
-              {courseRefs.slice(1, 4).map(chapter => <b key={chapter.id}>{L(lang, 'Ch.', 'บท')} {chapter.id} {localizedChapterTitle(chapter.id, chapter.title, lang)}</b>)}
-            </div>
-          )}
-          <small>{L(lang, 'Source', 'อ้างอิงจาก')}: content-TOEIC/TOEIC/{courseRefs[0].file}</small>
-        </div>
+        </details>
       )}
       {!correct && (
         <div className="reason-picker">
@@ -2051,9 +2179,9 @@ function FeedbackCard({
           </div>
         </div>
       )}
-      {!correct && (
+      {!correct && question.part === 7 && (
         <div className="rule-note">
-          <b>{L(lang, 'Rule to remember', 'กฎที่ต้องจำ')}</b>
+          <b>{L(lang, 'Reading rule to remember', 'กฎการอ่านที่ต้องจำ')}</b>
           <p>{fallbackWrongExplanation(question, lang)}</p>
         </div>
       )}
