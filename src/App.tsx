@@ -10,6 +10,7 @@ import {
   emptyState,
   improvement,
   learnerTier,
+  markVocabReview,
   nextFocusSkill,
   normalizeState,
   partAccuracy,
@@ -431,6 +432,87 @@ const connectorUsage: Record<string, { type: string; pattern: string; relation: 
   unless: { type:'conjunction', pattern:'Unless + S + V', relation:'condition', th:'เว้นแต่ + ประโยคเต็ม' },
   if: { type:'conjunction', pattern:'If + S + V', relation:'condition', th:'ถ้า + ประโยคเต็ม' },
 }
+
+const vocabGlossaryTh: Record<string, string> = {
+  promptly:'อย่างรวดเร็ว / โดยทันที',
+  prompt:'รวดเร็ว / ทันที',
+  satisfactorily:'อย่างน่าพอใจ',
+  satisfaction:'ความพึงพอใจ',
+  carefully:'อย่างระมัดระวัง',
+  care:'ความระมัดระวัง / การดูแล',
+  contain:'บรรจุ / ประกอบด้วย',
+  contact:'ติดต่อ',
+  conduct:'ดำเนินการ',
+  dependent:'ขึ้นอยู่กับ / ต้องพึ่งพา',
+  subject:'อยู่ภายใต้ / มีแนวโน้มที่จะ (ในวลี subject to)',
+  inconsistency:'ความไม่สอดคล้องกัน',
+  inconvenience:'ความไม่สะดวก',
+  productivity:'ผลิตภาพ / ประสิทธิผลในการทำงาน',
+  notification:'การแจ้งเตือน',
+  realistic:'สมจริง / เป็นไปได้จริง',
+  strict:'เข้มงวด',
+  strictly:'อย่างเคร่งครัด',
+  appealing:'น่าดึงดูด',
+  appeal:'ดึงดูด / การอุทธรณ์',
+  recall:'การเรียกคืนสินค้า',
+  receipt:'ใบเสร็จ',
+  retreat:'การถอย / ล่าถอย',
+  estimate:'ประมาณ / ประเมิน',
+  esteem:'ยกย่อง / เคารพ',
+  estate:'ทรัพย์สิน / ที่ดิน / กองมรดก',
+  streamline:'ทำให้กระชับและมีประสิทธิภาพขึ้น',
+  proof:'หลักฐาน',
+  permission:'การอนุญาต',
+  approval:'การอนุมัติ',
+  advice:'คำแนะนำ',
+  postpone:'เลื่อนออกไป',
+  preserve:'เก็บรักษา',
+  predict:'คาดการณ์',
+  purchase:'ซื้อ',
+  raise:'เพิ่ม / ยกระดับ (ต้องมีกรรม)',
+  rise:'เพิ่มขึ้น (ไม่รับกรรม)',
+  arise:'เกิดขึ้น',
+  outline:'สรุปโครง / ระบุใจความสำคัญ',
+  outlines:'ระบุ / สรุปขอบเขต',
+  outweighs:'มีน้ำหนักมากกว่า / สำคัญกว่า',
+  unavailable:'ไม่พร้อมใช้งาน / ไม่มี',
+  concise:'กระชับ',
+  convenient:'สะดวก',
+  conveniently:'อย่างสะดวก',
+  initiative:'โครงการริเริ่ม',
+  accommodate:'รองรับ / จัดให้ตามความต้องการ',
+  fulfill:'ทำให้สำเร็จ / ตอบสนองคำขอ',
+  expand:'ขยายขอบเขต',
+  relocate:'ย้ายสถานที่',
+  select:'เลือก',
+  effect:'ผล / ในวลี take effect = เริ่มมีผล',
+  affect:'ส่งผลกระทบ',
+  engaging:'น่าสนใจ / ชวนติดตาม',
+  provide:'ให้ / จัดให้',
+  limited:'มีจำนวนจำกัด',
+  encouraged:'ได้รับการแนะนำ / ส่งเสริม',
+  phase:'ช่วง / ระยะ',
+  phased:'เป็นช่วง ๆ / เป็นขั้นตอน',
+  credit:'ยอดเครดิต / เงินที่นำไปหักได้',
+  credited:'ถูกนำไปหักยอด / นับเป็นเงินที่ชำระแล้ว',
+  cover:'ทำแทน / รับช่วงแทน',
+  uninterrupted:'ต่อเนื่องโดยไม่ขาดช่วง',
+}
+
+const vocabPosOverrides: Record<string, string> = {
+  promptly:'adverb', prompt:'adjective / noun', satisfactorily:'adverb', satisfaction:'noun',
+  carefully:'adverb', care:'noun / verb', dependent:'adjective', subject:'adjective / noun / verb',
+  inconsistency:'noun', inconvenience:'noun', productivity:'noun', notification:'noun',
+  realistic:'adjective', strictly:'adverb', appealing:'adjective', recall:'noun / verb',
+  estimate:'verb / noun', esteem:'verb / noun', estate:'noun', proof:'noun',
+  postpone:'verb', preserve:'verb', predict:'verb', purchase:'verb / noun',
+  raise:'verb', rise:'verb / noun', arise:'verb', concise:'adjective',
+  unavailable:'adjective', initiative:'noun', accommodate:'verb', fulfill:'verb',
+  expand:'verb', relocate:'verb', select:'verb', effect:'noun', affect:'verb',
+  limited:'adjective', encouraged:'past participle / adjective', phased:'adjective / past participle',
+  credited:'past participle / verb', cover:'verb', uninterrupted:'adjective',
+}
+
 
 function simpleClauseParts(text: string) {
   const clean = text.trim().replace(/^[,;]+|[.?!]+$/g, '').trim()
@@ -1337,9 +1419,272 @@ function lineKey(row: string[], index: number) {
   return `${index}-${row.join('-')}`
 }
 
+
+type VocabCard = {
+  key: string
+  word: string
+  meaningTh: string
+  pos: string
+  correctWord: string
+  correctMeaningTh: string
+  sentence: string
+  explanation: string
+  mistakes: number
+  lastAt: number
+}
+
+function normalizedVocabKey(word: string) {
+  return word.trim().toLowerCase()
+}
+
+function isUsefulVocabQuestion(question: Question) {
+  if (question.skills.includes('vocabulary')) return true
+  if (!question.skills.includes('collocation')) return false
+  const commonFunctionWords = new Set(['to','for','at','with','by','in','on','of','from','as','than','during','after','before'])
+  return question.choices.some(choice => choice.text.length > 4 && !commonFunctionWords.has(choice.text.toLowerCase()))
+}
+
+function choiceMeaningTh(question: Question, choiceId: string) {
+  const choice = question.choices.find(item => item.id === choiceId)
+  if (!choice) return ''
+  const explicit = question.choiceTranslationsTh?.[choiceId]
+  if (explicit) return explicit
+  const key = normalizedVocabKey(choice.text)
+  return choiceLexicon[key]?.th ?? vocabGlossaryTh[key] ?? ''
+}
+
+function choicePosLabel(choiceText: string) {
+  const key = normalizedVocabKey(choiceText)
+  return choiceLexicon[key]?.pos ?? vocabPosOverrides[key] ?? inferWordClass(choiceText)
+}
+
+function buildVocabCards(
+  state: TrainerState,
+  questionMap: Record<string, Question>,
+  passageMap: Record<string, Passage>,
+): VocabCard[] {
+  const cards = new Map<string, VocabCard>()
+  for (const attempt of state.attempts) {
+    if (attempt.correct) continue
+    const question = questionMap[attempt.questionId]
+    if (!question || !isUsefulVocabQuestion(question)) continue
+    const selectedChoice = question.choices.find(choice => choice.id === attempt.selected)
+    const answerChoice = question.choices.find(choice => choice.id === question.answer)
+    if (!selectedChoice || !answerChoice) continue
+    const key = normalizedVocabKey(selectedChoice.text)
+    const existing = cards.get(key)
+    const passage = question.passageId ? passageMap[question.passageId] : undefined
+    const context = passage
+      ? activeContextForBlank(passage.body, question.stem)
+      : question.stem
+    const sentence = context.includes('_____')
+      ? context.replace(/\[\d+\]\s*_____/, answerChoice.text).replace(/_____/, answerChoice.text)
+      : context
+    const next: VocabCard = {
+      key,
+      word:selectedChoice.text,
+      meaningTh:choiceMeaningTh(question, selectedChoice.id) || 'คำนี้ยังไม่มีคำแปลเฉพาะในคลัง — ระบบจะเก็บไว้ให้เพิ่มคำแปลเมื่อพบซ้ำ',
+      pos:choicePosLabel(selectedChoice.text),
+      correctWord:answerChoice.text,
+      correctMeaningTh:choiceMeaningTh(question, answerChoice.id) || vocabGlossaryTh[normalizedVocabKey(answerChoice.text)] || '',
+      sentence,
+      explanation:localizedQuestionExplanation(question, 'th'),
+      mistakes:(existing?.mistakes ?? 0) + 1,
+      lastAt:Math.max(existing?.lastAt ?? 0, attempt.at),
+    }
+    cards.set(key, next)
+  }
+  return [...cards.values()].sort((a,b) => b.mistakes - a.mistakes || b.lastAt - a.lastAt)
+}
+
+function VocabReview({
+  state,
+  setState,
+  questionMap,
+  passageMap,
+  onBack,
+}: {
+  state: TrainerState
+  setState: StateSetter
+  questionMap: Record<string, Question>
+  passageMap: Record<string, Passage>
+  onBack: () => void
+}) {
+  const lang = useLanguage()
+  const cards = useMemo(() => buildVocabCards(state, questionMap, passageMap), [state, questionMap, passageMap])
+  const [index, setIndex] = useState(0)
+  const [revealed, setRevealed] = useState(false)
+
+  useEffect(() => {
+    if (index >= cards.length) setIndex(0)
+  }, [cards.length, index])
+
+  if (!cards.length) {
+    return (
+      <div className="screen vocab-screen">
+        <button className="round-back" onClick={onBack}>‹</button>
+        <div className="empty-state">{L(lang,'No missed vocabulary yet. Words you miss will automatically become flashcards here.','ยังไม่มีคำศัพท์ที่ตอบผิด คำศัพท์ที่คุณพลาดจะถูกสร้างเป็น Flashcard อัตโนมัติที่นี่')}</div>
+      </div>
+    )
+  }
+
+  const card = cards[index]
+  const review = state.vocabReview?.[card.key]
+  const next = (knewIt:boolean) => {
+    setState(current => markVocabReview(current, card.key, knewIt))
+    setRevealed(false)
+    setIndex(current => (current + 1) % cards.length)
+  }
+
+  return (
+    <div className="screen vocab-screen">
+      <div className="vocab-topbar">
+        <button className="round-back" onClick={onBack}>‹</button>
+        <div>
+          <span>{L(lang,'VOCAB REPAIR','ซ่อมจุดอ่อนคำศัพท์')}</span>
+          <b>{index + 1}/{cards.length} {L(lang,'missed words','คำที่เคยพลาด')}</b>
+        </div>
+        <span className="vocab-count">{card.mistakes}×</span>
+      </div>
+
+      <section className={revealed ? 'flashcard revealed' : 'flashcard'} onClick={() => setRevealed(true)}>
+        <div className="flashcard-front">
+          <small>{L(lang,'YOU PREVIOUSLY CHOSE','คำที่คุณเคยเลือกผิด')}</small>
+          <h1>{card.word}</h1>
+          <span>{card.pos}</span>
+          {!revealed && <button>{L(lang,'Tap to reveal','แตะเพื่อดูความหมาย')}</button>}
+        </div>
+        {revealed && (
+          <div className="flashcard-back">
+            <div className="flash-meaning">
+              <span>{L(lang,'Meaning','ความหมาย')}</span>
+              <b>{lang === 'th' ? card.meaningTh : card.word}</b>
+            </div>
+            <div className="flash-contrast">
+              <span>{L(lang,'Correct answer in that question','คำที่ถูกในโจทย์เดิม')}</span>
+              <b>{card.correctWord}</b>
+              {lang === 'th' && card.correctMeaningTh && <small>{card.correctMeaningTh}</small>}
+            </div>
+            <div className="flash-context">
+              <span>{L(lang,'Correct context','ประโยคที่ถูก')}</span>
+              <p>{card.sentence}</p>
+            </div>
+            <div className="flash-reason">
+              <span>{L(lang,'Why','ทำไม')}</span>
+              <p>{card.explanation}</p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {revealed && (
+        <div className="vocab-actions">
+          <button className="vocab-hard" onClick={() => next(false)}>{L(lang,'Still weak','ยังไม่แม่น')}</button>
+          <button className="vocab-known" onClick={() => next(true)}>{L(lang,'I know it','จำได้แล้ว')}</button>
+        </div>
+      )}
+
+      <section className="vocab-memory-note">
+        <b>{L(lang,'Adaptive memory','Adaptive จะจำคำนี้')}</b>
+        <p>{L(
+          lang,
+          'Words marked “Still weak” receive extra weight when they appear in future questions. Correct answers do not remove them immediately; repeated successful review lowers the priority gradually.',
+          'คำที่กด “ยังไม่แม่น” จะถูกเพิ่มน้ำหนักเมื่อโผล่ในโจทย์ครั้งต่อ ๆ ไป ต่อให้ตอบถูกครั้งเดียวก็ยังไม่หายจากระบบทันที ต้องทวนถูกซ้ำจึงค่อยลดความสำคัญ',
+        )}</p>
+        {review && <small>{L(lang,'Reviews','ทวนแล้ว')}: {review.seen} · {L(lang,'Hard','ยังไม่แม่น')}: {review.hard} · {L(lang,'Known','จำได้')}: {review.known}</small>}
+      </section>
+    </div>
+  )
+}
+
 function PassageVisual({ passage }: { passage: Passage }) {
   if (!passage.visual || !passage.visualData?.length) return null
   const rows = passage.visualData.map(line => line.split('|').map(part => part.trim()))
+
+  if (passage.visual === 'invoice') {
+    return (
+      <div className="passage-visual visual-invoice">
+        <div className="invoice-brand"><span>AW</span><div><b>{passage.visualTitle}</b><small>Invoice / account document</small></div></div>
+        <div className="visual-table-body invoice-lines">
+          {rows.map((row,index) => (
+            <div className={index === 0 ? 'visual-table-row invoice-head' : row[0] === 'TOTAL' ? 'visual-table-row invoice-total' : 'visual-table-row'} key={lineKey(row,index)}>
+              {row.map((cell,cellIndex)=><span key={cellIndex}>{cell}</span>)}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (passage.visual === 'calendar') {
+    return (
+      <div className="passage-visual visual-calendar">
+        <strong>{passage.visualTitle}</strong>
+        <div className="calendar-stack">
+          {rows.map((row,index)=>(
+            <div className="calendar-event" key={lineKey(row,index)}>
+              <time>{row[0]}</time><div><b>{row[1]}</b><span>{row[2]}</span><small>{row[3]}</small></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (passage.visual === 'chat') {
+    return (
+      <div className="passage-visual visual-chat">
+        <strong>{passage.visualTitle}</strong>
+        <div className="chat-stack">
+          {rows.map((row,index)=>(
+            <div className={index % 2 ? 'chat-bubble mine' : 'chat-bubble'} key={lineKey(row,index)}>
+              <small>{row[0]} · {row[1]}</small><span>{row.slice(2).join(' · ')}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (passage.visual === 'directory' || passage.visual === 'map') {
+    return (
+      <div className={`passage-visual visual-directory visual-${passage.visual}`}>
+        <strong>{passage.visualTitle}</strong>
+        <div className="directory-grid">
+          {rows.map((row,index)=>(
+            <div className="directory-card" key={lineKey(row,index)}>
+              <span>{row[0]}</span><b>{row[1]}</b><small>{row.slice(2).join(' · ')}</small>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (passage.visual === 'coupon') {
+    return (
+      <div className="passage-visual visual-coupon-wrap">
+        <strong>{passage.visualTitle}</strong>
+        {rows.map((row,index)=>(
+          <div className={index === 0 ? 'coupon-ticket hero' : 'coupon-ticket'} key={lineKey(row,index)}>
+            <b>{row[0]}</b><span>{row[1]}</span><small>{row.slice(2).join(' · ')}</small>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (passage.visual === 'web-page') {
+    return (
+      <div className="passage-visual visual-webpage">
+        <div className="browser-bar"><i/><i/><i/><span>secure member portal</span></div>
+        <strong>{passage.visualTitle}</strong>
+        <div className="webpage-grid">
+          {rows.map((row,index)=><div key={lineKey(row,index)}><b>{row[0]}</b><span>{row[1]}</span><small>{row.slice(2).join(' · ')}</small></div>)}
+        </div>
+      </div>
+    )
+  }
 
   if (passage.visual === 'floor-plan') {
     return (
@@ -1448,10 +1793,13 @@ function PassageText({ passage, evidence }: { passage: Passage; evidence?: strin
   }
 
   if (passage.kind === 'multi') {
+    const blocks = passage.body.includes('\n---\n')
+      ? passage.body.split(/\n---\n/)
+      : passage.body.split(/\n\n+/)
     return (
       <div className="multi-document">
-        {passage.body.split(/\n\n+/).map((block, index) => (
-          <div className="multi-doc-section" key={index}>{highlightPassageEvidence(block, evidence)}</div>
+        {blocks.map((block, index) => (
+          <div className="multi-doc-section" key={index}>{highlightPassageEvidence(block.trim(), evidence)}</div>
         ))}
       </div>
     )
@@ -1529,6 +1877,14 @@ function App() {
   const allPassageById = useMemo(
     () => ({ ...passageById, ...Object.fromEntries(remotePassages.map(p => [p.id, p])) }),
     [remotePassages],
+  )
+  const allQuestionById = useMemo(
+    () => Object.fromEntries([...allPart5, ...allPart6, ...allPart7].map(question => [question.id, question])),
+    [allPart5, allPart6, allPart7],
+  )
+  const vocabCardCount = useMemo(
+    () => buildVocabCards(state, allQuestionById, allPassageById).length,
+    [state, allQuestionById, allPassageById],
   )
 
   useEffect(() => {
@@ -1617,6 +1973,7 @@ function App() {
               navigate={navigate}
               startQuickPart5={startQuickPart5}
               questionCounts={{ 5: allPart5.length, 6: allPart6.length, 7: allPart7.length }}
+              vocabCount={vocabCardCount}
             />
           )}
           {view === 'part5' && (
@@ -1666,11 +2023,22 @@ function App() {
               readingSwitch={part => navigate(part === 6 ? 'part6' : 'part7')}
             />
           )}
+          {view === 'vocab' && (
+            <VocabReview
+              state={state}
+              setState={setState}
+              questionMap={allQuestionById}
+              passageMap={allPassageById}
+              onBack={() => navigate('home')}
+            />
+          )}
           {view === 'mock' && <MockTest setState={setState} />}
           {view === 'analytics' && (
             <Analytics
               state={state}
               startLesson={startLesson}
+              navigate={navigate}
+              vocabCount={vocabCardCount}
             />
           )}
           {view === 'review' && (
@@ -1767,12 +2135,14 @@ function Home({
   navigate,
   startQuickPart5,
   questionCounts,
+  vocabCount,
 }: {
   state: TrainerState
   startLesson: (skill: SkillId) => void
   navigate: (view: View) => void
   startQuickPart5: () => void
   questionCounts: Record<Part, number>
+  vocabCount: number
 }) {
   const lang = useLanguage()
   const focus = nextFocusSkill(state)
@@ -1838,7 +2208,7 @@ function Home({
         <div className="adaptive-heading">
           <div>
             <span className="tiny-label">{L(lang, 'ADAPTIVE PLAN TODAY', 'แผน ADAPTIVE วันนี้')}</span>
-            <h2>{L(lang, '3 tasks for your level', '3 งานที่เหมาะกับระดับคุณ')}</h2>
+            <h2>{L(lang, vocabCount ? '4 tasks for your level' : '3 tasks for your level', vocabCount ? '4 งานที่เหมาะกับระดับคุณ' : '3 งานที่เหมาะกับระดับคุณ')}</h2>
           </div>
           <span className="tier-pill">{state.totalAnswered ? localizedTier(learnerTier(state), lang) : L(lang, 'Start here', 'เริ่มตรงนี้')}</span>
         </div>
@@ -1853,6 +2223,9 @@ function Home({
           />
           <TaskCard icon="6" title={L(lang, 'Part 6 speed set', 'Part 6 ฝึกทำให้เร็ว')} subtitle={L(lang, `${targets.part6} questions today`, `วันนี้ ${targets.part6} ข้อ`)} value={p6done / targets.part6 * 100} right={`${Math.min(p6done, targets.part6)}/${targets.part6}`} onClick={() => navigate('part6')} />
           <TaskCard icon="7" title={L(lang, 'Part 7 evidence reading', 'Part 7 อ่านหาหลักฐาน')} subtitle={L(lang, `${targets.part7} questions today`, `วันนี้ ${targets.part7} ข้อ`)} value={p7done / targets.part7 * 100} right={`${Math.min(p7done, targets.part7)}/${targets.part7}`} onClick={() => navigate('part7')} />
+          {vocabCount > 0 && (
+            <TaskCard icon="V" title={L(lang, 'Repair missed vocabulary', 'ทวนคำศัพท์ที่เคยพลาด')} subtitle={L(lang, 'Flashcards built from your real mistakes', 'Flashcard สร้างจากคำที่คุณตอบผิดจริง')} value={Math.min(100, Object.values(state.vocabReview ?? {}).reduce((sum,item)=>sum+item.known,0) / Math.max(1,vocabCount) * 100)} right={`${vocabCount} ${L(lang,'words','คำ')}`} onClick={() => navigate('vocab')} />
+          )}
         </div>
       </section>
 
@@ -2949,9 +3322,13 @@ function MockTest({ setState }: { setState: StateSetter }) {
 function Analytics({
   state,
   startLesson,
+  navigate,
+  vocabCount,
 }: {
   state: TrainerState
   startLesson: (skill: SkillId) => void
+  navigate: (view: View) => void
+  vocabCount: number
 }) {
   const lang = useLanguage()
   const skills = useMemo(() => (
@@ -3038,6 +3415,13 @@ function Analytics({
           </button>
         )) : <div className="empty-state">{L(lang, 'No weak-point data yet.', 'ยังไม่มีข้อมูลจุดอ่อน')}</div>}
       </section>
+
+      {vocabCount > 0 && (
+        <button className="vocab-analytics-banner" onClick={() => navigate('vocab')}>
+          <span><b>{L(lang,'Vocabulary repair deck','คลังคำศัพท์ที่ต้องซ่อม')}</b><small>{L(lang,'Built automatically from words you actually missed','สร้างจากคำที่คุณตอบผิดจริงและจำไว้ใน Firebase')}</small></span>
+          <strong>{vocabCount} {L(lang,'words','คำ')} ›</strong>
+        </button>
+      )}
 
       <SectionTitle title={L(lang, 'Recent Mistakes', 'ข้อที่พลาดล่าสุด')} />
       <section className="mistake-list">
