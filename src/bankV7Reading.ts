@@ -489,7 +489,7 @@ seeds.forEach((seed,pIndex)=>{
   const ids=seed.questions.map((_,qIndex)=>passageId+'-q'+(qIndex+1))
   extraPassagesV7.push({
     id:passageId,
-    part:7,
+    part:7,examStyle:true,
     kind:seed.kind,
     title:seed.title,
     body:seed.body,

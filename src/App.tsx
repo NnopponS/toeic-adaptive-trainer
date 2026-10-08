@@ -1238,27 +1238,60 @@ function stepWordIndexes(question: Question, contextText: string | undefined, st
   return indices
 }
 
+// ponytail: flat clause spans from reviewed roles; author nested spans if needed.
+function sentenceGroups(question: Question, words: GrammarWord[]) {
+  const tags = reviewedGrammar[question.id]?.split(' ')
+  const lexical = words.filter(word => !word.punctuation)
+  if (!tags || tags.length !== lexical.length) return [{ tone: 'plain', words }]
+  const tones = words.map(() => 'main')
+  let tone = 'main'
+  let lexicalIndex = 0
+  words.forEach((word, index) => {
+    if (word.punctuation) {
+      tones[index] = tone
+      if (/[,.;!?]/.test(word.text)) tone = 'main'
+      return
+    }
+    const role = tags[lexicalIndex++].split(':')[1]
+    if (['CL', 'RS', 'RV', 'RAUX', 'RO'].includes(role)) {
+      if (tone === 'main' && role === 'RS') {
+        for (let i = index - 1; i >= 0 && !words[i].punctuation && /determiner|modifier|ตัวกำหนด|ขยายนาม/.test(words[i].role); i--) tones[i] = 'subordinate'
+      }
+      tone = 'subordinate'
+    } else if (role === 'RC') tone = 'phrase'
+    else if (['S', 'V', 'AUX', 'O', 'C', 'OC'].includes(role)) {
+      if (tone !== 'main' && role === 'S') {
+        for (let i = index - 1; i >= 0 && !words[i].punctuation && /determiner|modifier|ตัวกำหนด|ขยายนาม/.test(words[i].role); i--) tones[i] = 'main'
+      }
+      tone = 'main'
+    }
+    tones[index] = tone
+  })
+  const groups: { tone: string; words: GrammarWord[] }[] = []
+  words.forEach((word, index) => {
+    if (groups.at(-1)?.tone !== tones[index]) groups.push({ tone: tones[index], words: [] })
+    groups.at(-1)!.words.push(word)
+  })
+  return groups
+}
+
 function AnnotatedSentence({
   question,
   selected,
   contextText,
-  activeStep = 0,
   checked = true,
   onBlankClick,
-  onStep,
 }: {
   question: Question
   selected: string
   contextText?: string
-  activeStep?: number
   checked?: boolean
   onBlankClick?: () => void
-  onStep?: (step: number) => void
 }) {
   const lang = useLanguage()
   const [inspectedWord, setInspectedWord] = useState<number | null>(null)
   const words = labelWords(question, contextText, lang)
-  const highlights = checked ? stepWordIndexes(question, contextText, activeStep, words) : new Set<number>()
+  const highlights = checked ? stepWordIndexes(question, contextText, 1, words) : new Set<number>()
   const firstAnswer = words.findIndex(word => word.answer)
   const inspected = inspectedWord === null ? null : words[inspectedWord]
   const reviewed = reviewedGrammar[question.id]?.split(' ').length === words.filter(word => !word.punctuation).length
@@ -1278,24 +1311,21 @@ function AnnotatedSentence({
   }
   return (
     <>
-      <h2 id={`sentence-${question.id}`} className="sentence-inline" aria-label={activeStep < 3 ? (contextText ?? question.stem) : correctSentenceForMap(question, contextText)}>
-        {words.map((word, index) => word.punctuation
-          ? /^[,.;:!?]$/.test(word.text) && index > 0 && !words[index - 1].punctuation ? null : <span className="grammar-punctuation" key={`${word.text}-${index}`}>{word.text}</span>
-          : (
-            word.answer && activeStep < 3 && index !== firstAnswer ? null :
-            <button type="button" aria-pressed={inspectedWord === index} className={`sentence-word ${word.answer && !checked ? 'blank' : word.answer && activeStep === 3 ? 'answer' : highlights.has(index) ? 'focus' : ''}`} key={`${word.text}-${index}`} onClick={() => { setInspectedWord(inspectedWord === index ? null : index); if (word.answer && !checked) onBlankClick?.() }}>
-              <b>{word.answer && activeStep < 3 ? '_____' : word.text}{/^[,.;:!?]$/.test(words[index + 1]?.text ?? '') ? words[index + 1].text : ''}</b>
-              <small className="word-pos">{word.answer && !checked ? '?' : word.pos}</small>
-              <small className="word-function">{word.answer && !checked ? L(lang,'blank','ช่องที่ต้องเติม') : word.role}</small>
-            </button>
-          ))}
+      <h2 id={`sentence-${question.id}`} className="sentence-inline sentence-grouped" aria-label={correctSentenceForMap(question, contextText)}>
+        {sentenceGroups(question, words).map((group, groupIndex) => <span className={`clause-group clause-${group.tone}`} key={groupIndex}>
+          {group.words.map(word => {
+            const index = words.indexOf(word)
+            return word.punctuation ? <span key={index}>{word.text} </span> : <span key={index} className={word.answer ? 'filled-answer' : highlights.has(index) ? 'clue-word' : ''}>{word.text}{words[index + 1]?.punctuation ? '' : ' '}</span>
+          })}
+        </span>)}
       </h2>
-      {checked && onStep && <AnswerWalkthrough question={question} selected={selected} contextText={contextText} activeStep={activeStep} onStep={onStep} />}
-      <div className="sentence-tools"><span>{checked ? L(lang,`Step ${activeStep + 1}/4 · Gold = current focus`, `ขั้น ${activeStep + 1}/4 · สีทอง = คำที่ต้องดูในขั้นนี้`) : L(lang,'Inspect the structure before choosing','ดูโครงสร้างก่อนเลือกคำตอบ')}</span><span>{L(lang,'Tap a word to inspect its role','แตะคำเพื่อดูหน้าที่')}</span></div>
-      <div className="clause-outline">{L(lang,'Main clause','ประโยคหลัก')}: {words.filter(word => /main subject|ประธานหลัก|ประธานแท้/.test(word.role)).map(word => word.answer && activeStep < 3 ? '_____' : word.text).join(' / ') || 'S'} → {words.filter(word => /main verb|กริยาหลัก/.test(word.role)).map(word => word.answer && activeStep < 3 ? '_____' : word.text).join(' ') || 'V'}{words.some(word => /subordinate|อนุประโยค|reduced|ลดรูป/.test(word.role)) && <span> · {L(lang,'Subordinate/reduced clause: see roles under its words','มีอนุประโยค/ส่วนลดรูป: ดูหน้าที่ใต้คำ')}</span>}</div>
-      {inspected && <div className="word-inspector"><b>{inspected.answer && activeStep < 3 ? '_____' : inspected.text} · {inspected.answer && !checked ? '?' : inspected.pos}</b><p>{inspected.answer && !checked ? L(lang,'Identify the blank’s function from the surrounding words.','ลองหาหน้าที่ช่องว่างจากคำรอบข้างก่อน') : inspected.role}</p><small>{L(lang,'The class is what the word is; the function is what it does in this sentence.','ชนิดคำ = คำนี้เป็นอะไร · หน้าที่ = คำนี้ทำอะไรในประโยคนี้')}</small></div>}
-      {!reviewed && <small className="grammar-estimate">{L(lang,'Automatic grammar labels; the explanation is the source for the blank’s function.','ข้อนี้ใช้ป้ายคำอัตโนมัติซึ่งอาจคลาดเคลื่อน ให้ยึดเฉลยในการตัดสินหน้าที่ช่องว่าง')}</small>}
-      {checked && selected !== question.answer && <p className="submitted-answer">{L(lang,'Your answer','คำตอบที่คุณเลือก')}: {question.choices.find(c => c.id === selected)?.text}</p>}
+      {reviewed && <div className="clause-legend"><span className="clause-main">{L(lang,'Main clause','ประโยคหลัก')}</span><span className="clause-subordinate">{L(lang,'Subordinate clause','ประโยครอง')}</span><span className="clause-phrase">{L(lang,'Reduced phrase','วลีลดรูป')}</span></div>}
+      <AnswerWalkthrough question={question} selected={selected} contextText={contextText} />
+      {question.part < 7 && <details className="grammar-details"><summary>{L(lang,'Word roles','ดูชนิดและหน้าที่คำ')}</summary>
+        <div className="grammar-detail-words">{words.map((word, index) => !word.punctuation && <button type="button" aria-pressed={inspectedWord === index} className="sentence-word" key={index} onClick={() => setInspectedWord(inspectedWord === index ? null : index)}><b>{word.text}</b><small className="word-pos">{word.pos}</small><small className="word-function">{word.role}</small></button>)}</div>
+        {inspected && <p className="word-inspector">{inspected.text} · {inspected.pos} · {inspected.role}</p>}
+        {!reviewed && <small className="grammar-estimate">{L(lang,'Automatic word labels may be inaccurate. Use the explanation to decide.','ป้ายคำอัตโนมัติอาจคลาดเคลื่อน ให้ยึดเฉลยในการตัดสิน')}</small>}
+      </details>}
     </>
   )
 }
@@ -1365,41 +1395,19 @@ if (import.meta.env.DEV) {
   )
 }
 
-function AnswerWalkthrough({ question, selected, contextText, activeStep, onStep }: { question: Question; selected: string; contextText?: string; activeStep: number; onStep: (step: number) => void }) {
+function AnswerWalkthrough({ question, selected, contextText }: { question: Question; selected: string; contextText?: string }) {
   const lang = useLanguage()
-  const analysis = buildQuestionAnalysis({ ...question, stem: contextText ?? question.stem }, lang)
   const authored = lang === 'th' ? question.coaching : undefined
-  const reading = question.part === 7
-  const words = labelWords(question, contextText, lang)
-  const mainSubject = words.filter(word => /main subject|ประธานหลัก|ประธานแท้/.test(word.role)).map(word => word.answer ? '_____' : word.text).join(' + ') || 'S'
-  const mainVerb = words.filter(word => /main verb|กริยาหลัก/.test(word.role) || word.role === grammarFunctions.AUX[lang === 'th' ? 0 : 1]).map(word => word.answer ? '_____' : word.text).join(' ') || 'V'
-  const object = words.filter(word => /main object|กรรมหลัก/.test(word.role)).map(word => word.answer ? '_____' : word.text).join(' + ')
-  const complement = words.filter(word => /complement|เติมเต็ม/.test(word.role)).map(word => word.answer ? '_____' : word.text).join(' + ')
-  const subordinate = words.filter(word => /subordinate|อนุประโยค|reduced|ลดรูป/.test(word.role)).map(word => word.answer ? '_____' : word.text).join(' → ')
-  const overview = reading
-    ? L(lang, 'Read the question first, then identify each document’s purpose, sender, dates, and conditions. Connect information across documents before comparing choices.', 'อ่านคำถามก่อน แล้วแยกว่าแต่ละเอกสารใครเขียน เพื่ออะไร วันไหน และมีเงื่อนไขอะไร เชื่อมข้อมูลข้ามเอกสารก่อนเทียบตัวเลือก')
-    : question.id === 'cmp-1'
-      ? L(lang, 'sales is the subject; were is a linking verb. This quarter’s tells whose sales; significantly modifies their degree. The comparison than [was] expected is reduced. Read the whole statement: this quarter’s sales differed from expectations.', 'ภาพรวม: sales เป็นประธาน → were เป็น linking verb → ช่องว่างบอกลักษณะยอดขาย ส่วน This quarter’s ขยาย sales, significantly บอกระดับ และ than [was] expected เป็นส่วนเปรียบเทียบที่ลดรูป ความหมายทั้งประโยคคือยอดขายไตรมาสนี้เทียบกับที่คาดไว้')
-      : L(lang, `Main structure: ${mainSubject} → ${mainVerb}${object ? `; object to follow: ${object}` : ''}${complement ? `; complement to follow: ${complement}` : ''}. ${subordinate ? `Separate the subordinate/reduced clause: ${subordinate}. ` : ''}Follow the modifiers under each word: which noun, verb, or adjective do they describe? Place the blank in this structure before comparing choices.`, `แกนหลัก: ${mainSubject} → ${mainVerb}${object ? `; กรรมที่ตามดู: ${object}` : ''}${complement ? `; ส่วนเติมเต็มที่ตามดู: ${complement}` : ''} ${subordinate ? `แยกอนุประโยค/ส่วนลดรูปออกมาดู: ${subordinate} ` : ''}ไล่คำขยายตามป้ายใต้คำ: ขยาย N., V. หรือ Adj. ตัวไหน? แล้ววางช่องว่างลงในโครงสร้างนี้ก่อนเทียบตัวเลือก`)
-  const steps = [overview, ...(authored?.steps ?? (reading ? [
-    L(lang, 'Identify what the question asks: purpose, detail, or inference.', 'แยกว่าถามจุดประสงค์ รายละเอียด หรือสิ่งที่อนุมาน'),
-    question.evidence ? `${L(lang, 'Find this evidence', 'หาและอ่านหลักฐานนี้')}: “${question.evidence}”` : question.explanation,
-    localizedQuestionExplanation(question, lang),
-  ] : [analysis.steps[0], analysis.steps[1], localizedQuestionExplanation(question, lang)]))]
-  const popupId = `coach-${question.id}`
+  const clues = authored?.focus ?? (question.evidence ? [question.evidence] : [])
+  const reason = inspectionText(question, question.answer, lang)
+  const memory = authored?.memory ?? (question.part < 7 ? spottingRules(question, contextText, lang)[0] : undefined)
   return (
-    <div className="thinking-control">
-      <button className="thinking-launcher" type="button" popoverTarget={popupId} onClick={() => document.getElementById(`sentence-${question.id}`)?.scrollIntoView({ behavior:'smooth', block:'start' })}>{L(lang,'Show thinking','ดูวิธีคิด')} · {activeStep + 1}/4</button>
-      <div id={popupId} className="thinking-popover" popover="auto" role="dialog" aria-labelledby={`${popupId}-title`}>
-        <header><strong id={`${popupId}-title`}>{L(lang,'How to reach the answer','คิดอย่างไรให้ถึงคำตอบ')}</strong><button type="button" popoverTarget={popupId} popoverTargetAction="hide" aria-label={L(lang,'Close','ปิด')}>×</button></header>
-        <div className="thinking-body"><div className="thinking-step" aria-live="polite"><small>{L(lang,'Step','ขั้น')} {activeStep + 1}/4 · {L(lang,'Look at the circled words above','ดูคำที่วงบนโจทย์')}</small><h3>{[L(lang,'Read the whole structure','มองภาพรวมประโยค'), L(lang,'Find the clue','หาจุดสังเกต'), L(lang,'Decide the function','ตัดสินหน้าที่ / ความสัมพันธ์'), L(lang,'Choose and check','เลือกแล้วเช็ก')][activeStep]}</h3><p>{steps[activeStep]}</p></div>
-        {activeStep === 3 && <>
-          {selected !== question.answer && <div className="choice-trap"><b>{L(lang,'Why your choice fails','ทำไมตัวที่คุณเลือกใช้ไม่ได้')}</b><p>{inspectionText(question, selected, lang)}</p></div>}
-          <p className="memory-line"><b>{L(lang,'Remember','จำเป็นชุด')}:</b> {authored?.memory ?? spottingRules(question, contextText, lang)[0] ?? (reading ? L(lang,'Choose what the documents support, including conditions and exceptions.','ตอบจากหลักฐาน พร้อมเช็กเงื่อนไขและข้อยกเว้น') : analysis.memory)}</p>
-          {question.translationTh && lang === 'th' && <details><summary>แปลประโยค</summary><p>{question.translationTh}</p></details>}
-        </>}</div>
-        <footer><button type="button" disabled={activeStep === 0} onClick={() => onStep(activeStep - 1)}>{L(lang,'Back','ย้อนกลับ')}</button>{activeStep < 3 ? <button type="button" className="thinking-next" onClick={event => { event.preventDefault(); onStep(activeStep + 1) }}>{L(lang,'Next step','ขั้นถัดไป')} →</button> : <button type="button" className="thinking-next" popoverTarget={popupId} popoverTargetAction="hide">{L(lang,'Done','เข้าใจแล้ว')} ✓</button>}</footer>
-      </div>
+    <div className="answer-summary">
+      {clues.length > 0 && <p><b>{L(lang,'Look for','จุดสังเกต')}:</b> {clues.map((clue, index) => <span key={clue}>{index > 0 && ' · '}<u>{clue}</u></span>)}</p>}
+      <p><b>{L(lang,'Why it works','เหตุผลที่ถูก')}:</b> {reason}</p>
+      {selected && selected !== question.answer && <p className="choice-trap"><b>{L(lang,'Your choice','ตัวที่คุณเลือก')}:</b> {inspectionText(question, selected, lang)}</p>}
+      {memory && memory !== reason && <p className="memory-line"><b>{L(lang,'Remember','จำสั้น ๆ')}:</b> {memory}</p>}
+      {question.translationTh && lang === 'th' && <details><summary>แปลประโยค</summary><p>{question.translationTh}</p></details>}
     </div>
   )
 }
@@ -1734,6 +1742,7 @@ function PassageVisual({ passage }: { passage: Passage }) {
   if (passage.visual === 'poster') {
     return (
       <div className="passage-visual visual-poster">
+        {passage.visualTitle === 'DESIGN FORWARD 2026' && <img className="conference-banner" src={`${import.meta.env.BASE_URL}conference-banner.png`} alt="" loading="lazy" width="2172" height="724" />}
         <strong>{passage.visualTitle}</strong>
         {rows.map((row, index) => <div className="poster-line" key={lineKey(row, index)}><b>{row[0]}</b><span>{row.slice(1).join(' · ')}</span></div>)}
       </div>
@@ -1814,20 +1823,23 @@ function PassageDocument({
   question,
   selected,
   checked,
-  activeStep,
   onBlankClick,
-  onStep,
+  onAnswer,
+  completedAnswers = {},
 }: {
   passage: Passage
   part: Part
   question: Question
   selected: string
   checked: boolean
-  activeStep?: number
   onBlankClick?: () => void
-  onStep?: (step: number) => void
+  onAnswer?: (id: string) => void
+  completedAnswers?: Record<string, string>
 }) {
   const lang = useLanguage()
+  const [openBlank, setOpenBlank] = useState(false)
+  const marker = question.stem.match(/\[\d+\]/)?.[0]
+  const pickerId = `blank-choices-${question.id}`
   return (
     <article id={`reading-${question.id}`} className={`reading-passage doc-${passage.kind}`}>
       <div className="passage-heading">
@@ -1838,11 +1850,26 @@ function PassageDocument({
       </div>
       <h2>{passage.title}</h2>
       {part === 7 && passage.kind !== 'multi' && <PassageVisual passage={passage} />}
-      {part === 6
+      {part === 6 && onAnswer
+        ? <div className="passage-copy p6-inline-document">{passage.body.split('\n').map((line, index) => <div className="p6-paragraph" key={index}>
+          {line.split(/(\[\d+\]\s*_{2,})/g).map((piece, pieceIndex) => {
+            const number = piece.match(/^\[(\d+)\]\s*_{2,}$/)?.[1]
+            if (!number) return <span key={pieceIndex}>{piece}</span>
+            const id = passage.questions[Number(number) - 1]
+            if (`[${number}]` !== marker) return <span className={completedAnswers[id] ? 'p6-completed' : 'p6-future-blank'} key={pieceIndex}>[{number}] {completedAnswers[id] ?? '_____'}</span>
+            const text = checked ? question.choices.find(c => c.id === question.answer)?.text : question.choices.find(c => c.id === selected)?.text
+            return <button className={`p6-active-blank ${checked ? 'p6-completed' : ''}`} type="button" key={pieceIndex} disabled={checked} aria-expanded={openBlank && !checked} aria-controls={pickerId} aria-label={L(lang,`Choose answer for blank ${number}`,`เลือกคำตอบช่อง ${number}`)} onClick={() => setOpenBlank(value => !value)}>[{number}] {text ?? '_____'}</button>
+          })}
+          {line.includes(marker ?? '@@none@@') && openBlank && !checked && <div id={pickerId} className="p6-inline-choices" role="group" aria-label={L(lang,'Answer choices','ตัวเลือกคำตอบ')} onKeyDown={event => { if (event.key === 'Escape') setOpenBlank(false) }}>
+            <div className="p6-picker-heading"><b>{L(lang,'Blank','ช่อง')} {marker}</b><button type="button" aria-label={L(lang,'Close choices','ปิดตัวเลือก')} onClick={() => setOpenBlank(false)}>×</button></div>
+            {question.choices.map(choice => <button type="button" className={`choice ${selected === choice.id ? 'selected' : ''}`} key={choice.id} onClick={() => { setOpenBlank(false); onAnswer(choice.id) }}><span>{choice.id}</span><b>{choice.text}</b></button>)}
+          </div>}
+        </div>)}{checked && <AnswerWalkthrough question={question} selected={selected} contextText={activeContextForBlank(passage.body, question.stem)} />}</div>
+        : part === 6
         ? <div className="passage-copy">{passage.body.split(/(?<=[.!?])\s+(?=[A-Z]|\[\d+\])|\n/).map((line, index) => line.includes(question.stem.match(/\[\d+\]/)?.[0] ?? '@@none@@')
-          ? <div key={index}><AnnotatedSentence key={question.id} question={question} selected={selected} contextText={line} activeStep={activeStep} checked={checked} onBlankClick={onBlankClick} onStep={onStep} /></div>
+          ? <div key={index}><AnnotatedSentence key={question.id} question={question} selected={selected} contextText={line} checked={checked} onBlankClick={onBlankClick} /></div>
           : <div key={index}>{line || '\u00a0'}</div>)}</div>
-        : <PassageText passage={passage} evidence={checked && (activeStep ?? 0) >= 2 ? question.coaching?.focus ?? question.evidence : undefined} />}
+        : <PassageText passage={passage} evidence={checked ? question.coaching?.focus ?? question.evidence : undefined} />}
       {part === 7 && passage.kind === 'multi' && passage.visual && (
         <div className="multi-reference-document">
           <span>{L(lang, 'REFERENCE DOCUMENT', 'เอกสารประกอบ')}</span>
@@ -1894,27 +1921,39 @@ function App() {
 
   useEffect(() => {
     if (sandbox) return
-    const stopConnection = watchConnection(setConnected)
     const stopQuestions = watchPersonalizedQuestions(setRemoteQuestions)
     const stopPassages = watchPersonalizedPassages(setRemotePassages)
 
     let stopped=false
-    const hydrate = () => loadCloudState()
+    let readVersion=0
+    const hydrate = () => {
+      const version=++readVersion
+      setHydrated(false)
+      return loadCloudState()
       .then(cloud => {
-        if (stopped) return
+        if (stopped || version !== readVersion) return
         setState(local => chooseFresher(normalizeState(local), cloud))
         setHydrated(true)
         setSyncError(false)
       })
-      .catch(() => { if (!stopped) setSyncError(true) })
+      .catch(() => { if (!stopped && version === readVersion) setSyncError(true) })
+    }
     void hydrate()
+    const stopConnection = watchConnection(online => {
+      setConnected(online)
+      readVersion++
+      setHydrated(false)
+      if (online) void hydrate()
+    })
     // Keep local work safe until the first successful cloud read, then retry when online.
     window.addEventListener('online', hydrate)
+    window.addEventListener('focus', hydrate)
 
     publishQuestionBankManifest({ part5: part5.length, part6: part6.length, part7: part7.length }).catch(() => undefined)
     return () => {
       stopped=true
       window.removeEventListener('online', hydrate)
+      window.removeEventListener('focus', hydrate)
       stopConnection()
       stopQuestions()
       stopPassages()
@@ -1930,7 +1969,7 @@ function App() {
     const normalized = normalizeState(state)
     if (sandbox) return
     localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized))
-    if (!hydrated) return
+    if (!hydrated || !connected) return
 
     const timer = window.setTimeout(() => {
       setSyncing(true)
@@ -1985,14 +2024,14 @@ function App() {
               startLesson={startLesson}
               navigate={navigate}
               startQuickPart5={startQuickPart5}
-              questionCounts={{ 5: practicePool(allPart5,false).length, 6: allPart6.length, 7: allPart7.length }}
+              questionCounts={{ 5: practicePool(allPart5,false).length, 6: practicePool(allPart6,false,allPassageById).length, 7: practicePool(allPart7,false,allPassageById).length }}
               vocabCount={vocabCardCount}
             />
           )}
           {view === 'learn' && (lessonSkill && lessonBySkill[lessonSkill]
             ? <LessonSession key={lessonSkill} lesson={lessonBySkill[lessonSkill]!} state={state} setState={setState} pool={practicePool(allPart5,false)} onExit={() => setLessonSkill(null)} />
             : <Part5Hub state={state} setState={setState} startLesson={startLesson} navigate={navigate} />)}
-          {view === 'practice' && <PracticeHub state={state} navigate={navigate} counts={{5: practicePool(allPart5,false).length, 6: allPart6.length, 7: allPart7.length}} />}
+          {view === 'practice' && <PracticeHub state={state} navigate={navigate} counts={{5: practicePool(allPart5,false).length, 6: practicePool(allPart6,false,allPassageById).length, 7: practicePool(allPart7,false,allPassageById).length}} />}
           {view === 'part5' && <PracticeScreen part={5} state={state} setState={setState} pool={allPart5} onBack={() => navigate('practice')} />}
           {view === 'part6' && (
             <PracticeScreen
@@ -2490,16 +2529,7 @@ function firstQuestionOfPickedPassage(
     ? pool.filter(q => q.passageId !== excludePassageId)
     : pool
   const baseCandidates = candidates.length ? candidates : pool
-  const highFidelityPart7 = baseCandidates.filter(q => {
-    if (q.part !== 7 || !q.passageId) return false
-    const passage = map[q.passageId]
-    return q.id.startsWith('v7-p7-')
-      || Boolean(passage?.visual && passage.body.length >= 650 && q.difficulty >= 3)
-  })
-  const selectionPool = pool[0]?.part === 7 && highFidelityPart7.length
-    ? highFidelityPart7
-    : baseCandidates
-  const picked = pickAdaptiveQuestion(state, selectionPool)
+  const picked = pickAdaptiveQuestion(state, baseCandidates)
   if (!picked.passageId) return picked
   const passage = map[picked.passageId]
   const firstId = passage?.questions.find(id => pool.some(q => q.id === id))
@@ -2576,7 +2606,11 @@ function DailyPartComplete({
   )
 }
 
-function practicePool(questions: Question[], exam: boolean) {
+function practicePool(questions: Question[], exam: boolean, map: Record<string, Passage> = passageById) {
+  if (questions[0]?.part !== 5) {
+    const realistic = questions.filter(q => q.passageId && map[q.passageId]?.examStyle)
+    if (realistic.length) questions = realistic
+  }
   // Part 5 uses reviewed word roles; the full historical bank remains available in past results.
   if (questions[0]?.part===5) {
     const reviewed=questions.filter(q=>reviewedGrammar[q.id])
@@ -2606,18 +2640,17 @@ function PracticeScreen({
   readingSwitch?: (part: 6 | 7) => void
 }) {
   const lang = useLanguage()
-  const [exam, setExam] = useState(false)
-  const pool = useMemo(() => practicePool(sourcePool, exam), [sourcePool, exam])
+  const [exam, setExam] = useState(part !== 5)
   const activePassageMap = passageMap ?? passageById
+  const pool = useMemo(() => practicePool(sourcePool, exam, activePassageMap), [sourcePool, exam, activePassageMap])
   const [question, setQuestion] = useState<Question>(() => firstQuestionOfPickedPassage(state, pool, activePassageMap))
   const [selected, setSelected] = useState('')
   const [checked, setChecked] = useState(false)
-  const [coachingStep, setCoachingStep] = useState(0)
   const [elapsed, setElapsed] = useState(0)
   const [reason, setReason] = useState<ErrorReason | ''>('')
   const [confidence, setConfidence] = useState<1 | 2 | 3 | 0>(0)
   const [extraPractice, setExtraPractice] = useState(false)
-  const [session, setSession] = useState<{question:Question;correct:boolean;seconds:number;confidence:number}[]>([])
+  const [session, setSession] = useState<{question:Question;selected:string;correct:boolean;seconds:number;confidence:number}[]>([])
   const [finishedSet, setFinishedSet] = useState(false)
   const [dailyComplete, setDailyComplete] = useState(false)
   const startedAt = useRef(0)
@@ -2626,7 +2659,6 @@ function PracticeScreen({
     setQuestion(firstQuestionOfPickedPassage(state, pool, activePassageMap))
     setSelected('')
     setChecked(false)
-    setCoachingStep(0)
     setReason('')
     setConfidence(0)
     setExtraPractice(false)
@@ -2651,12 +2683,13 @@ function PracticeScreen({
   const goalReached = partDone >= partTarget
   const showDailyComplete = goalReached && !extraPractice && !checked && (session.length===0 || dailyComplete)
 
-  const submit = () => {
-    if (!selected || checked) return
+  const submit = (answerId = selected) => {
+    if (!answerId || checked) return
     const ms = performance.now() - startedAt.current
+    setSelected(answerId)
     setElapsed(ms)
-    setSession(items=>[...items,{question,correct:selected===question.answer,seconds:ms/1000,confidence:0}])
-    setState(current => recordAttempt(current, question, selected, ms, { mode: 'adaptive' }))
+    setSession(items=>[...items,{question,selected:answerId,correct:answerId===question.answer,seconds:ms/1000,confidence:0}])
+    setState(current => recordAttempt(current, question, answerId, ms, { mode: 'adaptive' }))
     setChecked(true)
   }
 
@@ -2670,7 +2703,6 @@ function PracticeScreen({
       setDailyComplete(true)
       setSelected('')
       setChecked(false)
-      setCoachingStep(0)
       setElapsed(0)
       setReason('')
       setConfidence(0)
@@ -2682,7 +2714,6 @@ function PracticeScreen({
     setQuestion(sequential ?? firstQuestionOfPickedPassage(state, pool, activePassageMap, question.passageId))
     setSelected('')
     setChecked(false)
-    setCoachingStep(0)
     setElapsed(0)
     setReason('')
     setConfidence(0)
@@ -2699,7 +2730,7 @@ function PracticeScreen({
     const recall=repair ? recallForQuestion(repair) : undefined
     return <div className="screen set-result"><div className="set-score">{session.filter(item=>item.correct).length}<small>/{session.length}</small></div><h1>{L(lang,'A small set. A clear next step.','จบชุดนี้ รู้จุดที่ควรแก้')}</h1><div className="set-metrics"><div><b>{session.filter(item=>!item.correct).length}</b><small>{L(lang,'Knowledge misses','ผิดเนื้อหา')}</small></div><div><b>{slow.length}</b><small>{L(lang,'Correct but slow','ถูกแต่ช้า')}</small></div><div><b>{rushed.length}</b><small>{L(lang,'Rushed / fast guess','รีบ / เดาเร็ว')}</small></div></div>
       <div className="set-repair"><span className="eyebrow">{L(lang,'YOUR NEXT FOCUS','จุดที่ควรทวนต่อ')}</span><p>{repair ? repair.skills.map(skill=>localizedSkill(skill,lang)).join(' · ') : L(lang,'Keep testing the pattern with new questions.','ฝึกข้อใหม่ต่อ เพื่อยืนยันว่าใช้ pattern ได้จริง')}</p>{recall && <><b>{recall.title}</b><p>{recall.memory}</p><details><summary>{L(lang,'Quick recall','ลองนึกสั้น ๆ')}</summary><p>{recall.prompt}</p><details><summary>{L(lang,'Reveal','เปิดคำตอบ')}</summary><p>{recall.answer}</p></details></details></>}</div>
-      <button className="big-next" onClick={()=>{setSession([]);setFinishedSet(false);setExtraPractice(true);setQuestion(firstQuestionOfPickedPassage(state,pool,activePassageMap,question.passageId));setSelected('');setChecked(false);setCoachingStep(0);setReason('');setConfidence(0);startedAt.current=performance.now()}}>{L(lang,'Start next adaptive set','เริ่มชุดถัดไปตามจุดอ่อน')} →</button><button className="back-link" onClick={onBack}>{L(lang,'Finish for now','พักก่อน กลับไปหน้าฝึก')}</button>
+      <button className="big-next" onClick={()=>{setSession([]);setFinishedSet(false);setExtraPractice(true);setQuestion(firstQuestionOfPickedPassage(state,pool,activePassageMap,question.passageId));setSelected('');setChecked(false);setReason('');setConfidence(0);startedAt.current=performance.now()}}>{L(lang,'Start next adaptive set','เริ่มชุดถัดไปตามจุดอ่อน')} →</button><button className="back-link" onClick={onBack}>{L(lang,'Finish for now','พักก่อน กลับไปหน้าฝึก')}</button>
     </div>
   }
 
@@ -2752,21 +2783,21 @@ function PracticeScreen({
 
       {passage && (
         <PassageDocument
+          key={question.id}
           passage={passage}
           part={part}
           question={question}
           selected={selected}
           checked={checked}
-          activeStep={coachingStep}
-          onStep={setCoachingStep}
-          onBlankClick={part === 6 ? () => document.getElementById('active-question')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) : undefined}
+          onAnswer={part === 6 ? submit : undefined}
+          completedAnswers={Object.fromEntries(session.map(item => [item.question.id, item.question.choices.find(c => c.id === item.question.answer)?.text ?? '']))}
         />
       )}
 
       <div id="active-question">
-          <QuestionCard key={question.id} question={question} selected={selected} checked={checked} onSelect={setSelected} contextText={questionContext} activeStep={coachingStep} onStep={setCoachingStep} />
-          {!checked ? (
-            <button className="big-next" disabled={!selected} onClick={submit}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
+          {part !== 6 && <QuestionCard key={question.id} question={question} selected={selected} checked={checked} onSelect={setSelected} contextText={questionContext} />}
+          {!checked ? (part === 6 ? null :
+            <button className="big-next" disabled={!selected} onClick={() => submit()}>{L(lang, 'Check answer', 'ตรวจคำตอบ')} <span>›</span></button>
           ) : (
             <FeedbackCard
               question={question}
@@ -2801,8 +2832,6 @@ function QuestionCard({
   checked,
   onSelect,
   contextText,
-  activeStep,
-  onStep,
   showGrammar = true,
 }: {
   question: Question
@@ -2810,18 +2839,10 @@ function QuestionCard({
   checked: boolean
   onSelect: (id: string) => void
   contextText?: string
-  activeStep?: number
-  onStep?: (step: number) => void
   showGrammar?: boolean
 }) {
   const lang = useLanguage()
   const [inspectedChoice, setInspectedChoice] = useState('')
-  const [localStep, setLocalStep] = useState(0)
-  const step = checked ? activeStep ?? localStep : 0
-  const chooseStep = (nextStep: number) => {
-    (onStep ?? setLocalStep)(nextStep)
-    if (question.part === 7) document.getElementById(nextStep === 2 ? `reading-${question.id}` : `sentence-${question.id}`)?.scrollIntoView({ behavior:'smooth', block:'start' })
-  }
 
   return (
     <section className="mobile-question-card">
@@ -2831,7 +2852,7 @@ function QuestionCard({
       </div>
 
       {!showGrammar ? <h2>{question.stem}</h2> : question.part !== 6
-        ? <AnnotatedSentence key={question.id} question={question} selected={selected} contextText={contextText} activeStep={step} checked={checked} onStep={chooseStep} />
+        ? <AnnotatedSentence key={question.id} question={question} selected={selected} contextText={contextText} checked={checked} />
         : null}
 
 
@@ -3104,8 +3125,10 @@ function MockTest({ setState }: { setState: StateSetter }) {
         <Progress value={(index + 1) / 100 * 100} />
         <strong className={remaining < 600 ? 'urgent' : ''}>{mm}:{ss}</strong>
       </div>
-      {passage && <article className="reading-passage"><span className="doc-type">PART {q.part}</span><h2>{passage.title}</h2><PassageVisual passage={passage} /><PassageText passage={passage} /></article>}
-      <QuestionCard key={q.id} question={q} selected={selected} checked={false} onSelect={setSelected} showGrammar={false} />
+      {passage && (q.part === 6
+        ? <PassageDocument key={q.id} passage={passage} part={6} question={q} selected={selected} checked={false} onAnswer={setSelected} completedAnswers={Object.fromEntries(questions.filter(item => answers[item.id]).map(item => [item.id,item.choices.find(c => c.id === answers[item.id])?.text ?? '']))} />
+        : <article className="reading-passage"><span className="doc-type">PART {q.part}</span><h2>{passage.title}</h2><PassageVisual passage={passage} /><PassageText passage={passage} /></article>)}
+      {q.part !== 6 && <QuestionCard key={q.id} question={q} selected={selected} checked={false} onSelect={setSelected} showGrammar={false} />}
       <button className="big-next" disabled={!selected} onClick={next}>{index === 99 ? L(lang, 'Finish', 'ส่งคำตอบ') : L(lang, 'Next', 'ข้อถัดไป')} <span>›</span></button>
       <small className="mock-note">{L(lang, 'No answer feedback during simulation.', 'โหมดจำลองสอบจะยังไม่เฉลยระหว่างทำ')}</small>
     </div>

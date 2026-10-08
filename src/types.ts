@@ -67,6 +67,7 @@ export interface Passage {
   body: string
   questions: string[]
   sourceLabel?: string
+  examStyle?: boolean
   visual?: 'floor-plan' | 'schedule' | 'receipt' | 'poster' | 'chart' | 'route' | 'table' | 'menu' | 'web-page' | 'invoice' | 'calendar' | 'chat' | 'directory' | 'coupon' | 'map'
   visualTitle?: string
   visualData?: string[]

@@ -7,7 +7,7 @@ const c = (a:string,b:string,c:string,d:string) => [
 export const extraPassagesV8: Passage[] = [
   {
     id:'v8-p7-01',
-    part:7,
+    part:7,examStyle:true,
     kind:'email',
     title:'Email: Regional Sales Training',
     body:`From: maya.chen@northstar.example
@@ -35,7 +35,7 @@ Regional Training Coordinator`,
   },
   {
     id:'v8-p7-02',
-    part:7,
+    part:7,examStyle:true,
     kind:'notice',
     title:'Building Access Notice',
     body:`HARBORPOINT BUSINESS CENTER
@@ -65,7 +65,7 @@ Tenants with questions should contact Building Services rather than the security
   },
   {
     id:'v8-p7-03',
-    part:7,
+    part:7,examStyle:true,
     kind:'multi',
     title:'Order Issue: Email + Return Policy',
     body:`DOCUMENT 1 — EMAIL
@@ -118,7 +118,7 @@ Corporate accounts:
   },
   {
     id:'v8-p7-04',
-    part:7,
+    part:7,examStyle:true,
     kind:'multi',
     title:'Conference Update: Announcement + Chat + Shuttle Schedule',
     body:`DOCUMENT 1 — CONFERENCE ANNOUNCEMENT
@@ -133,11 +133,11 @@ Participants registered for the supplier networking lunch should pick up a blue 
 ---
 
 DOCUMENT 2 — TEAM CHAT
-8:06 — Lena: I am on the hotel shuttle now. It should reach the convention center around 8:35.
-8:08 — Omar: Great. I already picked up our badges, so go straight to Hall A.
-8:10 — Lena: Thanks. I also signed up for the checkout workshop. My old schedule says Room 204 at 1:30.
-8:12 — Omar: The location and time both changed. I will send you the update.
-8:15 — Lena: Perfect. I have the supplier lunch too, so I will stop at registration before the keynote if there is time.
+8:26 — Lena: I am on the hotel shuttle now. It should reach the convention center around 8:35.
+8:28 — Omar: Great. I already picked up our badges, so go straight to Hall A.
+8:30 — Lena: Thanks. I also signed up for the checkout workshop. My old schedule says Room 204 at 1:30.
+8:32 — Omar: The location and time both changed. I will send you the update.
+8:35 — Lena: Perfect. I have the supplier lunch too, so I will stop at registration before the keynote if there is time.
 
 ---
 
@@ -158,10 +158,10 @@ Travel time is approximately 20 minutes. During heavy traffic, allow an addition
     visual:'chat',
     visualTitle:'TEAM CHAT SNAPSHOT',
     visualData:[
-      '8:06|Lena|On hotel shuttle · ETA about 8:35',
-      '8:08|Omar|Badges already collected · go to Hall A',
-      '8:10|Lena|Old workshop schedule says Room 204 · 1:30',
-      '8:12|Omar|Both location and time changed',
+      '8:26|Lena|On hotel shuttle · ETA about 8:35',
+      '8:28|Omar|Badges already collected · go to Hall A',
+      '8:30|Lena|Old workshop schedule says Room 204 · 1:30',
+      '8:32|Omar|Both location and time changed',
     ],
     sourceLabel:'Original triple-document TOEIC-style practice requiring cross-document reasoning; not an official ETS question.',
   },
@@ -354,7 +354,7 @@ export const extraPart7V8: Question[] = [
     stem:'What can be inferred about Lena’s trip to the convention center?',
     choices:c('She took the 8:15 A.M. hotel shuttle.','She will miss the entire keynote.','She left the hotel at 7:45 A.M.','She plans to return to the hotel at noon.'),
     answer:'A',skills:['multi-text','inference'],difficulty:5,ruleId:'p7.multi-text',
-    explanation:'At 8:06 she says she is on the shuttle and expects to arrive about 8:35. The 8:15 shuttle would arrive about 8:35 under the normal 20-minute travel time.',
+    explanation:'At 8:26 she says she is on the shuttle and expects to arrive about 8:35. The 8:15 shuttle would arrive about 8:35 under the normal 20-minute travel time.',
     explanationTh:'ต้องเชื่อมเวลา chat กับ shuttle schedule: ETA 8:35 ตรงกับ shuttle 8:15 + 20 นาที',
     evidence:'It should reach the convention center around 8:35.',
     targetSeconds:110,

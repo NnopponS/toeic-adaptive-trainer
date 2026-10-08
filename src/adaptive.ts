@@ -254,6 +254,26 @@ export function completeLesson(
   return next
 }
 
+export function repairNeeds(state: TrainerState) {
+  const rules = new Map<string, TrainerState['attempts']>()
+  for (const attempt of state.attempts.slice(0, 80)) {
+    const key = attempt.ruleId ?? attempt.skills[0]
+    if (!key) continue
+    const evidence = rules.get(key) ?? []
+    if (evidence.length < 6) evidence.push(attempt)
+    rules.set(key, evidence)
+  }
+  const secure = (a: TrainerState['attempts'][number]) => a.correct && (a.confidence ?? 3) === 3
+    && a.elapsedMs <= (a.targetMs ?? (a.part === 5 ? 25_000 : a.part === 6 ? 45_000 : 75_000)) * 1.25
+  return Object.fromEntries([...rules].map(([key, evidence]) => {
+    // Three successful, confident transfers retire a repair until new evidence appears.
+    const latest = evidence.slice(0, 3)
+    if (latest.length === 3 && latest.every(secure) && new Set(latest.map(a => a.questionId)).size === 3) return [key, 0]
+    const pressure = evidence.reduce((sum, a, index) => sum + (secure(a) ? 0 : !a.correct ? 6 : 3) * (6 - index), 0)
+    return [key, pressure ? clamp(pressure, 24, 100) : 0]
+  }))
+}
+
 export function questionWeight(state: TrainerState, q: Question) {
   const s = normalizeState(state)
   const ruleId = q.ruleId ?? q.skills[0]
@@ -305,6 +325,7 @@ export function questionWeight(state: TrainerState, q: Question) {
     .reduce((sum, a) => sum + (a.confidence === 1 ? 14 : 7), 0)
   const spacingBonus = rule?.lastPracticedAt && Date.now() - rule.lastPracticedAt > 86_400_000 ? 14 : 0
   const freshBonus = questionExposure === 0 ? 10 : 0
+  const transferBonus = (repairNeeds(s)[ruleId] ?? 0) * (questionExposure === 0 ? 0.9 : 0.45)
   const lexicalSurface = [q.stem,...q.choices.map(choice=>choice.text)].join(' ').toLowerCase()
   const vocabReviewBonus = Object.entries(s.vocabReview ?? {}).reduce((sum, [word, review]) => {
     if (word.length < 3 || !lexicalSurface.includes(word)) return sum
@@ -336,6 +357,7 @@ export function questionWeight(state: TrainerState, q: Question) {
       + uncertaintyBonus
       + spacingBonus
       + freshBonus
+      + transferBonus
       + vocabReviewBonus
       + recentWrongVocabBonus
       + authenticPart7Bonus
@@ -360,7 +382,12 @@ export function pickAdaptiveQuestion(state: TrainerState, questions: Question[],
     const floor=mastery<45 ? 1 : mastery<80 ? 2 : 3
     return q.difficulty>=floor && q.difficulty<=ceiling
   })
-  const weighted = (suitable.length ? suitable : pool).map(q => ({ q, w: questionWeight(state, q) }))
+  const eligible = suitable.length ? suitable : pool
+  const needs = repairNeeds(state)
+  const repair = eligible.filter(q => (needs[q.ruleId ?? q.skills[0]] ?? 0) >= 24)
+  // Most questions repair demonstrated gaps; the rest preserve topic coverage.
+  const selection = repair.length && Math.random() < 0.7 ? repair : eligible
+  const weighted = selection.map(q => ({ q, w: questionWeight(state, q) }))
   const total = weighted.reduce((sum, item) => sum + item.w, 0)
   let r = Math.random() * total
   for (const item of weighted) {

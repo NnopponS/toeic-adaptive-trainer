@@ -2883,7 +2883,7 @@ button.choice:hover:not(:disabled),
 .sentence-inline { display:block; font-size:clamp(1.15rem,4.5vw,1.65rem); line-height:1.6; margin:18px 0 10px; }
 .sentence-exam { line-height:1.85; color:#18334f; font-weight:760; letter-spacing:.005em; }
 .sentence-exam .exam-word { display:inline; margin-right:.34em; }
-.sentence-exam .exam-blank { display:inline-block; min-width:78px; margin:0 .34em; padding:0 5px 2px; border:0; border-bottom:2px solid #49677d; border-radius:0; background:transparent; color:#49677d; font:inherit; font-weight:800; line-height:1.1; text-align:center; cursor:default; vertical-align:baseline; }
+.sentence-exam .exam-blank { display:inline-block; min-width:78px; margin:0 .34em; padding:0 5px 2px; border:0; border-bottom:0; border-radius:0; background:transparent; color:#49677d; font:inherit; font-weight:800; line-height:1.1; text-align:center; cursor:default; vertical-align:baseline; }
 .sentence-exam button.exam-blank { cursor:pointer; }
 .sentence-exam button.exam-blank:hover, .sentence-exam button.exam-blank:focus-visible { border-bottom-color:#1c8b62; color:#1c8b62; outline:none; }
 .sentence-word { display:inline-flex; flex-direction:column; align-items:center; vertical-align:top; border:1px solid transparent; background:transparent; color:inherit; font:inherit; border-radius:8px; padding:4px 5px; margin:3px 4px 3px 0; cursor:pointer; }
@@ -2923,32 +2923,9 @@ button.choice:hover:not(:disabled),
 .passage-copy .sentence-inline { font-size:1.1rem; white-space:normal; }
 .passage-copy .sentence-tools, .passage-copy .grammar-estimate, .passage-copy .submitted-answer { white-space:normal; }
 
-.thinking-control { margin:8px 0; }
-.thinking-launcher { border:1px solid #b9d8c9; background:#edf8f2; color:#126344; border-radius:9px; padding:9px 13px; font:inherit; font-size:.8rem; font-weight:750; cursor:pointer; }
-.thinking-popover { position:fixed; inset:auto 16px 80px; margin:0 auto; width:min(410px,calc(100vw - 32px)); max-height:min(46vh,360px); overflow:auto; padding:14px; border:1px solid #bfd7cb; border-radius:14px; box-shadow:0 10px 32px #16392d26; background:#f8fcfa; color:#183750; }
-.thinking-popover::backdrop { background:transparent; }
-.thinking-popover header, .thinking-popover footer { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.thinking-popover header { font-size:.85rem; }
-.thinking-popover button { border:1px solid #cadbd2; border-radius:8px; background:white; padding:8px 12px; min-height:36px; color:inherit; font:inherit; font-size:.8rem; cursor:pointer; }
-.thinking-popover header button { padding:2px 10px; font-size:1.2rem; }
-.thinking-popover h3 { font-size:.92rem; margin:6px 0; }
-.thinking-step { margin:10px 0; }
-.thinking-step small { font-size:.7rem; color:#587466; }
-.thinking-popover p { margin:6px 0; font-size:.82rem; line-height:1.65; }
-.thinking-popover footer { flex-shrink:0; margin:12px -14px -14px; padding:10px 14px; background:#f8fcfa; border-top:1px solid #dcebe3; }
-.thinking-popover .thinking-next { background:#117449; color:white; border-color:#117449; }
-.thinking-popover button:disabled { opacity:.4; cursor:default; }
-.thinking-popover .memory-line { border-top:1px dashed #bcd4c6; padding-top:8px; }
-.thinking-popover details { margin:8px 0; font-size:.8rem; }
-.thinking-popover summary, .lesson-course-note summary, .course-memory-toggle summary { cursor:pointer; font-weight:700; }
 
 
 .sentence-inline { scroll-margin-top:84px; }
-.thinking-popover { height:min(46vh,320px); }
-.thinking-popover:popover-open { display:flex; flex-direction:column; }
-.thinking-popover header { flex-shrink:0; }
-.thinking-body { flex:1; overflow:auto; min-height:0; }
-@media (max-width:600px) { .thinking-popover { inset:auto 16px 80px; margin:0 auto; width:calc(100vw - 32px); height:min(38vh,260px); } .sentence-inline { font-size:1.45rem; } }
 
 /* Compact study workspace: a single active idea, with detail on demand. */
 .mobile-frame { max-width:760px; background:#f8faf8; }
@@ -3439,3 +3416,35 @@ button.choice:hover:not(:disabled),
     font-size: 1.02rem;
   }
 }
+
+/* Clause boundaries remain visible without opening a dialog. */
+.mobile-question-card h2.sentence-inline.sentence-grouped,
+.sentence-inline.sentence-grouped { display:block; line-height:2; font-size:clamp(1.05rem,4vw,1.35rem); }
+.clause-group { padding-bottom:4px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+.clause-main { text-decoration:underline solid #3675b5 2px; text-underline-offset:6px; }
+.clause-subordinate { text-decoration:underline dashed #8552b4 2px; text-underline-offset:6px; }
+.clause-phrase { text-decoration:underline dotted #158579 2px; text-underline-offset:6px; }
+.clause-legend { display:flex; flex-wrap:wrap; gap:16px; margin:8px 0 18px; font-size:.74rem; }
+.filled-answer { background:#d9f5e5; color:#126344; border-radius:4px; font-weight:850; }
+.clue-word { background:#fff0bc; }
+.answer-summary { background:#f0f8f4; border-left:3px solid #328260; padding:10px 14px; border-radius:8px; margin:12px 0; font-size:.88rem; line-height:1.65; }
+.answer-summary p { margin:5px 0; }
+.answer-summary .choice-trap { color:#8f3434; }
+.answer-summary summary, .grammar-details summary { cursor:pointer; font-weight:700; }
+.grammar-details { margin:10px 0; font-size:.8rem; }
+.grammar-detail-words { display:flex; flex-wrap:wrap; gap:3px; margin-top:8px; }
+.grammar-detail-words .sentence-word { border:1px solid #dce8e2; }
+.conference-banner { display:block; width:100%; height:140px; object-fit:cover; border-radius:8px; margin-bottom:12px; }
+
+.p6-inline-document { font-size:1rem; line-height:1.9; }
+.p6-paragraph { margin:0 0 10px; overflow-wrap:anywhere; }
+.p6-paragraph:empty { min-height:8px; }
+.p6-active-blank { display:inline; font:inherit; font-weight:800; color:#126344; background:#e0f6e9; border:1px dashed #398468; border-radius:5px; padding:2px 7px; cursor:pointer; }
+.p6-active-blank:focus-visible { outline:3px solid #3675b5; outline-offset:2px; }
+.p6-active-blank:disabled { cursor:default; opacity:1; }
+.p6-completed { font-weight:750; background:#e7f5ed; color:#126344; }
+.p6-future-blank { color:#657582; white-space:nowrap; }
+.p6-inline-choices { margin:10px 0 14px; padding:10px; border:1px solid #b8d8c8; border-radius:10px; background:#f4fbf7; display:grid; gap:6px; }
+.p6-inline-choices .choice { min-height:42px; font-size:.9rem; }
+.p6-picker-heading { display:flex; align-items:center; justify-content:space-between; font-size:.8rem; }
+.p6-picker-heading button { border:0; background:transparent; font:inherit; font-size:1.25rem; min-width:36px; min-height:36px; cursor:pointer; }
