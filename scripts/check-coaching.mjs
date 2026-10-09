@@ -59,6 +59,9 @@ try {
     }
     if(q.part>=6) assert.ok(passageById[q.passageId] && passageById[q.passageId].questions.includes(q.id),'missing matching passage: '+q.id)
   }
+  const wordformFixture=allQuestions.find(q=>q.id==='p5-12')
+  assert.ok(wordformFixture.whyOthersTh.A.includes('Noun (คำนาม)'), 'noun distractor must name its word class')
+  assert.ok(wordformFixture.whyOthersTh.D.includes('Verb V1'), 'verb distractor must name its word class')
   const sampleGenerated=allQuestions.find(q=>q.id==='v2-p7-01-q1')
   assert.equal(sampleGenerated.rationaleSource,'contextualized')
   assert.ok(sampleGenerated.whyOthersTh.A.includes('The current room has faulty equipment'))

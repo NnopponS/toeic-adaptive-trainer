@@ -155,7 +155,16 @@ function evidenceFromPassage(q:Question,p?:Passage){
 function partOfSpeech(text:string):string {
   const w=wordOf(text)
   if(!w) return 'รูปคำว่าง'
-  if(w.includes(' ')) return /\b(has|have|had|been|be|was|were|will|is|are)\b/.test(w)?'verb phrase (วลีแสดง tense/voice)':'phrase (วลีหลายคำ)'
+  if(w.includes(' ')) return /\b(has|have|had|been|be|was|were|will|is|are)\b/.test(w)?'verb phrase (วลีแสดง tense/voice)':'phrase (วลีหลายคำ)' 
+  const gloss=specialWords[w]??''
+  if(gloss.includes('(Adj.)'))return 'Adjective (คำคุณศัพท์)'
+  if(gloss.includes('(Adv.)'))return 'Adverb (คำกริยาวิเศษณ์)'
+  if(gloss.includes('(N.)'))return 'Noun (คำนาม)'
+  if(gloss.includes('(V.)'))return 'Verb (กริยา)'
+  if(new Set(['quick','clear','prompt','smooth','easy','safe','strong','major','long','short','true','real','actual','concise','complete','modern','stable','secure','large','small','low','high','free','new','old','specific','valid','formal','practical','direct','final','annual','monthly','daily','helpful','reliable','accurate']).has(w)) return 'Adjective (คำคุณศัพท์)'
+  if(new Set(['quicken','clarify','realize','relate','satisfy','modernize','summarize','notify','verify','simplify','justify','apply','provide','submit','produce','succeed','rely','inspect','approve','replace','review','process','inform','establish','manage','assess','implement','estimate','reserve','conduct','streamline','prepare']).has(w)) return 'Verb V1 (กริยารูปพื้นฐาน)'
+  if(new Set(['care','reason','notice','use','practice','growth','staff','equipment','response','process','summary','analysis','finance','performance','customer','client','shipment','claim','evidence','information','notification','requirement','inspection','revision','forecast']).has(w)) return 'Noun (คำนาม)'
+
   if(['is','has','does','was'].includes(w)) return 'finite verb/auxiliary (รูปเอกพจน์)'
   if(['are','have','do','were'].includes(w)) return 'finite verb/auxiliary (รูปพหูพจน์)'
   if(['be','been','being'].includes(w)) return 'รูปของ be ('+w+')'
