@@ -324,7 +324,7 @@ export function questionWeight(state: TrainerState, q: Question) {
     .filter(a => a.correct && a.confidence && a.confidence < 3 && a.skills.some(skill => q.skills.includes(skill)))
     .reduce((sum, a) => sum + (a.confidence === 1 ? 14 : 7), 0)
   const spacingBonus = rule?.lastPracticedAt && Date.now() - rule.lastPracticedAt > 86_400_000 ? 14 : 0
-  const freshBonus = questionExposure === 0 ? 10 : 0
+  const freshBonus = questionExposure === 0 ? 55 : 0
   const transferBonus = (repairNeeds(s)[ruleId] ?? 0) * (questionExposure === 0 ? 0.9 : 0.45)
   const lexicalSurface = [q.stem,...q.choices.map(choice=>choice.text)].join(' ').toLowerCase()
   const vocabReviewBonus = Object.entries(s.vocabReview ?? {}).reduce((sum, [word, review]) => {
@@ -337,10 +337,11 @@ export function questionWeight(state: TrainerState, q: Question) {
     .reduce((sum) => sum + 7, 0)
   const authenticPart7Bonus = q.part === 7 && q.id.startsWith('v8-p7-') ? 36 : q.part === 7 && q.id.startsWith('v7-p7-') ? 30 : 0
   const part7DepthBonus = q.part === 7 ? Math.max(0, q.difficulty - 2) * 7 : 0
+  const advancedPart5Bonus = q.part === 5 && q.id.startsWith('exam-p5-') ? 38 : 0
 
   const recentQuestionPenalty = lastQuestionIndex >= 0 && lastQuestionIndex < 8 ? 90 : lastQuestionIndex >= 8 && lastQuestionIndex < 24 ? 24 : 0
   const interleavePenalty = recentSameRule >= 3 ? 26 : recentSameRule === 2 ? 10 : 0
-  const overExposurePenalty = Math.max(0, questionExposure - 2) * 5
+  const overExposurePenalty = Math.max(0, questionExposure - 1) * 18
 
   return Math.max(
     1,
@@ -362,6 +363,7 @@ export function questionWeight(state: TrainerState, q: Question) {
       + recentWrongVocabBonus
       + authenticPart7Bonus
       + part7DepthBonus
+      + advancedPart5Bonus
       - streakRelief
       - recentQuestionPenalty
       - interleavePenalty
@@ -369,24 +371,47 @@ export function questionWeight(state: TrainerState, q: Question) {
   )
 }
 
-export function pickAdaptiveQuestion(state: TrainerState, questions: Question[], excludeId?: string): Question {
-  const base = questions.filter(q => q.id !== excludeId)
-  if (!base.length) return questions[0]
-  const recentIds = new Set(normalizeState(state).attempts.slice(0, 8).map(a => a.questionId))
-  const freshEnough = base.filter(q => !recentIds.has(q.id))
-  const pool = freshEnough.length >= Math.min(8, base.length) ? freshEnough : base
-  const suitable = pool.filter(q => {
-    const values=q.skills.map(skill=>state.skills[skill]?.mastery).filter((n): n is number=>typeof n==='number')
-    const mastery=values.length ? values.reduce((a,b)=>a+b,0)/values.length : 50
-    const ceiling=mastery<45 ? 2 : mastery<65 ? 3 : mastery<80 ? 4 : 5
-    const floor=mastery<45 ? 1 : mastery<80 ? 2 : 3
-    return q.difficulty>=floor && q.difficulty<=ceiling
+// Normalize the visible prompt, not the item ID: older banks sometimes renamed the same question.
+export function questionFingerprint(q: Question) {
+  const text = q.stem.toLowerCase().normalize('NFKC').replace(/[’']/g, "'")
+    .replace(/_{2,}|[—–-]/g, ' ').replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\s+/g, ' ').trim()
+  return q.part === 5 ? `5:${text}` : `${q.part}:${q.passageId ?? q.id}:${text}`
+}
+
+export function uniqueQuestionPool<T extends Question>(questions: T[]): T[] {
+  const keys = new Set<string>()
+  return questions.filter(q => {
+    const key = questionFingerprint(q)
+    if (keys.has(key)) return false
+    keys.add(key)
+    return true
   })
+}
+
+export function pickAdaptiveQuestion(state: TrainerState, questions: Question[], excludeId?: string): Question {
+  const base = uniqueQuestionPool(questions.filter(q => q.id !== excludeId))
+  if (!base.length) return questions[0]
+  const attempts = normalizeState(state).attempts
+  const seenIds = new Set(attempts.map(a => a.questionId))
+  const recentIds = new Set(attempts.slice(0, 70).map(a => a.questionId))
+  // Exhaust all never-attempted items before scheduling a repeat. Learning a rule
+  // means transferring it to a NEW sentence, not recognizing yesterday's answer.
+  const unseen = base.filter(q => !seenIds.has(q.id))
+  const cooled = base.filter(q => !recentIds.has(q.id))
+  const pool = unseen.length ? unseen : cooled.length ? cooled : base
+  const suitable = pool.filter(q => {
+    const values = q.skills.map(skill => state.skills[skill]?.mastery).filter((n): n is number => typeof n === 'number')
+    const mastery = values.length ? values.reduce((x,y) => x+y,0) / values.length : 50
+    const ceiling = mastery < 45 ? 2 : mastery < 65 ? 3 : mastery < 80 ? 4 : 5
+    const floor = mastery < 45 ? 1 : mastery < 80 ? 2 : 3
+    return q.difficulty >= floor && q.difficulty <= ceiling
+  })
+  // Freshness wins even when all remaining new items are above the estimated level.
   const eligible = suitable.length ? suitable : pool
   const needs = repairNeeds(state)
   const repair = eligible.filter(q => (needs[q.ruleId ?? q.skills[0]] ?? 0) >= 24)
-  // Most questions repair demonstrated gaps; the rest preserve topic coverage.
-  const selection = repair.length && Math.random() < 0.7 ? repair : eligible
+  const selection = repair.length && Math.random() < 0.65 ? repair : eligible
   const weighted = selection.map(q => ({ q, w: questionWeight(state, q) }))
   const total = weighted.reduce((sum, item) => sum + item.w, 0)
   let r = Math.random() * total

@@ -17,6 +17,7 @@ import {
   normalizeState,
   partAccuracy,
   pickAdaptiveQuestion,
+  uniqueQuestionPool,
   questionsForSkill,
   questionTargetMs,
   recentAccuracy,
@@ -1335,7 +1336,11 @@ function inspectionText(question: Question, choiceId: string, lang: Language) {
   if (!choice) return ''
   if (lang === 'th' && question.coaching?.choiceReasons[choiceId]) return question.coaching.choiceReasons[choiceId]
   if (choiceId === question.answer) return localizedQuestionExplanation(question, lang)
-  if (question.whyOthers?.[choiceId]) return question.whyOthers[choiceId]
+  if (lang === 'th' && question.whyOthersTh?.[choiceId]) return question.whyOthersTh[choiceId]
+  if (question.whyOthers?.[choiceId]) {
+    const reason = question.whyOthers[choiceId]
+    return lang === 'th' ? `${reason} · หลักที่ใช้ตัดสิน: ${localizedQuestionExplanation(question, lang)}` : reason
+  }
   if (question.part <= 6) {
     return explainChoice(question, choiceId, buildQuestionAnalysis(question, lang), lang)
   }
@@ -1401,12 +1406,24 @@ function AnswerWalkthrough({ question, selected, contextText }: { question: Ques
   const clues = authored?.focus ?? (question.evidence ? [question.evidence] : [])
   const reason = inspectionText(question, question.answer, lang)
   const memory = authored?.memory ?? (question.part < 7 ? spottingRules(question, contextText, lang)[0] : undefined)
+  const steps = authored?.steps ?? (question.part < 7 ? buildQuestionAnalysis(question, lang).steps : [])
   return (
     <div className="answer-summary">
+      {question.part < 7 && steps.length > 0 && (
+        <div className="answer-logic"><b>{L(lang,'Reason through the sentence','วิเคราะห์ทีละขั้น: โครงสร้าง → หน้าที่ → คำตอบ')}</b>
+          <ol>{steps.map((step,index)=><li key={index}>{step}</li>)}</ol>
+        </div>
+      )}
       {clues.length > 0 && <p><b>{L(lang,'Look for','จุดสังเกต')}:</b> {clues.map((clue, index) => <span key={clue}>{index > 0 && ' · '}<u>{clue}</u></span>)}</p>}
       <p><b>{L(lang,'Why it works','เหตุผลที่ถูก')}:</b> {reason}</p>
       {selected && selected !== question.answer && <p className="choice-trap"><b>{L(lang,'Your choice','ตัวที่คุณเลือก')}:</b> {inspectionText(question, selected, lang)}</p>}
       {memory && memory !== reason && <p className="memory-line"><b>{L(lang,'Remember','จำสั้น ๆ')}:</b> {memory}</p>}
+      {question.part < 7 && <details className="answer-alternatives"><summary>{L(lang,'Compare all four choices (A–D)','เทียบเหตุผลครบทั้ง A–D')}</summary>
+        {question.choices.map(choice=><div className="answer-alternative" key={choice.id}>
+          <b>{choice.id}. {choice.text} {choice.id===question.answer?'✓':''}</b>
+          <p>{inspectionText(question,choice.id,lang)}</p>
+        </div>)}
+      </details>}
       {question.translationTh && lang === 'th' && <details><summary>แปลประโยค</summary><p>{question.translationTh}</p></details>}
     </div>
   )
@@ -2529,11 +2546,21 @@ function firstQuestionOfPickedPassage(
     ? pool.filter(q => q.passageId !== excludePassageId)
     : pool
   const baseCandidates = candidates.length ? candidates : pool
-  const picked = pickAdaptiveQuestion(state, baseCandidates)
-  if (!picked.passageId) return picked
-  const passage = map[picked.passageId]
-  const firstId = passage?.questions.find(id => pool.some(q => q.id === id))
-  return pool.find(q => q.id === firstId) ?? picked
+  if (!baseCandidates.some(q => q.passageId)) return pickAdaptiveQuestion(state, baseCandidates)
+  // Pick by first question of each document. Sampling an arbitrary blank and then
+  // rewinding to question 1 made already-seen Part 6 passages recur excessively.
+  const firsts = new Map<string, Question>()
+  for (const item of baseCandidates) {
+    if (!item.passageId || firsts.has(item.passageId)) continue
+    const firstId = map[item.passageId]?.questions.find(id => baseCandidates.some(q => q.id === id))
+    const first = baseCandidates.find(q => q.id === firstId)
+    if (first) firsts.set(item.passageId, first)
+  }
+  const candidatesByPassage = [...firsts.values()]
+  if (!candidatesByPassage.length) return pickAdaptiveQuestion(state, baseCandidates)
+  const attempted = new Set(state.attempts.map(a => a.questionId))
+  const freshPassages = candidatesByPassage.filter(q => map[q.passageId!]?.questions.every(id => !attempted.has(id)))
+  return pickAdaptiveQuestion(state, freshPassages.length ? freshPassages : candidatesByPassage)
 }
 
 function nextQuestionInSamePassage(
@@ -2607,19 +2634,16 @@ function DailyPartComplete({
 }
 
 function practicePool(questions: Question[], exam: boolean, map: Record<string, Passage> = passageById) {
-  if (questions[0]?.part !== 5) {
-    const realistic = questions.filter(q => q.passageId && map[q.passageId]?.examStyle)
-    if (realistic.length) questions = realistic
-  }
-  // Part 5 uses reviewed word roles; the full historical bank remains available in past results.
-  if (questions[0]?.part===5) {
-    const reviewed=questions.filter(q=>reviewedGrammar[q.id])
-    if (reviewed.length) questions=reviewed
-  }
-  if (!exam) return questions
-  const passageIds = new Set(questions.filter(q => q.difficulty >= 3).map(q => q.passageId).filter(Boolean))
-  const challenging = questions.filter(q => q.passageId ? passageIds.has(q.passageId) : q.difficulty >= 3)
-  return challenging.length ? challenging : questions
+  // All original Part 5 questions are usable. The old grammar-map-only filter
+  // silently discarded hundreds of different questions.
+  const unique = uniqueQuestionPool(questions)
+  const realistic = unique[0]?.part === 5 ? unique : unique.filter(q => q.passageId && map[q.passageId]?.examStyle)
+  const pool = realistic.length ? realistic : unique
+  if (!exam) return pool
+  // Select ENTIRE reading passages when one question is challenging.
+  const passageIds = new Set(pool.filter(q => q.difficulty >= 3).map(q => q.passageId).filter(Boolean))
+  const challenging = pool.filter(q => q.passageId ? passageIds.has(q.passageId) : q.difficulty >= 3)
+  return challenging.length ? challenging : pool
 }
 
 function PracticeScreen({
@@ -2640,7 +2664,7 @@ function PracticeScreen({
   readingSwitch?: (part: 6 | 7) => void
 }) {
   const lang = useLanguage()
-  const [exam, setExam] = useState(part !== 5)
+  const [exam, setExam] = useState(true)
   const activePassageMap = passageMap ?? passageById
   const pool = useMemo(() => practicePool(sourcePool, exam, activePassageMap), [sourcePool, exam, activePassageMap])
   const [question, setQuestion] = useState<Question>(() => firstQuestionOfPickedPassage(state, pool, activePassageMap))
@@ -2679,6 +2703,12 @@ function PracticeScreen({
   const targets = dailyTargets(state)
   const partTarget = part === 5 ? targets.part5 : part === 6 ? targets.part6 : targets.part7
   const partDone = todayPartCount(state, part)
+  const seenIds = new Set(state.attempts.map(a => a.questionId))
+  const unseenCount = part === 5
+    ? pool.filter(q => !seenIds.has(q.id)).length
+    : new Set(pool.map(q => q.passageId).filter((id): id is string => Boolean(id))).size
+      - new Set(pool.filter(q => seenIds.has(q.id)).map(q => q.passageId)).size
+  const poolTotal = part === 5 ? pool.length : new Set(pool.map(q => q.passageId)).size
   const passageBoundary = part === 5 || !passage || passageQuestionIndex >= passageQuestionIds.length - 1
   const goalReached = partDone >= partTarget
   const showDailyComplete = goalReached && !extraPractice && !checked && (session.length===0 || dailyComplete)
@@ -2779,6 +2809,7 @@ function PracticeScreen({
         <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}{extraPractice ? L(lang, ' · extra', ' · ฝึกเพิ่ม') : ''}</span>
       </div>
       <div className="session-status"><b>{L(lang,'SHORT SET','ชุดสั้น')} · {L(lang,'Question','ข้อ')} {session.length + (checked ? 0 : 1)}</b><span>{L(lang,'6+ questions · finish the whole passage','6 ข้อขึ้นไป · ทำให้จบทั้งบทความ')}</span></div>
+      <p className="fresh-bank-meter">{L(lang, 'Unseen', 'ยังไม่เคยทำ')}: <b>{unseenCount}/{poolTotal}</b> {part === 5 ? L(lang,'unique questions','ข้อไม่ซ้ำ') : L(lang,'complete passages','บทอ่าน')} {unseenCount === 0 && <span>· {L(lang,'All new items completed; review mode','ทำข้อใหม่ครบแล้ว เริ่มทบทวนข้อเก่า')}</span>}</p>
       {checked && <details className="adaptive-why"><summary>{L(lang,'Why this question?','ทำไมระบบเลือกข้อนี้?')}</summary><p>{L(lang,'Selection balances difficulty with weak skills, missed patterns, confidence, speed, spacing and recent exposure.','ระบบจัดน้ำหนักจากระดับที่ทำได้ จุดอ่อน pattern ที่พลาด ความมั่นใจ เวลา และระยะทบทวน พร้อมลดข้อที่เพิ่งเห็น')} · {question.skills.map(skill=>`${localizedSkill(skill,lang)} ${skillAssessment(state,skill).value??'—'}%`).join(' / ')}</p></details>}
 
       {passage && (

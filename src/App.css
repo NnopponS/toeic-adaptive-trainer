@@ -3448,3 +3448,15 @@ button.choice:hover:not(:disabled),
 .p6-inline-choices .choice { min-height:42px; font-size:.9rem; }
 .p6-picker-heading { display:flex; align-items:center; justify-content:space-between; font-size:.8rem; }
 .p6-picker-heading button { border:0; background:transparent; font:inherit; font-size:1.25rem; min-width:36px; min-height:36px; cursor:pointer; }
+
+/* Clearly staged post-answer logic and visibility into the genuine question inventory. */
+.answer-logic { margin: 12px 0; }
+.answer-logic > b { display:block; font-weight: 750; margin-bottom: 7px; }
+.answer-logic ol { margin: 0; padding-inline-start: 1.35rem; display:grid; gap: 7px; line-height:1.55; }
+.answer-alternatives { margin-top: 14px; border-top: 1px solid var(--border, #d9e0e8); padding-top:12px; }
+.answer-alternatives summary { cursor:pointer; font-weight:700; }
+.answer-alternative { padding: 10px 0; border-bottom: 1px solid var(--border, #e1e6eb); }
+.answer-alternative b { display:block; overflow-wrap:anywhere; }
+.answer-alternative p { margin:5px 0 0; line-height:1.55; overflow-wrap:anywhere; }
+.fresh-bank-meter { font-size:0.82rem; opacity:0.85; margin: 6px 0 15px; }
+.fresh-bank-meter b { font-variant-numeric:tabular-nums; }

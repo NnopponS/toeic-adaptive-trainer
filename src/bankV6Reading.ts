@@ -119,6 +119,7 @@ seeds.forEach((seed,pIndex)=>{
   extraPassagesV6.push({
     id:passageId,part:6,kind:seed.kind,title:seed.title,body:seed.body,questions:ids,
     sourceLabel:'Original TOEIC-style practice modeled on official ETS Part 6 task structure; not official ETS questions.',
+    examStyle:true,
   })
   seed.questions.forEach((q,qIndex)=>{
     extraPart6V6.push({

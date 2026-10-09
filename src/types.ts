@@ -45,6 +45,7 @@ export interface Question {
   choiceTranslationsTh?: Record<string, string>
   evidence?: string
   whyOthers?: Record<string, string>
+  whyOthersTh?: Record<string, string>
   passageId?: string
   source?: 'core' | 'personalized'
   createdAt?: number

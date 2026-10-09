@@ -31,12 +31,12 @@ try {
   const { coachingQuestions, coachingPart6, coachingPart7, foundationCoaching } = await import(pathToFileURL(path.join(dir, 'bankCoaching.mjs')))
   const { reviewedGrammar, grammarClasses, grammarFunctions } = await import(pathToFileURL(path.join(dir, 'grammarGuide.mjs')))
   const { lessons } = await import(pathToFileURL(path.join(dir, 'lessons.mjs')))
-  const { emptyState, recordAttempt, addFeedbackToLatest, pickAdaptiveQuestion, completeReadingSample, markVocabReview, classifyAttempt, questionTargetMs, repairNeeds, questionWeight } = await import(pathToFileURL(path.join(dir,'adaptive.mjs')))
+  const { emptyState, recordAttempt, addFeedbackToLatest, pickAdaptiveQuestion, completeReadingSample, markVocabReview, classifyAttempt, questionTargetMs, repairNeeds, questionWeight, questionFingerprint } = await import(pathToFileURL(path.join(dir,'adaptive.mjs')))
   const { courseCards, courseSources, cardIsDue, recallForQuestion } = await import(pathToFileURL(path.join(dir,'courseCards.mjs')))
   assert.equal(recallForQuestion(coachingQuestions.find(q=>q.id==='coach-p5-14')).chapter,19,'connector errors should recall connectors, not unrelated if-clause notes')
   assert.equal(courseSources.length,30)
   assert.equal(Object.keys(foundationCoaching).length,31)
-  for (const q of practicePool(part5,false)) {
+  for (const q of part5.filter(q=>reviewedGrammar[q.id])) {
     assert.ok(q.coaching, `reviewed Part 5 needs authored coaching: ${q.id}`)
     assert.equal(q.coaching.steps.length,3)
     assert.deepEqual(Object.keys(q.coaching.choiceReasons),['A','B','C','D'])
@@ -61,7 +61,9 @@ try {
       for (const id of new Set(sample.map(q=>q.passageId))) assert.deepEqual(sample.filter(q=>q.passageId===id).map(q=>q.id),passageById[id].questions,'mock must preserve every question in each passage')
     }
   }
-  assert.ok(practicePool(part5,true).length>=30,'there must be enough reviewed challenge questions for the mock')
+  assert.ok(practicePool(part5,true).length>=30,'there must be enough challenging Part 5 questions for the mock')
+  assert.ok(practicePool(part5,false).length>150,'full Part 5 pool must not be limited to grammar-map examples')
+  assert.ok(new Set(practicePool(part5,false).map(q=>q.id)).size===practicePool(part5,false).length,'no duplicate IDs in practice');
   const { chooseFresher } = await import(pathToFileURL(path.join(dir,'App.mjs')))
   const leak = renderToStaticMarkup(createElement(QuestionCard,{question:coachingQuestions[0],selected:'',checked:false,activeStep:3,onSelect:()=>{}}))
   assert.ok(leak.match(/<h2.*?<\/h2>/s)[0].includes('_____'), 'a previous explanation step must never reveal the next unanswered question')
@@ -296,6 +298,17 @@ try {
   }
   assert.match(blankRequirement(coachingQuestions.find(q => q.id === 'coach-p5-11')).labelEn, /gerund/)
   assert.ok(practicePool(part5, true).every(q => q.difficulty >= 3))
+  const freshTestPool = practicePool(part5,true).slice(0,24)
+  let freshState = emptyState()
+  const chosen = []
+  for (let i=0;i<freshTestPool.length;i++) {
+    const nextQ = pickAdaptiveQuestion(freshState, freshTestPool)
+    chosen.push(nextQ.id)
+    freshState=recordAttempt(freshState,nextQ,nextQ.answer,25_000)
+  }
+  assert.equal(new Set(chosen).size,freshTestPool.length,'adaptive must exhaust fresh items before repeating')
+  assert.equal(new Set(practicePool(part5,false).map(questionFingerprint)).size, practicePool(part5,false).length, 'canonical Part 5 duplicates must be removed')
+
   for (const bank of [part6, part7]) {
     const eligible = practicePool(bank, true)
     for (const q of eligible) assert.equal(eligible.filter(x => x.passageId === q.passageId).length, bank.filter(x => x.passageId === q.passageId).length, 'reading sets stay complete')
