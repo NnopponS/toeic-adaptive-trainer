@@ -27,7 +27,7 @@ import {
   studyStreak,
 } from './adaptive'
 import { part5, part6, part7, passageById, skillLabels } from './data'
-import { adaptiveNeeds, adaptiveReason, recommendedReadingPart } from './adaptiveFocus'
+import { adaptiveNeeds, adaptiveReason, conceptKey, recommendedReadingPart } from './adaptiveFocus'
 import {
   loadCloudState,
   publishQuestionBankManifest,
@@ -2599,20 +2599,38 @@ function firstQuestionOfPickedPassage(
     : pool
   const baseCandidates = candidates.length ? candidates : pool
   if (!baseCandidates.some(q => q.passageId)) return pickAdaptiveQuestion(state, baseCandidates)
-  // Pick by first question of each document. Sampling an arbitrary blank and then
-  // rewinding to question 1 made already-seen Part 6 passages recur excessively.
+
+  // Score each *whole document* by its strongest relevant blank/question.
+  // Previously only blank 1 was scored, so a missed connector or gerund in
+  // blank 3 could never help prioritize the document containing that practice.
+  const byId = new Map(baseCandidates.map(q => [q.id, q]))
   const firsts = new Map<string, Question>()
   for (const item of baseCandidates) {
     if (!item.passageId || firsts.has(item.passageId)) continue
-    const firstId = map[item.passageId]?.questions.find(id => baseCandidates.some(q => q.id === id))
-    const first = baseCandidates.find(q => q.id === firstId)
+    const firstId = map[item.passageId]?.questions.find(id => byId.has(id))
+    const first = firstId ? byId.get(firstId) : undefined
     if (first) firsts.set(item.passageId, first)
   }
-  const candidatesByPassage = [...firsts.values()]
-  if (!candidatesByPassage.length) return pickAdaptiveQuestion(state, baseCandidates)
+  const passages = [...firsts.values()]
+  if (!passages.length) return pickAdaptiveQuestion(state, baseCandidates)
   const attempted = new Set(state.attempts.map(a => a.questionId))
-  const freshPassages = candidatesByPassage.filter(q => map[q.passageId!]?.questions.every(id => !attempted.has(id)))
-  return pickAdaptiveQuestion(state, freshPassages.length ? freshPassages : candidatesByPassage)
+  const fresh = passages.filter(q => map[q.passageId!]?.questions.every(id => !attempted.has(id)))
+  const eligible = fresh.length ? fresh : passages
+  const needs = new Map(adaptiveNeeds(state).map(n => [n.concept, n.priority]))
+  const scored = eligible.map(first => {
+    const doc = map[first.passageId!]
+    const items = (doc?.questions ?? []).map(id => byId.get(id)).filter((q): q is Question => Boolean(q))
+    const strongest = items.reduce((best, item) => {
+      const score = needs.get(conceptKey(item.ruleId, item.skills, item.part)) ?? 0
+      const bestScore = needs.get(conceptKey(best.ruleId, best.skills, best.part)) ?? 0
+      return score > bestScore ? item : best
+    }, first)
+    // Only use the strongest item as a scoring proxy. Return the untouched
+    // first question so Part 6 blanks still appear in their natural order.
+    return { ...first, ruleId: strongest.ruleId, skills: strongest.skills, difficulty: strongest.difficulty }
+  })
+  const chosen = pickAdaptiveQuestion(state, scored)
+  return byId.get(chosen.id) ?? passages[0]
 }
 
 function nextQuestionInSamePassage(

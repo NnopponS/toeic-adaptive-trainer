@@ -240,6 +240,28 @@ try {
     assert.equal(calibration.id,'foundation','calibration must not jump to an advanced question just because the lottery picks it')
   } finally { Math.random=originalRandom }
   const { sentenceGroups, firstQuestionOfPickedPassage } = await import(pathToFileURL(path.join(dir,'App.mjs')))
+  // The most relevant Part 6 blank may be q3, but the passage must still start at q1.
+  const docBase={ ...coachingPart6[0], part:6, difficulty:2, skills:['context'],ruleId:'unrelated.context' }
+  const docA=Array.from({length:4},(_,index)=>({
+    ...docBase,id:'focus-doc-a-'+(index+1),passageId:'focus-doc-a',stem:'['+(index+1)+'] _____',
+    ...(index===2?{ruleId:'gerund.after-preposition',skills:['verb-tense']}:{}),
+  }))
+  const docB=Array.from({length:4},(_,index)=>({
+    ...docBase,id:'focus-doc-b-'+(index+1),passageId:'focus-doc-b',stem:'['+(index+1)+'] _____',
+  }))
+  const docMap={
+    'focus-doc-a':{ id:'focus-doc-a',part:6,kind:'email',title:'A',body:'',questions:docA.map(q=>q.id) },
+    'focus-doc-b':{ id:'focus-doc-b',part:6,kind:'email',title:'B',body:'',questions:docB.map(q=>q.id) },
+  }
+  const weakGerund={ ...docBase,id:'previous-gerund-failure',ruleId:'gerund.after-preposition',skills:['verb-tense'] }
+  const gerundState=recordAttempt(emptyState(),weakGerund,'A'===weakGerund.answer?'B':'A',36_000)
+  const oldRandomForPassage=Math.random
+  try {
+    Math.random=()=>0
+    assert.equal(firstQuestionOfPickedPassage(gerundState,[...docB,...docA],docMap).id,'focus-doc-a-1',
+      'select a document for a weak q3 concept, but start at q1')
+  } finally { Math.random=oldRandomForPassage }
+
   const clauseQ = allQuestions.find(q=>q.id==='p5-06')
   const grouped = sentenceGroups(clauseQ,labelWords(clauseQ,undefined,'en'))
   assert.deepEqual(grouped.filter(g=>g.tone==='subordinate').flatMap(g=>g.words).filter(w=>!w.punctuation).map(w=>w.text), ['which','was','released','last','week'], 'relative clause underline must cover its whole phrase')
