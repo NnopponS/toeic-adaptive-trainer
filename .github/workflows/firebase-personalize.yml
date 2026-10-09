@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "adaptive-packs/**"
+      - ".github/workflows/firebase-personalize.yml"
 
 permissions:
   contents: read
