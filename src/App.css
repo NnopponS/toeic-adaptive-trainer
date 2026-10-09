@@ -3550,3 +3550,10 @@ button.choice:hover:not(:disabled),
   .answer-alternative p { margin-left:0; }
   .analysis-takeaway { flex-wrap:wrap; }
 }
+
+/* Adaptive evidence on the home route. Clear and lightweight on mobile. */
+.focus-dashboard { margin: 14px 0 22px; border:1px solid #dce5f0; background:#f8fbff; border-radius:16px; padding:15px; display:grid; gap:9px; }
+.focus-dashboard > b { color:#23445f; font-size:.87rem; }
+.focus-dashboard > div { display:flex; flex-wrap:wrap; gap:7px; }
+.focus-dashboard > div span { max-width:100%; overflow-wrap:anywhere; border:1px solid #d7e3ef; border-radius:9px; background:white; padding:6px 9px; color:#365671; font-size:.75rem; }
+.focus-dashboard small { line-height:1.55; color:#577088; font-size:.74rem; }

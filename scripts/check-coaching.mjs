@@ -28,6 +28,50 @@ try {
   await compile('App')
   const { labelWords, correctSentenceForMap, inspectionText, blankRequirement, QuestionCard, practicePool, BottomNav, PassageDocument, stepWordIndexes } = await import(pathToFileURL(path.join(dir, 'App.mjs')))
   const { allQuestions, part5, part6, part7, passageById } = await import(pathToFileURL(path.join(dir, 'data.mjs')))
+  const { adaptiveNeeds, adaptiveReason, recommendedReadingPart, conceptKey } = await import(pathToFileURL(path.join(dir, 'adaptiveFocus.mjs')))
+  assert.equal(conceptKey('exam2.conjunction.27',['conjunction'],5),'connector.clause-vs-phrase')
+  assert.equal(conceptKey('exam.conjunction.5',['conjunction'],5),'connector.clause-vs-phrase')
+  const coverage = [part5, part6, part7].map(pool => ({
+    part:pool[0]?.part, total:pool.length,
+    authoredThaiFourChoices:pool.filter(q => q.choices.every(c => Boolean(q.coaching?.choiceReasons[c.id] || q.whyOthersTh?.[c.id]))).length,
+    threeStepWalkthrough:pool.filter(q => q.coaching?.steps?.length === 3).length,
+    completeSyntaxMap:pool.filter(q => Boolean(q.coaching?.breakdown)).length,
+  }))
+  console.log('BUNDLED_BANK_COVERAGE ' + JSON.stringify(coverage))
+  const packsDir=path.resolve('adaptive-packs')
+  const names=(await import('node:fs/promises')).readdir
+  const packFiles=(await names(packsDir)).filter(name=>name.endsWith('.json'))
+  const personalized = await Promise.all(packFiles.map(async name => JSON.parse(await readFile(path.join(packsDir,name),'utf8'))))
+  const newPersonalized = personalized.flatMap(pack=>pack.questions||[]).filter(q=>q.id.startsWith('personal-20261009-'))
+  assert.ok(newPersonalized.length >= 42, 'fresh personalized grammar + reading transfer bank')
+  for (const q of newPersonalized) {
+    assert.equal(q.choices.length,4, q.id)
+    assert.ok(q.choices.some(c => c.id===q.answer), q.id + ': answer missing')
+    assert.ok(q.explanationTh && q.choices.every(c=>q.coaching?.choiceReasons[c.id] || q.whyOthersTh?.[c.id]),q.id + ': incomplete Thai A-D')
+    if (q.part < 7) assert.equal(q.coaching?.steps.length,3, q.id + ': reasoning stages')
+  }
+  for (const passage of personalized.flatMap(pack=>pack.passages||[])) {
+    if (!passage.id.startsWith('personal-20261009-')) continue
+    assert.ok(passage.examStyle && passage.questions.length===4)
+    if (passage.part===6) for (let i=1;i<=4;i++) assert.ok(passage.body.includes('['+i+'] _____'))
+    for (const id of passage.questions) assert.ok(newPersonalized.find(q=>q.id===id && q.passageId===passage.id))
+  }
+  const simulatedCounts={...emptyState(),attempts:[
+    ...Array.from({length:129},(_,i)=>({questionId:'a'+i,part:5,skills:['part-of-speech'],correct:true,selected:'A',elapsedMs:19000,at:Date.now()-i*1000})),
+    ...Array.from({length:26},(_,i)=>({questionId:'b'+i,part:6,skills:['context'],correct:true,selected:'A',elapsedMs:35000,at:Date.now()-i*1000})),
+    ...Array.from({length:19},(_,i)=>({questionId:'c'+i,part:7,skills:['inference'],correct:true,selected:'A',elapsedMs:65000,at:Date.now()-i*1000}))
+  ]}
+  assert.equal(recommendedReadingPart(simulatedCounts).part,7,'coverage recommendation must not send a saturated Part 5 learner back to Part 5')
+  const repairedConcept=adaptiveNeeds({
+    ...emptyState(),
+    attempts:[
+      {questionId:'second-conj',part:5,correct:false,selected:'A',elapsedMs:20000,at:Date.now(),skills:['conjunction'],ruleId:'exam2.conjunction.27'},
+      {questionId:'first-conj',part:5,correct:false,selected:'B',elapsedMs:21000,at:Date.now()-1000,skills:['conjunction'],ruleId:'exam.conjunction.5'}
+    ]
+  })
+  assert.ok(repairedConcept.some(n=>n.concept==='connector.clause-vs-phrase' && n.misses===2 && n.priority>60),'same concept across question IDs must combine errors')
+  assert.ok(adaptiveReason(emptyState(),part5[0]).detailTh.length>15)
+
   const { coachingQuestions, coachingPart6, coachingPart7, foundationCoaching } = await import(pathToFileURL(path.join(dir, 'bankCoaching.mjs')))
   const { reviewedGrammar, grammarClasses, grammarFunctions } = await import(pathToFileURL(path.join(dir, 'grammarGuide.mjs')))
   const { lessons } = await import(pathToFileURL(path.join(dir, 'lessons.mjs')))

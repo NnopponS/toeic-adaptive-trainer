@@ -14,43 +14,68 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Publish personalized questions to Firebase
+      - name: Validate and publish reviewed questions and complete reading passages
         shell: bash
         run: |
-          node <<'NODE'
-          const fs = await import('node:fs');
-          const path = await import('node:path');
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
           const DB = 'https://toeic-study-c4905-default-rtdb.asia-southeast1.firebasedatabase.app';
           const dir = path.join(process.cwd(), 'adaptive-packs');
-          const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort() : [];
-          const questions = {};
-
+          const files = fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort();
+          const questions = {}, passages = {};
           for (const file of files) {
             const pack = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+            for (const p of pack.passages ?? []) {
+              if (!p.id || ![6,7].includes(p.part) || !p.body || !Array.isArray(p.questions)) {
+                throw new Error('Invalid passage in ' + file);
+              }
+              if (passages[p.id]) throw new Error('Duplicate passage id: ' + p.id);
+              if (p.part === 6 && (p.questions.length !== 4 || !p.questions.every((id,i) =>
+                p.body.includes('[' + (i+1) + '] _____'))) throw new Error('Part 6 needs four matching blanks: ' + p.id);
+              passages[p.id] = p;
+            }
             for (const q of pack.questions ?? []) {
-              if (!q.id || !q.part || !Array.isArray(q.choices)) throw new Error('Invalid question in ' + file);
-              questions[q.id] = { ...q, source:'personalized', createdAt:q.createdAt ?? Date.now() };
+              if (!q.id || ![5,6,7].includes(q.part) || !Array.isArray(q.choices) || q.choices.length !== 4 ||
+                  !q.choices.some(c => c.id === q.answer) || new Set(q.choices.map(c => c.id)).size !== 4 ||
+                  !q.stem || !q.explanation || !Array.isArray(q.skills) || !q.skills.length) {
+                throw new Error('Invalid question in ' + file + ': ' + q.id);
+              }
+              if (questions[q.id]) throw new Error('Duplicate question id: ' + q.id);
+              if (q.id.startsWith('personal-20261009-')) {
+                const reasons = q.coaching?.choiceReasons ?? q.whyOthersTh;
+                if (!reasons || q.choices.some(c => !reasons[c.id]) || !q.explanationTh) {
+                  throw new Error('Question lacks individual Thai explanations: ' + q.id);
+                }
+                if (q.part < 7 && (!q.coaching?.steps || q.coaching.steps.length !== 3)) {
+                  throw new Error('Question lacks 3-step coaching: ' + q.id);
+                }
+              }
+              questions[q.id] = { ...q, source: 'personalized', createdAt: q.createdAt || Date.now() };
             }
           }
-
-          const res = await fetch(DB + '/questionBank/personalized.json', {
-            method:'PATCH',
-            headers:{'content-type':'application/json'},
-            body:JSON.stringify(questions),
+          for (const p of Object.values(passages)) {
+            if (p.questions.some(id => !questions[id] || questions[id].passageId !== p.id || questions[id].part !== p.part)) {
+              throw new Error('Passage question references are not complete: ' + p.id);
+            }
+          }
+          async function patch(key, data) {
+            if (!Object.keys(data).length) return;
+            const response = await fetch(DB + '/questionBank/' + key + '.json', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+            if (!response.ok) throw new Error('Firebase ' + key + ' publish failed: ' + response.status + ' ' + await response.text());
+          }
+          await patch('personalized', questions);
+          await patch('passages', passages);
+          await patch('meta', {
+            personalizedCount: Object.keys(questions).length,
+            personalizedPassageCount: Object.keys(passages).length,
+            personalizedUpdatedAt: Date.now(),
+            personalizedPackFiles: files.length,
           });
-          if (!res.ok) throw new Error('Firebase publish failed: ' + res.status + ' ' + await res.text());
-
-          const meta = await fetch(DB + '/questionBank/meta.json', {
-            method:'PATCH',
-            headers:{'content-type':'application/json'},
-            body:JSON.stringify({
-              personalizedCount:Object.keys(questions).length,
-              personalizedUpdatedAt:Date.now(),
-              personalizedPackFiles:files.length,
-            }),
-          });
-          if (!meta.ok) throw new Error('Firebase meta update failed: ' + meta.status + ' ' + await meta.text());
-
-          console.log('Published personalized questions:', Object.keys(questions).length);
-          console.log('Pack files:', files.join(', '));
+          console.log('Published', Object.keys(questions).length, 'personalized questions,',
+            Object.keys(passages).length, 'full passages from', files.length, 'packs.');
           NODE

@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { get, getDatabase, onValue, ref, set, update } from 'firebase/database'
+import { get, getDatabase, onValue, ref, update } from 'firebase/database'
 import { buildAgentSummary, dailyTargets, normalizeState } from './adaptive'
 import type { Passage, Question, TrainerState } from './types'
 
@@ -84,8 +84,8 @@ export async function syncCloudState(state: TrainerState) {
     },
     [`${base}/meta`]: {
       schemaVersion: 7,
-      appVersion: '6.3.0',
-      adaptiveVersion: 'v12-exam-reading',
+      appVersion: '6.4.0',
+      adaptiveVersion: 'v13-concept-transfer',
       lastSyncAt: Date.now(),
       examDate: '2026-10-17',
     },
@@ -117,9 +117,9 @@ export function watchPersonalizedPassages(callback: (passages: Passage[]) => voi
 }
 
 export async function publishQuestionBankManifest(counts: { part5: number; part6: number; part7: number }) {
-  await set(ref(db, 'questionBank/meta'), {
+  await update(ref(db, 'questionBank/meta'), {
     ...counts,
-    appBankVersion: 6,
+    appBankVersion: 7,
     updatedAt: Date.now(),
     note: 'Core bank is bundled with the app; personalized questions and Part 6/7 passages are loaded live from Firebase.',
   })

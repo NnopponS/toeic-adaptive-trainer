@@ -1,0 +1,518 @@
+{
+  "createdAt": "2026-10-09T10:44:00+07:00",
+  "description": "Original Part 6 context passages targeting gerund, connector, fixed-phrase errors",
+  "questions": [
+    {
+      "id": "personal-20261009-p6-01-q1",
+      "part": 6,
+      "passageId": "personal-20261009-p6-01",
+      "stem": "[1] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "submit"
+        },
+        {
+          "id": "B",
+          "text": "submitting"
+        },
+        {
+          "id": "C",
+          "text": "submitted"
+        },
+        {
+          "id": "D",
+          "text": "submission"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "difficulty": 4,
+      "explanation": "before เป็น preposition ในวลี before submitting; submitting เป็น V-ing และมี any changes เป็นกรรม",
+      "explanationTh": "before เป็น preposition ในวลี before submitting; submitting เป็น V-ing และมี any changes เป็นกรรม",
+      "whyOthersTh": {
+        "A": "submit เป็น V1 โดด ๆ หลัง before ไม่ถูกใน reduced phrase นี้",
+        "B": "submitting เป็น V-ing หลัง before ได้ และรับ any changes เป็นกรรม",
+        "C": "submitted เป็น V3 ไม่ทำหน้าที่ gerund หลัง before",
+        "D": "submission เป็น N. ได้แต่ submission any changes ผิดโครงสร้าง ต้อง submission of changes"
+      },
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "ก่อนช่องมี before และตามด้วย any changes เป็นกรรม",
+          "เมื่อ before ตามด้วยวลีไม่มีประธานย่อย ให้ใช้ V-ing",
+          "submitting any changes = ก่อนส่งการเปลี่ยนแปลงข้อมูล"
+        ],
+        "memory": "before/after + V-ing; before + S + V (full clause)",
+        "choiceReasons": {
+          "A": "submit เป็น V1 โดด ๆ หลัง before ไม่ถูกใน reduced phrase นี้",
+          "B": "submitting เป็น V-ing หลัง before ได้ และรับ any changes เป็นกรรม",
+          "C": "submitted เป็น V3 ไม่ทำหน้าที่ gerund หลัง before",
+          "D": "submission เป็น N. ได้แต่ submission any changes ผิดโครงสร้าง ต้อง submission of changes"
+        }
+      },
+      "targetSeconds": 43,
+      "chapterIds": [
+        17,
+        19,
+        21,
+        27
+      ]
+    },
+    {
+      "id": "personal-20261009-p6-01-q2",
+      "part": 6,
+      "passageId": "personal-20261009-p6-01",
+      "stem": "[2] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Although"
+        },
+        {
+          "id": "B",
+          "text": "Despite"
+        },
+        {
+          "id": "C",
+          "text": "Unless"
+        },
+        {
+          "id": "D",
+          "text": "Because"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "difficulty": 4,
+      "explanation": "the short notice เป็น noun phrase; Despite + N. สื่อแม้แจ้งกระชั้นแต่ขั้นตอนยังใช้ไม่นาน",
+      "explanationTh": "the short notice เป็น noun phrase; Despite + N. สื่อแม้แจ้งกระชั้นแต่ขั้นตอนยังใช้ไม่นาน",
+      "whyOthersTh": {
+        "A": "Although ต้องตามด้วย S+V เช่น Although notice was short",
+        "B": "Despite ตามด้วย the short notice ซึ่งเป็น N. phrase และสื่อ contrast",
+        "C": "Unless ต้องตามด้วย S+V แสดงข้อยกเว้น",
+        "D": "Because ต้องตามด้วย S+V หากมี N. ต้องใช้ because of"
+      },
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "หลังช่องเป็น the short notice = noun phrase ไม่ใช่ S+V",
+          "ประโยคหลักบอกว่าทำได้ภายใน 10 นาทีซึ่งขัดกับการแจ้งกระชั้น",
+          "Despite + N. ตรงทั้งรูปและความหมาย"
+        ],
+        "memory": "Despite + N. / Although + S+V",
+        "choiceReasons": {
+          "A": "Although ต้องตามด้วย S+V เช่น Although notice was short",
+          "B": "Despite ตามด้วย the short notice ซึ่งเป็น N. phrase และสื่อ contrast",
+          "C": "Unless ต้องตามด้วย S+V แสดงข้อยกเว้น",
+          "D": "Because ต้องตามด้วย S+V หากมี N. ต้องใช้ because of"
+        }
+      },
+      "targetSeconds": 43,
+      "chapterIds": [
+        17,
+        19,
+        21,
+        27
+      ]
+    },
+    {
+      "id": "personal-20261009-p6-01-q3",
+      "part": 6,
+      "passageId": "personal-20261009-p6-01",
+      "stem": "[3] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "in accordance with"
+        },
+        {
+          "id": "B",
+          "text": "owing to"
+        },
+        {
+          "id": "C",
+          "text": "in contrast with"
+        },
+        {
+          "id": "D",
+          "text": "regardless of"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "collocation"
+      ],
+      "ruleId": "p6.fixed-phrase",
+      "difficulty": 5,
+      "explanation": "checked in accordance with our payment-security guidelines = ตรวจตามแนวปฏิบัติความปลอดภัย เป็นสำนวน compliance",
+      "explanationTh": "checked in accordance with our payment-security guidelines = ตรวจตามแนวปฏิบัติความปลอดภัย เป็นสำนวน compliance",
+      "whyOthersTh": {
+        "A": "in accordance with = ตาม/สอดคล้องกับแนวปฏิบัติ ตรงกับ checked",
+        "B": "owing to = เนื่องจาก เป็นเหตุ ไม่ใช่มาตรฐานที่ใช้ตรวจ",
+        "C": "in contrast with = ตรงข้ามกับ ไม่ใช้เมื่อหมายถึงตรวจตาม guideline",
+        "D": "regardless of = ไม่คำนึงถึง ซึ่งทำให้ความหมายผิดจากนโยบายตรวจตามกฎ"
+      },
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "ประโยคใช้ checked passive และมี our guidelines ตามช่อง",
+          "ต้องการวลีบอกมาตรฐาน/กฎที่ใช้ตรวจ ไม่ใช่เหตุการณ์หรือข้อยกเว้น",
+          "in accordance with + guidelines = ตามแนวปฏิบัติ"
+        ],
+        "memory": "in accordance with + regulations/guidelines",
+        "choiceReasons": {
+          "A": "in accordance with = ตาม/สอดคล้องกับแนวปฏิบัติ ตรงกับ checked",
+          "B": "owing to = เนื่องจาก เป็นเหตุ ไม่ใช่มาตรฐานที่ใช้ตรวจ",
+          "C": "in contrast with = ตรงข้ามกับ ไม่ใช้เมื่อหมายถึงตรวจตาม guideline",
+          "D": "regardless of = ไม่คำนึงถึง ซึ่งทำให้ความหมายผิดจากนโยบายตรวจตามกฎ"
+        }
+      },
+      "targetSeconds": 43,
+      "chapterIds": [
+        17,
+        19,
+        21,
+        27
+      ]
+    },
+    {
+      "id": "personal-20261009-p6-01-q4",
+      "part": 6,
+      "passageId": "personal-20261009-p6-01",
+      "stem": "[4] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "The portal will show the exchange rate for each transaction."
+        },
+        {
+          "id": "B",
+          "text": "Employees should avoid sharing passwords with their colleagues."
+        },
+        {
+          "id": "C",
+          "text": "The next supplier meeting is scheduled for December."
+        },
+        {
+          "id": "D",
+          "text": "Keep a copy of the submitted form and the confirmation e-mail together."
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "sentence-placement"
+      ],
+      "ruleId": "p6.sentence-placement",
+      "difficulty": 5,
+      "explanation": "These records ในประโยคหลังต้องอ้างถึงเอกสารก่อนหน้า ได้แก่ submitted form และ confirmation e-mail ในตัวเลือก D",
+      "explanationTh": "These records ในประโยคหลังต้องอ้างถึงเอกสารก่อนหน้า ได้แก่ submitted form และ confirmation e-mail ในตัวเลือก D",
+      "whyOthersTh": {
+        "A": "อัตราแลกเปลี่ยนไม่ใช่ records ที่ต้องเก็บเกี่ยวกับ verification",
+        "B": "รหัสผ่านเป็นคำแนะนำด้านความปลอดภัยทั่วไป แต่ These records ไม่อ้างกลับได้",
+        "C": "ตารางประชุมไม่เกี่ยวบันทึกการยืนยันข้อมูล",
+        "D": "เก็บสำเนาฟอร์มกับอีเมล ทำให้ These records อ้างกลับอย่างเจาะจง"
+      },
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "ประโยคก่อนกำหนดให้เก็บ reference number",
+          "หลังช่อง These records ต้องมี antecedent เป็นเอกสารบันทึก",
+          "ตัวเลือก D เพิ่มฟอร์มและอีเมลที่สอดคล้องกับ These records"
+        ],
+        "memory": "Sentence insertion: หาว่าคำชี้เฉพาะ these/those/this อ้างถึงอะไร",
+        "choiceReasons": {
+          "A": "อัตราแลกเปลี่ยนไม่ใช่ records ที่ต้องเก็บเกี่ยวกับ verification",
+          "B": "รหัสผ่านเป็นคำแนะนำด้านความปลอดภัยทั่วไป แต่ These records ไม่อ้างกลับได้",
+          "C": "ตารางประชุมไม่เกี่ยวบันทึกการยืนยันข้อมูล",
+          "D": "เก็บสำเนาฟอร์มกับอีเมล ทำให้ These records อ้างกลับอย่างเจาะจง"
+        }
+      },
+      "targetSeconds": 70,
+      "chapterIds": [
+        17,
+        19,
+        21,
+        27
+      ]
+    },
+    {
+      "id": "personal-20261009-p6-02-q1",
+      "part": 6,
+      "passageId": "personal-20261009-p6-02",
+      "stem": "[1] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "receive"
+        },
+        {
+          "id": "B",
+          "text": "receiving"
+        },
+        {
+          "id": "C",
+          "text": "received"
+        },
+        {
+          "id": "D",
+          "text": "to receive"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "difficulty": 4,
+      "explanation": "Upon + V-ing = เมื่อได้รับ/ทันทีที่ได้รับ; receiving เป็น gerund รับ the roster เป็นกรรม",
+      "explanationTh": "Upon + V-ing = เมื่อได้รับ/ทันทีที่ได้รับ; receiving เป็น gerund รับ the roster เป็นกรรม",
+      "whyOthersTh": {
+        "A": "receive V1 ไม่เป็นกรรมหลัง upon",
+        "B": "receiving V-ing หลัง upon ถูกต้อง",
+        "C": "received V3 ไม่เป็น gerund ในสำนวนนี้",
+        "D": "to receive infinitive ไม่ใช้หลัง upon"
+      },
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "Upon เป็น preposition",
+          "หลังช่อง the roster เป็นกรรมของ receive",
+          "ต้อง upon receiving + noun = เมื่อได้รับ"
+        ],
+        "memory": "upon receipt of + N. / upon receiving + N.",
+        "choiceReasons": {
+          "A": "receive V1 ไม่เป็นกรรมหลัง upon",
+          "B": "receiving V-ing หลัง upon ถูกต้อง",
+          "C": "received V3 ไม่เป็น gerund ในสำนวนนี้",
+          "D": "to receive infinitive ไม่ใช้หลัง upon"
+        }
+      },
+      "targetSeconds": 43,
+      "chapterIds": [
+        17,
+        19,
+        21,
+        27
+      ]
+    },
+    {
+      "id": "personal-20261009-p6-02-q2",
+      "part": 6,
+      "passageId": "personal-20261009-p6-02",
+      "stem": "[2] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "instead of"
+        },
+        {
+          "id": "B",
+          "text": "regardless of"
+        },
+        {
+          "id": "C",
+          "text": "despite"
+        },
+        {
+          "id": "D",
+          "text": "according to"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "collocation"
+      ],
+      "ruleId": "vocab.fixed-regardless-of",
+      "difficulty": 4,
+      "explanation": "regardless of whether + clause = ไม่ว่าจะทำงานที่สำนักงานหรือ remotely ทุกคนก็ต้องเข้าร่วม",
+      "explanationTh": "regardless of whether + clause = ไม่ว่าจะทำงานที่สำนักงานหรือ remotely ทุกคนก็ต้องเข้าร่วม",
+      "whyOthersTh": {
+        "A": "instead of whether ไม่เป็นสำนวนที่ใช้กับสองทางเลือก",
+        "B": "regardless of whether = ไม่ว่า...หรือไม่ ตรงกับ Attendance remains compulsory",
+        "C": "despite whether ใช้ไม่ได้ในที่นี้ (despite ต้องตาม N./V-ing)",
+        "D": "according to whether = ขึ้นอยู่กับว่า ซึ่งอาจแปลว่าการเข้าอบรมไม่ใช่ภาคบังคับ"
+      },
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "whether participants work ... or remotely แสดงสองกรณี",
+          "Attendance remains compulsory บอกว่าทุกกรณียังบังคับ",
+          "regardless of whether + clause = ไม่ว่าจะ..."
+        ],
+        "memory": "regardless of whether + clause / regardless of + N.",
+        "choiceReasons": {
+          "A": "instead of whether ไม่เป็นสำนวนที่ใช้กับสองทางเลือก",
+          "B": "regardless of whether = ไม่ว่า...หรือไม่ ตรงกับ Attendance remains compulsory",
+          "C": "despite whether ใช้ไม่ได้ในที่นี้ (despite ต้องตาม N./V-ing)",
+          "D": "according to whether = ขึ้นอยู่กับว่า ซึ่งอาจแปลว่าการเข้าอบรมไม่ใช่ภาคบังคับ"
+        }
+      },
+      "targetSeconds": 43,
+      "chapterIds": [
+        17,
+        19,
+        21,
+        27
+      ]
+    },
+    {
+      "id": "personal-20261009-p6-02-q3",
+      "part": 6,
+      "passageId": "personal-20261009-p6-02",
+      "stem": "[3] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "In the event of a cancellation"
+        },
+        {
+          "id": "B",
+          "text": "Although the cafeteria is unavailable"
+        },
+        {
+          "id": "C",
+          "text": "Because of next month's holiday"
+        },
+        {
+          "id": "D",
+          "text": "Despite the attendance figures"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "difficulty": 5,
+      "explanation": "In the event of a cancellation = หากเกิดการยกเลิก; ประโยคหลังบอกให้ coordinator แจ้ง Training เพื่อให้ผู้อื่นรับที่ว่าง",
+      "explanationTh": "In the event of a cancellation = หากเกิดการยกเลิก; ประโยคหลังบอกให้ coordinator แจ้ง Training เพื่อให้ผู้อื่นรับที่ว่าง",
+      "whyOthersTh": {
+        "A": "In the event of + N. บอกเงื่อนไขเมื่อมีคนยกเลิก ทำให้ vacant seat สมเหตุสมผล",
+        "B": "Although the cafeteria is unavailable เปลี่ยนหัวข้อโรงอาหาร ไม่เกี่ยวการยกเลิก",
+        "C": "Because of next month's holiday ไม่สอดคล้องกับการจัดที่นั่งว่าง",
+        "D": "Despite the attendance figures ไม่เป็นเหตุของการติดต่อ Training เรื่อง vacant seat"
+      },
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "ประโยคหลังอ้าง vacant seat ซึ่งจะมีได้เมื่อมี cancellation",
+          "ช่องต้องให้เหตุการณ์ที่ทำให้ต้องแจ้ง Training",
+          "In the event of a cancellation = ในกรณีเกิดการยกเลิก"
+        ],
+        "memory": "in the event of + N. = if something happens",
+        "choiceReasons": {
+          "A": "In the event of + N. บอกเงื่อนไขเมื่อมีคนยกเลิก ทำให้ vacant seat สมเหตุสมผล",
+          "B": "Although the cafeteria is unavailable เปลี่ยนหัวข้อโรงอาหาร ไม่เกี่ยวการยกเลิก",
+          "C": "Because of next month's holiday ไม่สอดคล้องกับการจัดที่นั่งว่าง",
+          "D": "Despite the attendance figures ไม่เป็นเหตุของการติดต่อ Training เรื่อง vacant seat"
+        }
+      },
+      "targetSeconds": 43,
+      "chapterIds": [
+        17,
+        19,
+        21,
+        27
+      ]
+    },
+    {
+      "id": "personal-20261009-p6-02-q4",
+      "part": 6,
+      "passageId": "personal-20261009-p6-02",
+      "stem": "[4] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "The registration portal will send course materials after the event."
+        },
+        {
+          "id": "B",
+          "text": "Supervisors are encouraged to discuss the course with their teams."
+        },
+        {
+          "id": "C",
+          "text": "Some participants may need additional training later this year."
+        },
+        {
+          "id": "D",
+          "text": "Reservations made before receiving written confirmation will not be reimbursed."
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "sentence-placement"
+      ],
+      "ruleId": "p6.sentence-placement",
+      "difficulty": 5,
+      "explanation": "Accordingly บอกผลของข้อกำหนดก่อนหน้า; ข้อ D ระบุว่าไม่จ่ายคืนหากจองก่อน written confirmation ซึ่งทำให้ nonrefundable charges เป็นความรับผิดชอบของพนักงาน",
+      "explanationTh": "Accordingly บอกผลของข้อกำหนดก่อนหน้า; ข้อ D ระบุว่าไม่จ่ายคืนหากจองก่อน written confirmation ซึ่งทำให้ nonrefundable charges เป็นความรับผิดชอบของพนักงาน",
+      "whyOthersTh": {
+        "A": "portal course materials ไม่ใช่เหตุให้ charge เป็นของพนักงาน",
+        "B": "คำแนะนำให้ discuss course ไม่เกี่ยวการอนุมัติค่าเดินทาง",
+        "C": "การเรียนเสริมในอนาคตไม่เกี่ยวค่าโรงแรมก่อนอนุมัติ",
+        "D": "ห้ามจองก่อนยืนยันและไม่คืนเงิน เป็นเหตุโดยตรงของข้อความ Accordingly"
+      },
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "ประโยคก่อนกำชับห้ามจองจนกว่าจะยืนยัน session",
+          "ประโยคถัดไปเริ่ม Accordingly ต้องมีเงื่อนไข/กฎที่ทำให้เกิดผล",
+          "D เชื่อมการไม่ได้รับอนุญาต → ค่าจองที่ไม่คืนเงินต้องจ่ายเอง"
+        ],
+        "memory": "Accordingly = ผลที่สืบเนื่องจากกฎ/เหตุในประโยคก่อน",
+        "choiceReasons": {
+          "A": "portal course materials ไม่ใช่เหตุให้ charge เป็นของพนักงาน",
+          "B": "คำแนะนำให้ discuss course ไม่เกี่ยวการอนุมัติค่าเดินทาง",
+          "C": "การเรียนเสริมในอนาคตไม่เกี่ยวค่าโรงแรมก่อนอนุมัติ",
+          "D": "ห้ามจองก่อนยืนยันและไม่คืนเงิน เป็นเหตุโดยตรงของข้อความ Accordingly"
+        }
+      },
+      "targetSeconds": 70,
+      "chapterIds": [
+        17,
+        19,
+        21,
+        27
+      ]
+    }
+  ],
+  "passages": [
+    {
+      "id": "personal-20261009-p6-01",
+      "part": 6,
+      "kind": "email",
+      "title": "Supplier Portal — Banking Details Verification",
+      "body": "To: Approved Suppliers\nFrom: Accounts Payable Support\nSubject: Required verification before the November payment cycle\n\nWe are moving supplier records to a new payment portal on November 2. Existing supplier accounts will remain active, but vendors must verify the name of the account holder before [1] _____ any changes to their banking details. This extra step has been introduced after several invoices were linked to outdated account numbers.\n\n[2] _____ the short notice, the verification process should take no more than ten minutes. A secure link will be sent to the registered contact person rather than to individual employees. If your contact has changed, please ask your purchasing representative to update the name before using the link.\n\nAll submitted information will be checked [3] _____ our payment-security guidelines. Requests received after October 30 may not be processed in time for the first November payment cycle.\n\nPlease retain the reference number shown after each submission. [4] _____ These records will be needed if there is a discrepancy during the first payment cycle. If you have questions, contact the Accounts Payable Support team rather than creating a second supplier account.",
+      "questions": [
+        "personal-20261009-p6-01-q1",
+        "personal-20261009-p6-01-q2",
+        "personal-20261009-p6-01-q3",
+        "personal-20261009-p6-01-q4"
+      ],
+      "examStyle": true,
+      "sourceLabel": "Original contextual business English practice; not a licensed ETS item."
+    },
+    {
+      "id": "personal-20261009-p6-02",
+      "part": 6,
+      "kind": "notice",
+      "title": "Compliance Workshop — Participant Reassignment",
+      "body": "NOTICE TO DEPARTMENT COORDINATORS\nUpdated attendance and travel procedure\n\nFollowing a review of registration numbers, the compliance workshop will be split into two sessions instead of one. The morning session is intended for employees who routinely handle confidential client records; all other registered staff will be assigned to the afternoon session.\n\nCoordinators will receive revised participant rosters by October 21. Upon [1] _____ the roster, please check whether the employees listed under your department will be available at their assigned time. Requests for reassignment must be made before October 23.\n\nAttendance remains compulsory, [2] _____ whether participants work at the main office or remotely. Anyone unable to attend either session must obtain written approval from a direct supervisor.\n\n[3] _____, the coordinator should contact Training immediately so that the vacant seat can be offered to another employee. This helps us avoid ordering unnecessary printed materials.\n\nHotel and travel reservations should not be made until each person's session has been confirmed. [4] _____ Accordingly, any nonrefundable charges incurred without authorization will remain the employee's responsibility.",
+      "questions": [
+        "personal-20261009-p6-02-q1",
+        "personal-20261009-p6-02-q2",
+        "personal-20261009-p6-02-q3",
+        "personal-20261009-p6-02-q4"
+      ],
+      "examStyle": true,
+      "sourceLabel": "Original contextual business English practice; not a licensed ETS item."
+    }
+  ]
+}

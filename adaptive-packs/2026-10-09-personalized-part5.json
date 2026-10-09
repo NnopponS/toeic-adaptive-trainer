@@ -1,0 +1,1528 @@
+{
+  "createdAt": "2026-10-09T10:44:00+07:00",
+  "description": "Original grammar and vocabulary transfer questions addressing aggregate learner errors; all A-D reasons individually authored",
+  "questions": [
+    {
+      "id": "personal-20261009-p5-01",
+      "part": 5,
+      "stem": "The procurement team postponed the order _____ the revised quotation had not been approved.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "because"
+        },
+        {
+          "id": "B",
+          "text": "despite"
+        },
+        {
+          "id": "C",
+          "text": "during"
+        },
+        {
+          "id": "D",
+          "text": "in spite of"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "difficulty": 4,
+      "explanation": "because + clause อธิบายเหตุที่ยังไม่ออกคำสั่งซื้อ",
+      "explanationTh": "because + clause อธิบายเหตุที่ยังไม่ออกคำสั่งซื้อ",
+      "targetSeconds": 38,
+      "chapterIds": [
+        19
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "because + S + V",
+        "breakdown": {
+          "subject": "The procurement team",
+          "verb": "postponed",
+          "object": "the order",
+          "blankRole": "เหตุผลที่ตามด้วย clause",
+          "signal": "quotation had not been approved",
+          "pattern": "because + S + V"
+        },
+        "choiceReasons": {
+          "A": "because ต้องตาม S+V ซึ่งมี quotation + had not been approved",
+          "B": "despite ต้องรับ N./V-ing ไม่ใช่ clause",
+          "C": "during รับระยะเวลา/เหตุการณ์ ไม่ใช่ clause",
+          "D": "in spite of รับ N./V-ing ไม่รับ clause"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-02",
+      "part": 5,
+      "stem": "_____ the higher transportation costs, the company kept its delivery charges unchanged.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Although"
+        },
+        {
+          "id": "B",
+          "text": "Despite"
+        },
+        {
+          "id": "C",
+          "text": "Whereas"
+        },
+        {
+          "id": "D",
+          "text": "Even though"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "difficulty": 4,
+      "explanation": "Despite + noun phrase เป็นความขัดแย้ง: ต้นทุนสูงขึ้นแต่ราคาไม่เปลี่ยน",
+      "explanationTh": "Despite + noun phrase เป็นความขัดแย้ง: ต้นทุนสูงขึ้นแต่ราคาไม่เปลี่ยน",
+      "targetSeconds": 38,
+      "chapterIds": [
+        19
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "despite + N./V-ing",
+        "breakdown": {
+          "subject": "the company",
+          "verb": "kept",
+          "object": "delivery charges",
+          "blankRole": "preposition นำ noun phrase",
+          "signal": "the higher transportation costs",
+          "pattern": "despite + N./V-ing"
+        },
+        "choiceReasons": {
+          "A": "Although ต้องตาม S+V เช่น Although costs increased",
+          "B": "Despite ตามด้วย the higher transportation costs ซึ่งเป็น noun phrase",
+          "C": "Whereas ต้องตาม clause ใช้เปรียบต่าง",
+          "D": "Even though ต้องมี clause ไม่ใช่ noun phrase"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-03",
+      "part": 5,
+      "stem": "The contract will renew automatically _____ either party provides written notice of cancellation.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "because of"
+        },
+        {
+          "id": "B",
+          "text": "despite"
+        },
+        {
+          "id": "C",
+          "text": "unless"
+        },
+        {
+          "id": "D",
+          "text": "regardless of"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.condition-purpose",
+      "difficulty": 4,
+      "explanation": "unless + S+V = เว้นแต่มีฝ่ายใดแจ้งยกเลิก สร้างเงื่อนไขยกเว้นการต่อสัญญา",
+      "explanationTh": "unless + S+V = เว้นแต่มีฝ่ายใดแจ้งยกเลิก สร้างเงื่อนไขยกเว้นการต่อสัญญา",
+      "targetSeconds": 38,
+      "chapterIds": [
+        19
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "unless + S + V",
+        "breakdown": {
+          "subject": "The contract",
+          "verb": "will renew",
+          "object": null,
+          "blankRole": "conditional conjunction",
+          "signal": "either party provides notice",
+          "pattern": "unless + S + V"
+        },
+        "choiceReasons": {
+          "A": "because of ต้องตาม N. ไม่รับ clause",
+          "B": "despite ต้องตาม N. ไม่รับ clause",
+          "C": "unless + clause แสดงข้อยกเว้นถูกต้อง",
+          "D": "regardless of + N. ไม่ใช่ clause"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-04",
+      "part": 5,
+      "stem": "The replacement parts arrived early; _____, the repairs could not begin until a safety certificate was issued.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "therefore"
+        },
+        {
+          "id": "B",
+          "text": "likewise"
+        },
+        {
+          "id": "C",
+          "text": "for example"
+        },
+        {
+          "id": "D",
+          "text": "nevertheless"
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.contrast-result",
+      "difficulty": 4,
+      "explanation": "แม้อะไหล่มาเร็ว แต่ยังซ่อมไม่ได้ ต้องใช้ nevertheless = อย่างไรก็ตาม",
+      "explanationTh": "แม้อะไหล่มาเร็ว แต่ยังซ่อมไม่ได้ ต้องใช้ nevertheless = อย่างไรก็ตาม",
+      "targetSeconds": 38,
+      "chapterIds": [
+        19
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "nevertheless = however",
+        "breakdown": {
+          "subject": "the repairs",
+          "verb": "could not begin",
+          "object": null,
+          "blankRole": "sentence connector แสดง contrast",
+          "signal": "arrived early vs could not begin",
+          "pattern": "nevertheless = however"
+        },
+        "choiceReasons": {
+          "A": "therefore = ดังนั้น แต่ของมาเร็วไม่ได้เป็นเหตุให้ซ่อมไม่ได้",
+          "B": "likewise = เช่นเดียวกัน ไม่ได้แสดงข้อจำกัด",
+          "C": "for example = ตัวอย่างเช่น แต่ไม่มีการยกตัวอย่าง",
+          "D": "nevertheless = อย่างไรก็ตาม สื่อความขัดกัน"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-05",
+      "part": 5,
+      "stem": "A discount will be applied _____ the purchase order is received by the end of the month.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "provided that"
+        },
+        {
+          "id": "B",
+          "text": "despite"
+        },
+        {
+          "id": "C",
+          "text": "in addition to"
+        },
+        {
+          "id": "D",
+          "text": "owing to"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "difficulty": 5,
+      "explanation": "provided that + clause เป็นเงื่อนไขว่าจะได้ส่วนลดเมื่อรับใบสั่งซื้อทันกำหนด",
+      "explanationTh": "provided that + clause เป็นเงื่อนไขว่าจะได้ส่วนลดเมื่อรับใบสั่งซื้อทันกำหนด",
+      "targetSeconds": 38,
+      "chapterIds": [
+        19
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "provided that + S+V",
+        "breakdown": {
+          "subject": "A discount",
+          "verb": "will be applied",
+          "object": null,
+          "blankRole": "conjunction นำเงื่อนไข",
+          "signal": "purchase order is received",
+          "pattern": "provided that + S+V"
+        },
+        "choiceReasons": {
+          "A": "provided that รับ purchase order is received ซึ่งเป็น S+V",
+          "B": "despite ต้องตาม N./V-ing และสื่อขัดแย้ง",
+          "C": "in addition to ตามด้วย N./V-ing ไม่เป็น condition clause",
+          "D": "owing to = เนื่องจาก ตามด้วย N. ไม่แสดงเงื่อนไข"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-06",
+      "part": 5,
+      "stem": "The warranty remains valid _____ all repairs are performed by authorized personnel.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "due to"
+        },
+        {
+          "id": "B",
+          "text": "as long as"
+        },
+        {
+          "id": "C",
+          "text": "regardless of"
+        },
+        {
+          "id": "D",
+          "text": "despite"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.condition-purpose",
+      "difficulty": 4,
+      "explanation": "as long as + clause = ตราบเท่าที่ช่างที่ได้รับอนุญาตเป็นผู้ซ่อม",
+      "explanationTh": "as long as + clause = ตราบเท่าที่ช่างที่ได้รับอนุญาตเป็นผู้ซ่อม",
+      "targetSeconds": 38,
+      "chapterIds": [
+        19
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "as long as + S+V",
+        "breakdown": {
+          "subject": "The warranty",
+          "verb": "remains",
+          "object": "valid",
+          "blankRole": "conditional conjunction",
+          "signal": "repairs are performed by ...",
+          "pattern": "as long as + S+V"
+        },
+        "choiceReasons": {
+          "A": "due to + N. ไม่รับ S+V",
+          "B": "as long as + clause แสดงเงื่อนไขรับประกัน",
+          "C": "regardless of + N. ไม่รับ clause และเปลี่ยนเป็นไม่สนเงื่อนไข",
+          "D": "despite + N. ไม่รับ clause"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-07",
+      "part": 5,
+      "stem": "The security team prepared a backup access list _____ a network outage.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "whereas"
+        },
+        {
+          "id": "B",
+          "text": "even though"
+        },
+        {
+          "id": "C",
+          "text": "in case of"
+        },
+        {
+          "id": "D",
+          "text": "unless"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "difficulty": 4,
+      "explanation": "in case of + N. = เตรียมการเผื่อเกิด network outage ซึ่งเป็น noun phrase",
+      "explanationTh": "in case of + N. = เตรียมการเผื่อเกิด network outage ซึ่งเป็น noun phrase",
+      "targetSeconds": 38,
+      "chapterIds": [
+        19
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "in case of + N.; in case + S+V",
+        "breakdown": {
+          "subject": "The security team",
+          "verb": "prepared",
+          "object": "a backup access list",
+          "blankRole": "preposition แสดงความเสี่ยงที่เตรียมรับ",
+          "signal": "a network outage (N.)",
+          "pattern": "in case of + N.; in case + S+V"
+        },
+        "choiceReasons": {
+          "A": "whereas ต้องตาม S+V เพื่อเปรียบต่าง",
+          "B": "even though ต้องตาม S+V",
+          "C": "in case of + outage ซึ่งเป็น N. เหมาะกับการเตรียมสำรอง",
+          "D": "unless ต้องตาม S+V ไม่ใช่ noun phrase"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-08",
+      "part": 5,
+      "stem": "_____ the old system requires a manual check, the replacement validates each entry automatically.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Despite"
+        },
+        {
+          "id": "B",
+          "text": "On account of"
+        },
+        {
+          "id": "C",
+          "text": "Notwithstanding"
+        },
+        {
+          "id": "D",
+          "text": "Whereas"
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "difficulty": 4,
+      "explanation": "Whereas เชื่อม clause สองด้านเปรียบความแตกต่างระหว่างระบบเก่ากับใหม่",
+      "explanationTh": "Whereas เชื่อม clause สองด้านเปรียบความแตกต่างระหว่างระบบเก่ากับใหม่",
+      "targetSeconds": 38,
+      "chapterIds": [
+        19
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "whereas + S+V, S+V",
+        "breakdown": {
+          "subject": "the replacement",
+          "verb": "validates",
+          "object": "each entry",
+          "blankRole": "conjunction comparing clauses",
+          "signal": "old system requires vs replacement validates",
+          "pattern": "whereas + S+V, S+V"
+        },
+        "choiceReasons": {
+          "A": "Despite ต้องตาม N./V-ing ไม่รับ clause",
+          "B": "On account of ตาม N. ไม่รับ clause",
+          "C": "Notwithstanding เป็น preposition ตามด้วย noun phrase ไม่ใช่ประโยคเต็มที่มี the old system requires ...",
+          "D": "Whereas + S+V แสดงข้อแตกต่างแบบเปรียบคู่"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-09",
+      "part": 5,
+      "stem": "The vendor submitted a _____ documented breakdown of the revised fees.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "thoroughly"
+        },
+        {
+          "id": "B",
+          "text": "thorough"
+        },
+        {
+          "id": "C",
+          "text": "thoroughness"
+        },
+        {
+          "id": "D",
+          "text": "thoroughs"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.adverb-modifier",
+      "difficulty": 4,
+      "explanation": "thoroughly เป็น Adv. ขยาย documented ซึ่งขยาย breakdown ไม่ใช่ขยายคำนามตรง ๆ",
+      "explanationTh": "thoroughly เป็น Adv. ขยาย documented ซึ่งขยาย breakdown ไม่ใช่ขยายคำนามตรง ๆ",
+      "targetSeconds": 38,
+      "chapterIds": [
+        5,
+        6
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "Adv. + participle + N.",
+        "breakdown": {
+          "subject": "The vendor",
+          "verb": "submitted",
+          "object": "a breakdown",
+          "blankRole": "adverb ขยาย participial adjective",
+          "signal": "_____ documented breakdown",
+          "pattern": "Adv. + participle + N."
+        },
+        "choiceReasons": {
+          "A": "thoroughly เป็น Adv. = อย่างละเอียด ขยาย documented",
+          "B": "thorough เป็น Adj. ขยาย noun ได้แต่ไม่ใช่ตัวขยาย documented โดยตรง",
+          "C": "thoroughness เป็น N. ไม่ขยาย documented",
+          "D": "thoroughs ไม่ใช่คำรูปที่ต้องการ"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-10",
+      "part": 5,
+      "stem": "The revised maintenance schedule has made equipment inspections more _____.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "efficiency"
+        },
+        {
+          "id": "B",
+          "text": "efficient"
+        },
+        {
+          "id": "C",
+          "text": "efficiently"
+        },
+        {
+          "id": "D",
+          "text": "efficiencies"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.object-complement",
+      "difficulty": 4,
+      "explanation": "made + equipment inspections (กรรม) + efficient (Adj. เติมเต็มกรรม) และ more ขยาย Adj.",
+      "explanationTh": "made + equipment inspections (กรรม) + efficient (Adj. เติมเต็มกรรม) และ more ขยาย Adj.",
+      "targetSeconds": 38,
+      "chapterIds": [
+        5,
+        6
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "make + O + (more) Adj.",
+        "breakdown": {
+          "subject": "The revised maintenance schedule",
+          "verb": "has made",
+          "object": "equipment inspections",
+          "blankRole": "adjective object complement",
+          "signal": "made ... inspections more ____",
+          "pattern": "make + O + (more) Adj."
+        },
+        "choiceReasons": {
+          "A": "efficiency เป็น N. ไม่ใช่ Adj. complement",
+          "B": "efficient เป็น Adj. บอกสภาพของ inspections หลัง made",
+          "C": "efficiently เป็น Adv. ขยายกริยา ไม่บอกสภาพกรรม",
+          "D": "efficiencies เป็น N. plural ไม่เป็น Adj."
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-11",
+      "part": 5,
+      "stem": "Applicants must submit written _____ of their professional qualifications.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "confirm"
+        },
+        {
+          "id": "B",
+          "text": "confirmed"
+        },
+        {
+          "id": "C",
+          "text": "confirmation"
+        },
+        {
+          "id": "D",
+          "text": "confirming"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.noun-position",
+      "difficulty": 4,
+      "explanation": "written เป็น Adj. และ of their qualifications ตาม noun; confirmation เป็น N. แปลว่าหลักฐานยืนยัน",
+      "explanationTh": "written เป็น Adj. และ of their qualifications ตาม noun; confirmation เป็น N. แปลว่าหลักฐานยืนยัน",
+      "targetSeconds": 38,
+      "chapterIds": [
+        5,
+        6
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "written + N. + of",
+        "breakdown": {
+          "subject": "Applicants",
+          "verb": "must submit",
+          "object": "written confirmation",
+          "blankRole": "noun หลัง adjective written",
+          "signal": "written _____ of ...",
+          "pattern": "written + N. + of"
+        },
+        "choiceReasons": {
+          "A": "confirm เป็น V1 ไม่ใช่ noun หลัง written",
+          "B": "confirmed เป็น V3/Adj. ยังขาด head noun",
+          "C": "confirmation เป็น N. ที่ written ขยาย และต่อ with of ได้",
+          "D": "confirming เป็น V-ing แต่ written confirming of... ไม่เป็นวลีมาตรฐาน"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-12",
+      "part": 5,
+      "stem": "A more _____ evaluation is required before the new supplier can be approved.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "comprehensively"
+        },
+        {
+          "id": "B",
+          "text": "comprehension"
+        },
+        {
+          "id": "C",
+          "text": "comprehend"
+        },
+        {
+          "id": "D",
+          "text": "comprehensive"
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.adjective-before-noun",
+      "difficulty": 5,
+      "explanation": "evaluation เป็น N. และ a more ... evaluation ต้อง Adj. comprehensive; more ขยาย Adj.",
+      "explanationTh": "evaluation เป็น N. และ a more ... evaluation ต้อง Adj. comprehensive; more ขยาย Adj.",
+      "targetSeconds": 38,
+      "chapterIds": [
+        5,
+        6
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "Det. + more + Adj. + N.",
+        "breakdown": {
+          "subject": "an evaluation",
+          "verb": "is required",
+          "object": null,
+          "blankRole": "adjective ขยาย evaluation",
+          "signal": "a more _____ evaluation",
+          "pattern": "Det. + more + Adj. + N."
+        },
+        "choiceReasons": {
+          "A": "comprehensively เป็น Adv. ไม่ขยาย evaluation โดยตรง",
+          "B": "comprehension เป็น N. ไม่อยู่ตำแหน่ง adjective",
+          "C": "comprehend เป็น V. ไม่ขยายนาม",
+          "D": "comprehensive เป็น Adj. = ครอบคลุม"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-13",
+      "part": 5,
+      "stem": "Actual shipping costs were _____ higher than initially estimated.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "considerably"
+        },
+        {
+          "id": "B",
+          "text": "considerable"
+        },
+        {
+          "id": "C",
+          "text": "consideration"
+        },
+        {
+          "id": "D",
+          "text": "consider"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.adverb-modifier",
+      "difficulty": 4,
+      "explanation": "higher เป็น comparative Adj.; considerably เป็น Adv. บอกว่ามากกว่าอย่างมาก",
+      "explanationTh": "higher เป็น comparative Adj.; considerably เป็น Adv. บอกว่ามากกว่าอย่างมาก",
+      "targetSeconds": 38,
+      "chapterIds": [
+        5,
+        6
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "Adv. + comparative + than",
+        "breakdown": {
+          "subject": "Actual shipping costs",
+          "verb": "were",
+          "object": null,
+          "blankRole": "adverb ขยาย comparative Adj.",
+          "signal": "_____ higher than",
+          "pattern": "Adv. + comparative + than"
+        },
+        "choiceReasons": {
+          "A": "considerably เป็น Adv. ขยาย higher",
+          "B": "considerable เป็น Adj. ขยายนาม ไม่ใช้ขยาย higher ตรงนี้",
+          "C": "consideration เป็น N. ไม่ขยาย comparative",
+          "D": "consider เป็น V1 ไม่ขยาย higher"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-14",
+      "part": 5,
+      "stem": "The new portal is intended to remain _____ even during scheduled maintenance.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "access"
+        },
+        {
+          "id": "B",
+          "text": "accessible"
+        },
+        {
+          "id": "C",
+          "text": "accessibly"
+        },
+        {
+          "id": "D",
+          "text": "accessibility"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.be-complement",
+      "difficulty": 4,
+      "explanation": "remain เป็น linking verb และ accessible เป็น Adj. ส่วนเติมเต็มประธาน portal ว่ายังเข้าใช้ได้",
+      "explanationTh": "remain เป็น linking verb และ accessible เป็น Adj. ส่วนเติมเต็มประธาน portal ว่ายังเข้าใช้ได้",
+      "targetSeconds": 38,
+      "chapterIds": [
+        5,
+        6
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "remain + Adj.",
+        "breakdown": {
+          "subject": "The new portal",
+          "verb": "is intended to remain",
+          "object": null,
+          "blankRole": "subject complement adjective",
+          "signal": "remain _____",
+          "pattern": "remain + Adj."
+        },
+        "choiceReasons": {
+          "A": "access เป็น N./V. ไม่เป็น Adj. complement ตรงนี้",
+          "B": "accessible เป็น Adj. complement หลัง remain",
+          "C": "accessibly เป็น Adv. ไม่ใช้หลัง remain เพื่อบอกสภาพ portal",
+          "D": "accessibility เป็น N. ไม่บอกสภาพตรง ๆ"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-15",
+      "part": 5,
+      "stem": "The purchasing manager objected to _____ a contract before the compliance review was completed.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "signed"
+        },
+        {
+          "id": "B",
+          "text": "to sign"
+        },
+        {
+          "id": "C",
+          "text": "signing"
+        },
+        {
+          "id": "D",
+          "text": "sign"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "difficulty": 4,
+      "explanation": "object to + V-ing โดย to เป็น preposition ไม่ใช่ infinitive marker: signing",
+      "explanationTh": "object to + V-ing โดย to เป็น preposition ไม่ใช่ infinitive marker: signing",
+      "targetSeconds": 38,
+      "chapterIds": [
+        11,
+        17
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "object to + V-ing",
+        "breakdown": {
+          "subject": "The purchasing manager",
+          "verb": "objected",
+          "object": "to signing a contract",
+          "blankRole": "gerund หลัง preposition to",
+          "signal": "objected to _____",
+          "pattern": "object to + V-ing"
+        },
+        "choiceReasons": {
+          "A": "signed เป็น V2/V3 ไม่ใช่ gerund หลัง prep.",
+          "B": "to sign จะซ้ำ to to sign และผิด pattern",
+          "C": "signing เป็น gerund ตามหลัง objected to",
+          "D": "sign เป็น V1 ไม่ตาม to ที่เป็น preposition ในสำนวนนี้"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-16",
+      "part": 5,
+      "stem": "The finance division is committed to _____ the monthly reporting process.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "simplified"
+        },
+        {
+          "id": "B",
+          "text": "simplification"
+        },
+        {
+          "id": "C",
+          "text": "simplify"
+        },
+        {
+          "id": "D",
+          "text": "simplifying"
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "difficulty": 4,
+      "explanation": "be committed to + V-ing เป็นสำนวน; simplifying ใช้หลัง to ที่เป็น preposition",
+      "explanationTh": "be committed to + V-ing เป็นสำนวน; simplifying ใช้หลัง to ที่เป็น preposition",
+      "targetSeconds": 38,
+      "chapterIds": [
+        11,
+        17
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "committed to + V-ing",
+        "breakdown": {
+          "subject": "The finance division",
+          "verb": "is committed",
+          "object": "to simplifying the process",
+          "blankRole": "gerund object of to",
+          "signal": "committed to _____",
+          "pattern": "committed to + V-ing"
+        },
+        "choiceReasons": {
+          "A": "simplified เป็น V3 ไม่เป็น gerund",
+          "B": "simplification เป็น N. แต่ต้องมี of the process ไม่ใช่ตามด้วย process ตรง ๆ",
+          "C": "simplify เป็น V1 แต่ committed to ต้องใช้ V-ing",
+          "D": "simplifying เป็น gerund ตาม prep. to และรับกรรม process"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-17",
+      "part": 5,
+      "stem": "The project team was praised for _____ the delay without compromising safety.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "resolving"
+        },
+        {
+          "id": "B",
+          "text": "to resolve"
+        },
+        {
+          "id": "C",
+          "text": "resolve"
+        },
+        {
+          "id": "D",
+          "text": "resolved"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "difficulty": 4,
+      "explanation": "for เป็น preposition และต้องตาม V-ing: resolving; ได้รับคำชมที่แก้ปัญหาล่าช้า",
+      "explanationTh": "for เป็น preposition และต้องตาม V-ing: resolving; ได้รับคำชมที่แก้ปัญหาล่าช้า",
+      "targetSeconds": 38,
+      "chapterIds": [
+        11,
+        17
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "be praised for + V-ing",
+        "breakdown": {
+          "subject": "The project team",
+          "verb": "was praised",
+          "object": "for resolving the delay",
+          "blankRole": "gerund หลัง for",
+          "signal": "praised for _____",
+          "pattern": "be praised for + V-ing"
+        },
+        "choiceReasons": {
+          "A": "resolving เป็น V-ing หลัง preposition for",
+          "B": "to resolve เป็น infinitive ไม่ตาม for ใน pattern นี้",
+          "C": "resolve เป็น V1 ไม่เป็นกรรมหลัง for",
+          "D": "resolved เป็น V2/V3 ไม่ใช้แทน gerund"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-18",
+      "part": 5,
+      "stem": "Before _____ any confidential records, the consultant must obtain the client's permission.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "to share"
+        },
+        {
+          "id": "B",
+          "text": "sharing"
+        },
+        {
+          "id": "C",
+          "text": "share"
+        },
+        {
+          "id": "D",
+          "text": "shared"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "difficulty": 4,
+      "explanation": "Before + V-ing = ก่อนแบ่งปันข้อมูล; ก่อนนี้ละประธานย่อยที่เป็น consultant",
+      "explanationTh": "Before + V-ing = ก่อนแบ่งปันข้อมูล; ก่อนนี้ละประธานย่อยที่เป็น consultant",
+      "targetSeconds": 38,
+      "chapterIds": [
+        11,
+        17
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "Before + V-ing",
+        "breakdown": {
+          "subject": "the consultant",
+          "verb": "must obtain",
+          "object": "the client's permission",
+          "blankRole": "gerund หลัง before",
+          "signal": "Before _____ any records",
+          "pattern": "Before + V-ing"
+        },
+        "choiceReasons": {
+          "A": "to share เป็น infinitive แต่ before to share ไม่ใช่รูปมาตรฐาน",
+          "B": "sharing เป็น gerund หลัง before และรับ records เป็นกรรม",
+          "C": "share เป็น V1 ไม่ตาม preposition before ตรง ๆ",
+          "D": "shared เป็น V2/V3 ไม่มีประธานย่อยรองรับ"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-19",
+      "part": 5,
+      "stem": "The operations team looks forward to _____ the updated inspection results by Thursday.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "receives"
+        },
+        {
+          "id": "B",
+          "text": "receive"
+        },
+        {
+          "id": "C",
+          "text": "receiving"
+        },
+        {
+          "id": "D",
+          "text": "received"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "difficulty": 5,
+      "explanation": "look forward to เป็น fixed phrase ที่ to เป็น Prep. จึง receiving V-ing",
+      "explanationTh": "look forward to เป็น fixed phrase ที่ to เป็น Prep. จึง receiving V-ing",
+      "targetSeconds": 38,
+      "chapterIds": [
+        11,
+        17
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "look forward to + V-ing",
+        "breakdown": {
+          "subject": "The operations team",
+          "verb": "looks forward",
+          "object": "to receiving results",
+          "blankRole": "gerund หลัง preposition to",
+          "signal": "looks forward to _____",
+          "pattern": "look forward to + V-ing"
+        },
+        "choiceReasons": {
+          "A": "receives เป็น V-s ไม่เป็น gerund",
+          "B": "receive เป็น V1 ไม่ใช้หลัง look forward to",
+          "C": "receiving เป็น gerund หลัง to ที่เป็น preposition",
+          "D": "received เป็น V3 ไม่เป็น gerund"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-20",
+      "part": 5,
+      "stem": "This is the first occasion on which our subsidiary _____ an international procurement event.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "organizes"
+        },
+        {
+          "id": "B",
+          "text": "had organized"
+        },
+        {
+          "id": "C",
+          "text": "organized"
+        },
+        {
+          "id": "D",
+          "text": "has organized"
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "tense.present-perfect-since",
+      "difficulty": 4,
+      "explanation": "This is the first occasion on which ... ใช้มุมมองจนถึงปัจจุบันจึง Present Perfect has organized",
+      "explanationTh": "This is the first occasion on which ... ใช้มุมมองจนถึงปัจจุบันจึง Present Perfect has organized",
+      "targetSeconds": 38,
+      "chapterIds": [
+        11,
+        17
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "first time/occasion + present perfect",
+        "breakdown": {
+          "subject": "our subsidiary",
+          "verb": "has organized",
+          "object": "an event",
+          "blankRole": "present perfect verb phrase",
+          "signal": "This is the first occasion",
+          "pattern": "first time/occasion + present perfect"
+        },
+        "choiceReasons": {
+          "A": "organizes เป็น Simple Present ใช้กับกิจวัตร ไม่บอกประสบการณ์แรก",
+          "B": "had organized เป็น Past Perfect ต้องมี past reference",
+          "C": "organized เป็น Simple Past ไม่เชื่อมกับ This is the first occasion",
+          "D": "has organized เป็น Present Perfect ของ subsidiary เอกพจน์"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-21",
+      "part": 5,
+      "stem": "The research team _____ four prototype revisions since the initial customer evaluation.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "has made"
+        },
+        {
+          "id": "B",
+          "text": "had made"
+        },
+        {
+          "id": "C",
+          "text": "making"
+        },
+        {
+          "id": "D",
+          "text": "makes"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "tense.present-perfect-since",
+      "difficulty": 4,
+      "explanation": "since the initial evaluation บอกจุดเริ่มในอดีตและผลรวมจนตอนนี้ จึง has made",
+      "explanationTh": "since the initial evaluation บอกจุดเริ่มในอดีตและผลรวมจนตอนนี้ จึง has made",
+      "targetSeconds": 38,
+      "chapterIds": [
+        11,
+        17
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "since + past starting point → has/have + V3",
+        "breakdown": {
+          "subject": "The research team",
+          "verb": "has made",
+          "object": "four prototype revisions",
+          "blankRole": "present perfect",
+          "signal": "since the initial evaluation",
+          "pattern": "since + past starting point → has/have + V3"
+        },
+        "choiceReasons": {
+          "A": "has made เป็น Present Perfect ถูกทั้ง tense และ team เป็นเอกพจน์",
+          "B": "had made เป็น Past Perfect ต้องมีอีกจุดอ้างอิงในอดีต",
+          "C": "making เป็น V-ing ไม่มี auxiliary",
+          "D": "makes เป็น Present Simple ไม่เน้นผลสะสมตั้งแต่อดีต"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-22",
+      "part": 5,
+      "stem": "The supplier's finance department will _____ eligible employees for expenses incurred during the product launch.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "reconcile"
+        },
+        {
+          "id": "B",
+          "text": "reimburse"
+        },
+        {
+          "id": "C",
+          "text": "release"
+        },
+        {
+          "id": "D",
+          "text": "repair"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "vocabulary"
+      ],
+      "ruleId": "vocab.reimburse-expenses",
+      "difficulty": 4,
+      "explanation": "reimburse someone for expenses = ชดเชย/คืนเงินให้คนที่สำรองจ่ายก่อน",
+      "explanationTh": "reimburse someone for expenses = ชดเชย/คืนเงินให้คนที่สำรองจ่ายก่อน",
+      "targetSeconds": 38,
+      "chapterIds": [
+        21
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "reimburse someone for expenses",
+        "breakdown": {
+          "subject": "The supplier's finance department",
+          "verb": "will reimburse",
+          "object": "eligible employees",
+          "blankRole": "business verb + object",
+          "signal": "employees for expenses",
+          "pattern": "reimburse someone for expenses"
+        },
+        "choiceReasons": {
+          "A": "reconcile = กระทบยอดบัญชี ไม่ใช่คืนค่าใช้จ่ายบุคคล",
+          "B": "reimburse = คืนเงินค่าใช้จ่ายให้ employees",
+          "C": "release = ปล่อย/เผยแพร่ ไม่ใช่ชดเชยค่าใช้จ่าย",
+          "D": "repair = ซ่อม ไม่เกี่ยวคืนเงิน"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-23",
+      "part": 5,
+      "stem": "The updated policy applies to all contractors, _____ their job titles or work locations.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "due to"
+        },
+        {
+          "id": "B",
+          "text": "although"
+        },
+        {
+          "id": "C",
+          "text": "regardless of"
+        },
+        {
+          "id": "D",
+          "text": "despite"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "vocabulary"
+      ],
+      "ruleId": "vocab.fixed-regardless-of",
+      "difficulty": 4,
+      "explanation": "regardless of + noun phrase = ไม่ว่าอาชีพหรือสถานที่ทำงาน ก็อยู่ภายใต้นโยบาย",
+      "explanationTh": "regardless of + noun phrase = ไม่ว่าอาชีพหรือสถานที่ทำงาน ก็อยู่ภายใต้นโยบาย",
+      "targetSeconds": 38,
+      "chapterIds": [
+        21
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "regardless of + N.",
+        "breakdown": {
+          "subject": "The updated policy",
+          "verb": "applies",
+          "object": "to all contractors",
+          "blankRole": "prepositional modifier describing scope",
+          "signal": "job titles or work locations",
+          "pattern": "regardless of + N."
+        },
+        "choiceReasons": {
+          "A": "due to = เนื่องจาก เป็นเหตุผล ไม่สื่อไม่จำกัด",
+          "B": "although ต้องมี S+V ไม่ใช่ noun phrase",
+          "C": "regardless of = ไม่คำนึงถึง เข้าคู่ with all contractors",
+          "D": "despite = แม้มี... มักบอก contrast ไม่ชัดเท่าความครอบคลุมทุกกรณี"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-24",
+      "part": 5,
+      "stem": "The engineering manager asked for test reports that could _____ the unexpected vibration measurements.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "stimulate"
+        },
+        {
+          "id": "B",
+          "text": "simplify"
+        },
+        {
+          "id": "C",
+          "text": "simulate"
+        },
+        {
+          "id": "D",
+          "text": "substantiate"
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "vocabulary"
+      ],
+      "ruleId": "vocab.substantiate-results",
+      "difficulty": 4,
+      "explanation": "substantiate findings = ยืนยันผลด้วยหลักฐาน; ต้องการรายงานเพื่อรับรองค่าการสั่นผิดปกติ",
+      "explanationTh": "substantiate findings = ยืนยันผลด้วยหลักฐาน; ต้องการรายงานเพื่อรับรองค่าการสั่นผิดปกติ",
+      "targetSeconds": 38,
+      "chapterIds": [
+        21
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "substantiate findings/claims",
+        "breakdown": {
+          "subject": "test reports",
+          "verb": "could substantiate",
+          "object": "the measurements",
+          "blankRole": "verb V1 after modal",
+          "signal": "unexpected measurements",
+          "pattern": "substantiate findings/claims"
+        },
+        "choiceReasons": {
+          "A": "stimulate = กระตุ้น ไม่ใช่พิสูจน์ข้อมูล",
+          "B": "simplify = ทำให้ง่ายขึ้น ไม่ได้ยืนยันความถูกต้อง",
+          "C": "simulate = จำลองระบบได้ แต่ไม่ใช่การพิสูจน์ผลวัดด้วยรายงานนี้",
+          "D": "substantiate = ยืนยันหลักฐานรองรับ findings"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-25",
+      "part": 5,
+      "stem": "The engineer, _____ recommendations were incorporated into the revised design, will lead the review.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "whose"
+        },
+        {
+          "id": "B",
+          "text": "whom"
+        },
+        {
+          "id": "C",
+          "text": "which"
+        },
+        {
+          "id": "D",
+          "text": "who"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "relative-clause"
+      ],
+      "ruleId": "relative.pronouns",
+      "difficulty": 4,
+      "explanation": "whose + recommendations เป็น possessive relative clause ของ engineer",
+      "explanationTh": "whose + recommendations เป็น possessive relative clause ของ engineer",
+      "targetSeconds": 38,
+      "chapterIds": [
+        15
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "whose + N.",
+        "breakdown": {
+          "subject": "The engineer",
+          "verb": "will lead",
+          "object": "the review",
+          "blankRole": "possessive relative determiner",
+          "signal": "_____ recommendations",
+          "pattern": "whose + N."
+        },
+        "choiceReasons": {
+          "A": "whose เป็น possessive relative determiner หน้า recommendations",
+          "B": "whom แทนคนเป็น object ไม่แสดงเจ้าของ",
+          "C": "which ใช้แทนสิ่งของ ไม่แสดงเจ้าของของ engineer",
+          "D": "who แทนคนเป็น S แต่ไม่เป็นคำแสดงเจ้าของของ recommendations"
+        }
+      }
+    },
+    {
+      "id": "personal-20261009-p5-26",
+      "part": 5,
+      "stem": "The human resources team updated _____ procedures for approving remote-work arrangements.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "themselves"
+        },
+        {
+          "id": "B",
+          "text": "its"
+        },
+        {
+          "id": "C",
+          "text": "it's"
+        },
+        {
+          "id": "D",
+          "text": "them"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "pronoun"
+      ],
+      "ruleId": "pronoun.possessive",
+      "difficulty": 5,
+      "explanation": "team เอกพจน์แบบองค์กร และ procedures เป็น N.; its เป็น possessive determiner",
+      "explanationTh": "team เอกพจน์แบบองค์กร และ procedures เป็น N.; its เป็น possessive determiner",
+      "targetSeconds": 38,
+      "chapterIds": [
+        15
+      ],
+      "coaching": {
+        "focus": [],
+        "steps": [
+          "แยกประธาน ${roles[0]} และกริยา ${roles[1]}: ช่องว่างทำหน้าที่ ${roles[3]}",
+          "สังเกต “${roles[4]}” แล้วใช้สูตร ${roles[5]}",
+          "คำตอบคือ ${choices[target]} เพราะ ${answerExplain}"
+        ],
+        "memory": "its vs it's",
+        "breakdown": {
+          "subject": "The human resources team",
+          "verb": "updated",
+          "object": "its procedures",
+          "blankRole": "possessive determiner before N.",
+          "signal": "team ... procedures",
+          "pattern": "its vs it's"
+        },
+        "choiceReasons": {
+          "A": "themselves เป็น reflexive ไม่ทำหน้าที่ขยายนาม",
+          "B": "its เป็นคำแสดงความเป็นเจ้าของของ team หน้าคำนาม procedures",
+          "C": "it's = it is/it has ไม่ใช่ possessive",
+          "D": "them เป็น object pronoun ไม่ขยายนาม"
+        }
+      }
+    }
+  ],
+  "passages": []
+}

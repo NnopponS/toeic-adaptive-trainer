@@ -10,6 +10,7 @@ import type {
   SkillState,
   TrainerState,
 } from './types'
+import { adaptiveNeeds, conceptKey } from './adaptiveFocus'
 
 export const EXAM_DATE = new Date('2026-10-17T09:00:00+07:00')
 export const DAILY_GOAL = 70
@@ -389,37 +390,68 @@ export function uniqueQuestionPool<T extends Question>(questions: T[]): T[] {
   })
 }
 
+/**
+ * Adaptive v13:
+ * 1. Use new sentences as transfer evidence instead of making the learner memorize old answers.
+ * 2. Prioritize repeated errors/uncertainty by CONCEPT (stable across question-bank IDs).
+ * 3. Interleave concepts; honor a calibrated difficulty range when choices exist.
+ * 4. Once the bank is exhausted, use cooled review items (never immediate repeats).
+ */
 export function pickAdaptiveQuestion(state: TrainerState, questions: Question[], excludeId?: string): Question {
   const base = uniqueQuestionPool(questions.filter(q => q.id !== excludeId))
   if (!base.length) return questions[0]
-  const attempts = normalizeState(state).attempts
-  const seenIds = new Set(attempts.map(a => a.questionId))
-  const recentIds = new Set(attempts.slice(0, 70).map(a => a.questionId))
-  // Exhaust all never-attempted items before scheduling a repeat. Learning a rule
-  // means transferring it to a NEW sentence, not recognizing yesterday's answer.
-  const unseen = base.filter(q => !seenIds.has(q.id))
-  const cooled = base.filter(q => !recentIds.has(q.id))
+
+  const normalized = normalizeState(state)
+  const attempts = normalized.attempts
+  const seen = new Set(attempts.map(a => a.questionId))
+  const latest = new Set(attempts.slice(0, 18).map(a => a.questionId))
+  const unseen = base.filter(q => !seen.has(q.id))
+  const cooled = base.filter(q => !latest.has(q.id))
   const pool = unseen.length ? unseen : cooled.length ? cooled : base
+  const needs = new Map(adaptiveNeeds(normalized).map(n => [n.concept, n]))
+  const recentConcepts = attempts.slice(0, 5).map(a => conceptKey(a.ruleId, a.skills, a.part))
+  const recentSkillCounts = new Map<string, number>()
+  for (const a of attempts.slice(0, 30)) {
+    for (const skill of a.skills) recentSkillCounts.set(skill, (recentSkillCounts.get(skill) ?? 0) + 1)
+  }
+
   const suitable = pool.filter(q => {
-    const values = q.skills.map(skill => state.skills[skill]?.mastery).filter((n): n is number => typeof n === 'number')
-    const mastery = values.length ? values.reduce((x,y) => x+y,0) / values.length : 50
+    const mastery = q.skills.map(skill => normalized.skills[skill]?.mastery ?? 50)
+      .reduce((total,v) => total + v, 0) / Math.max(1,q.skills.length)
     const ceiling = mastery < 45 ? 2 : mastery < 65 ? 3 : mastery < 80 ? 4 : 5
-    const floor = mastery < 45 ? 1 : mastery < 80 ? 2 : 3
+    const floor = mastery < 45 ? 1 : mastery < 70 ? 2 : 3
     return q.difficulty >= floor && q.difficulty <= ceiling
   })
-  // Freshness wins even when all remaining new items are above the estimated level.
-  const eligible = suitable.length ? suitable : pool
-  const needs = repairNeeds(state)
-  const repair = eligible.filter(q => (needs[q.ruleId ?? q.skills[0]] ?? 0) >= 24)
-  const selection = repair.length && Math.random() < 0.65 ? repair : eligible
-  const weighted = selection.map(q => ({ q, w: questionWeight(state, q) }))
-  const total = weighted.reduce((sum, item) => sum + item.w, 0)
-  let r = Math.random() * total
-  for (const item of weighted) {
-    r -= item.w
-    if (r <= 0) return item.q
+  const candidates = suitable.length ? suitable : pool
+  const weighted = candidates.map(q => {
+    const concept = conceptKey(q.ruleId, q.skills, q.part)
+    const need = needs.get(concept)
+    const skillPressure = q.skills.reduce((score,skill) => {
+      const stats = normalized.skills[skill]
+      const evidenceGap = Math.max(0, 6 - (stats?.attempts ?? 0))
+      const weak = (100 - (stats?.mastery ?? 50)) * 0.22
+      return score + weak + evidenceGap * 4
+    }, 0)
+    const consecutive = recentConcepts.slice(0, 2).filter(x => x === concept).length
+    const interleave = recentConcepts.slice(0, 5).filter(x => x === concept).length
+    const noEvidence = q.skills.every(skill => (normalized.skills[skill]?.attempts ?? 0) < 6)
+    const focus = (need?.priority ?? 0) * 1.55 + skillPressure
+    const cooldown = consecutive === 2 ? 120 : consecutive === 1 ? 48 : interleave >= 3 ? 70 : interleave === 2 ? 22 : 0
+    const coverage = noEvidence ? 14 : 0
+    const age = recentSkillCounts.get(q.skills[0]) ?? 0
+    // Stable score combines difficulty, transfer, concept mastery and interleaving.
+    return { q, weight: Math.max(1, questionWeight(normalized,q) * 0.58 + focus + coverage - cooldown - age * 0.25) }
+  })
+  weighted.sort((a,b) => b.weight - a.weight || a.q.id.localeCompare(b.q.id))
+  // Stay in the best-scoring third; randomness provides variety, not blind selection.
+  const top = weighted.slice(0, Math.max(1, Math.min(9, Math.ceil(weighted.length / 3))))
+  const total = top.reduce((sum,x) => sum + x.weight,0)
+  let draw = Math.random() * total
+  for (const item of top) {
+    draw -= item.weight
+    if (draw <= 0) return item.q
   }
-  return weighted[weighted.length - 1].q
+  return top[top.length - 1].q
 }
 
 export function questionsForSkill(state: TrainerState, questions: Question[], skill: SkillId, count = 10) {

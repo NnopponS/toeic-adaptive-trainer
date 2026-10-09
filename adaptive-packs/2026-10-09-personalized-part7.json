@@ -1,0 +1,390 @@
+{
+  "createdAt": "2026-10-09T10:44:00+07:00",
+  "description": "Two original multi-document TOEIC-style Reading texts prioritizing inferred meaning, main idea, NOT-supported and evidence reconciliation",
+  "questions": [
+    {
+      "id": "personal-20261009-p7-01-q1",
+      "part": 7,
+      "passageId": "personal-20261009-p7-01",
+      "stem": "What is the primary purpose of Ms. Kim's e-mail?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "To authorize an earlier client demonstration"
+        },
+        {
+          "id": "B",
+          "text": "To explain dependencies affecting the relocation schedule"
+        },
+        {
+          "id": "C",
+          "text": "To request an immediate replacement of all network monitors"
+        },
+        {
+          "id": "D",
+          "text": "To cancel Friday's laboratory handover"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "main-idea"
+      ],
+      "ruleId": "personal.p7.main-idea",
+      "difficulty": 4,
+      "explanation": "อีเมลอธิบายว่างานเครือข่ายทำได้ตามเดิม แต่ sensor, certificate และ tests มีเงื่อนไขต่อเนื่องก่อน handover พร้อมขอรายชื่ออุปกรณ์ ไม่ใช่ประกาศยกเลิก",
+      "explanationTh": "อีเมลอธิบายว่างานเครือข่ายทำได้ตามเดิม แต่ sensor, certificate และ tests มีเงื่อนไขต่อเนื่องก่อน handover พร้อมขอรายชื่ออุปกรณ์ ไม่ใช่ประกาศยกเลิก",
+      "whyOthersTh": {
+        "A": "อีเมลห้าม demo ก่อน quality sign-off ไม่ได้อนุญาตให้จัดเร็วขึ้น",
+        "B": "สรุปเงื่อนไขเซนเซอร์→ใบรับรอง→ทดสอบ→ส่งมอบ เป็นเจตนาหลัก",
+        "C": "network monitors ติดตั้งตามแผน ไม่ได้ขอเปลี่ยนทั้งหมด",
+        "D": "Friday ยังเป็นกำหนดคาดหมายหากการทดสอบผ่าน ไม่ได้ยกเลิก"
+      },
+      "evidence": "The Facilities team still expects to turn over the space on Friday, provided that the tests are satisfactory.",
+      "targetSeconds": 70,
+      "chapterIds": [
+        28,
+        29
+      ]
+    },
+    {
+      "id": "personal-20261009-p7-01-q2",
+      "part": 7,
+      "passageId": "personal-20261009-p7-01",
+      "stem": "Why would moving the final operational tests to Tuesday be inappropriate?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "The network monitors have not been purchased."
+        },
+        {
+          "id": "B",
+          "text": "The department lists must be approved by a client first."
+        },
+        {
+          "id": "C",
+          "text": "The tests require certification that follows the sensor installation."
+        },
+        {
+          "id": "D",
+          "text": "The facility will not have electricity until Friday."
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "inference"
+      ],
+      "ruleId": "personal.p7.inference",
+      "difficulty": 5,
+      "explanation": "จากสองเอกสาร: sensor มาถึงพุธ; technician ตรวจและออก certificate พฤหัส; operational tests ทำได้หลัง certification จึงเลื่อนขึ้นอังคารไม่ได้",
+      "explanationTh": "จากสองเอกสาร: sensor มาถึงพุธ; technician ตรวจและออก certificate พฤหัส; operational tests ทำได้หลัง certification จึงเลื่อนขึ้นอังคารไม่ได้",
+      "whyOthersTh": {
+        "A": "monitor มีแผนติดตั้งอังคาร ไม่ได้ระบุว่าซื้อไม่ครบ",
+        "B": "รายชื่ออุปกรณ์ส่งให้ Facilities ไม่ใช่ลูกค้าอนุมัติ",
+        "C": "certificate ต้องออกหลัง sensor ติดตั้งและตรวจ และ tests ต้องหลัง certificate",
+        "D": "เอกสารไม่มีข้อกล่าวอ้างว่าไฟฟ้าใช้ไม่ได้จนถึงศุกร์"
+      },
+      "evidence": "operational tests follow only after certification",
+      "targetSeconds": 90,
+      "chapterIds": [
+        28,
+        29
+      ]
+    },
+    {
+      "id": "personal-20261009-p7-01-q3",
+      "part": 7,
+      "passageId": "personal-20261009-p7-01",
+      "stem": "Which statement is NOT supported by the two documents?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "IT connectivity checks can proceed before the replacement sensor arrives."
+        },
+        {
+          "id": "B",
+          "text": "A late sensor delivery could force Facilities to issue an updated schedule."
+        },
+        {
+          "id": "C",
+          "text": "The equipment lists are expected on Wednesday afternoon."
+        },
+        {
+          "id": "D",
+          "text": "The client demonstration has been confirmed for Thursday morning."
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "inference"
+      ],
+      "ruleId": "personal.p7.inference",
+      "difficulty": 4,
+      "explanation": "D ขัดกับอีเมลที่ระบุห้ามกำหนด client demonstration ก่อน quality team sign-off; พฤหัสเช้ามีการตรวจ calibration ไม่ใช่ยืนยันสาธิตให้ลูกค้า",
+      "explanationTh": "D ขัดกับอีเมลที่ระบุห้ามกำหนด client demonstration ก่อน quality team sign-off; พฤหัสเช้ามีการตรวจ calibration ไม่ใช่ยืนยันสาธิตให้ลูกค้า",
+      "whyOthersTh": {
+        "A": "อังคารติดตั้ง monitor และ diagnostics ได้ ก่อน sensor มาในวันพุธ จึงมีหลักฐาน",
+        "B": "อีเมลบอกว่าหาก sensor ช้า จะออก schedule ใหม่ จึงมีหลักฐาน",
+        "C": "รายการอุปกรณ์ต้องส่งพุธ 2 PM จึงมีหลักฐาน",
+        "D": "ไม่มีการยืนยัน client demo พฤหัสเช้า; กลับห้ามนัดจนกว่า QA อนุมัติ"
+      },
+      "evidence": "Please do not schedule a client demonstration before the quality team signs off on the results.",
+      "targetSeconds": 70,
+      "chapterIds": [
+        28,
+        29
+      ]
+    },
+    {
+      "id": "personal-20261009-p7-01-q4",
+      "part": 7,
+      "passageId": "personal-20261009-p7-01",
+      "stem": "Which sequence most accurately describes the conditions for Friday's handover?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Network diagnostics, sensor replacement, calibration approval, and satisfactory tests"
+        },
+        {
+          "id": "B",
+          "text": "Handover, replacement-sensor delivery, calibration, and network installation"
+        },
+        {
+          "id": "C",
+          "text": "Client demonstration, equipment-list approval, and network diagnosis"
+        },
+        {
+          "id": "D",
+          "text": "Calibration certificate, sensor order, relocation, and document printing"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "multi-text"
+      ],
+      "ruleId": "personal.p7.multi-text",
+      "difficulty": 5,
+      "explanation": "ต้องเชื่อมสองเอกสาร: IT diagnostics อังคาร→sensor พุธ→external check/certificate พฤหัส→operational tests/quality sign-off→handover ศุกร์",
+      "explanationTh": "ต้องเชื่อมสองเอกสาร: IT diagnostics อังคาร→sensor พุธ→external check/certificate พฤหัส→operational tests/quality sign-off→handover ศุกร์",
+      "whyOthersTh": {
+        "A": "เรียง dependencies ได้ถูก โดยการส่งมอบขึ้นกับผล tests",
+        "B": "ส่งมอบเกิดหลังงานตรวจ ไม่ใช่ก่อนรับ sensor",
+        "C": "client demo ยังไม่ได้รับอนุญาตและไม่ใช่เงื่อนไขของ handover",
+        "D": "certificate จะออกหลังติดตั้ง sensor ไม่ใช่ก่อน order sensor"
+      },
+      "evidence": "Planned handover to the laboratory, subject to quality approval.",
+      "targetSeconds": 90,
+      "chapterIds": [
+        28,
+        29
+      ]
+    },
+    {
+      "id": "personal-20261009-p7-02-q1",
+      "part": 7,
+      "passageId": "personal-20261009-p7-02",
+      "stem": "What is the main purpose of the revised travel policy?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "To eliminate reimbursement for work-related workshops"
+        },
+        {
+          "id": "B",
+          "text": "To clarify evidence and eligibility rules for different expenses"
+        },
+        {
+          "id": "C",
+          "text": "To require all employees to attend security training"
+        },
+        {
+          "id": "D",
+          "text": "To replace hotel invoices with credit-card notifications"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "main-idea"
+      ],
+      "ruleId": "personal.p7.main-idea",
+      "difficulty": 4,
+      "explanation": "หัวข้อหลักกำหนดว่าค่าใช้จ่ายชนิดใดเบิกได้ ต้องแนบหลักฐานอย่างไร และใช้นโยบายใหม่ตั้งแต่เมื่อไร ไม่ได้ยกเลิกทั้งหมด",
+      "explanationTh": "หัวข้อหลักกำหนดว่าค่าใช้จ่ายชนิดใดเบิกได้ ต้องแนบหลักฐานอย่างไร และใช้นโยบายใหม่ตั้งแต่เมื่อไร ไม่ได้ยกเลิกทั้งหมด",
+      "whyOthersTh": {
+        "A": "ยังเบิกค่าใช้จ่ายที่เข้าหลักเกณฑ์ได้ ไม่ได้ยกเลิก",
+        "B": "นโยบายแจกแจงเงื่อนไขและเอกสารสำหรับโรงแรม อาหาร แท็กซี่ และวันมีผล",
+        "C": "การเข้าฝึกอบรมไม่ใช่จุดประสงค์ของนโยบายเบิกค่าใช้จ่าย",
+        "D": "meal ต้องใบเสร็จแยกรายการ credit-card notification ไม่เพียงพอ"
+      },
+      "evidence": "Employees attending an approved training event may claim reasonable travel expenses within ten business days of returning.",
+      "targetSeconds": 70,
+      "chapterIds": [
+        28,
+        29
+      ]
+    },
+    {
+      "id": "personal-20261009-p7-02-q2",
+      "part": 7,
+      "passageId": "personal-20261009-p7-02",
+      "stem": "Why is Mr. Brooks's hotel charge potentially reimbursable under the revised policy?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "It was incurred after November 1 and had written preauthorization for an alternative booking."
+        },
+        {
+          "id": "B",
+          "text": "Every hotel expense is covered, regardless of where it was booked."
+        },
+        {
+          "id": "C",
+          "text": "The hotel was reserved through the company portal."
+        },
+        {
+          "id": "D",
+          "text": "His supervisor approved it after the workshop."
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "multi-text"
+      ],
+      "ruleId": "personal.p7.multi-text",
+      "difficulty": 5,
+      "explanation": "ต้องอ่านร่วม: charged Nov 2 (หลังนโยบายมีผล) และ supervisor e-mailed permission Oct31 ก่อนจองนอก portal จึงผ่านเงื่อนไขยกเว้นพร้อมแนบ invoice",
+      "explanationTh": "ต้องอ่านร่วม: charged Nov 2 (หลังนโยบายมีผล) และ supervisor e-mailed permission Oct31 ก่อนจองนอก portal จึงผ่านเงื่อนไขยกเว้นพร้อมแนบ invoice",
+      "whyOthersTh": {
+        "A": "ชำระ Nov2 + อนุญาตก่อนจอง Oct31 ตรงเงื่อนไขทั้งวันและข้อยกเว้น",
+        "B": "นอก portal ต้องมี written authorization ก่อน ไม่ใช่เบิกได้ทุกกรณี",
+        "C": "portal unavailable จึงจองโดยตรงกับโรงแรม ไม่ผ่าน portal",
+        "D": "permission ออก Oct31 ก่อน workshop ไม่ใช่หลัง"
+      },
+      "evidence": "Please include the supervisor's dated authorization and the hotel invoice.",
+      "targetSeconds": 90,
+      "chapterIds": [
+        28,
+        29
+      ]
+    },
+    {
+      "id": "personal-20261009-p7-02-q3",
+      "part": 7,
+      "passageId": "personal-20261009-p7-02",
+      "stem": "Which expense lacks the documentation required by the revised policy?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "The hotel room, because it was outside the booking portal"
+        },
+        {
+          "id": "B",
+          "text": "The train fare, because it was paid in October"
+        },
+        {
+          "id": "C",
+          "text": "The restaurant meal, because only a credit-card alert is available"
+        },
+        {
+          "id": "D",
+          "text": "The shuttle ride, because it ended before 10:00 P.M."
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "detail"
+      ],
+      "ruleId": "personal.p7.detail",
+      "difficulty": 4,
+      "explanation": "นโยบายต้อง itemized receipt สำหรับมื้ออาหาร ส่วน Evan มีแค่ credit-card alert และ Travel Support ขอให้นำใบเสร็จรายการมาเพิ่ม",
+      "explanationTh": "นโยบายต้อง itemized receipt สำหรับมื้ออาหาร ส่วน Evan มีแค่ credit-card alert และ Travel Support ขอให้นำใบเสร็จรายการมาเพิ่ม",
+      "whyOthersTh": {
+        "A": "โรงแรมมี itemized invoice และ written authorization อยู่แล้ว",
+        "B": "รถไฟซื้อก่อน Nov1 จึงอยู่ในนโยบายเก่า ไม่ได้แปลว่าขาดเอกสารตามนโยบายใหม่",
+        "C": "ค่าอาหารไม่มี itemized receipt จึงขาดหลักฐานที่ต้องมี",
+        "D": "ใช้ company shuttle ไม่ได้แจ้งค่าแท็กซี่เพื่อเบิก และไม่เกี่ยวกับเวลา 10 PM"
+      },
+      "evidence": "For the meal, request an itemized receipt before submitting that portion of your claim.",
+      "targetSeconds": 70,
+      "chapterIds": [
+        28,
+        29
+      ]
+    },
+    {
+      "id": "personal-20261009-p7-02-q4",
+      "part": 7,
+      "passageId": "personal-20261009-p7-02",
+      "stem": "What can be inferred about a taxi fare claimed for Mr. Brooks's workshop evening?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "It would automatically qualify because the event ended in November."
+        },
+        {
+          "id": "B",
+          "text": "It would likely fail the exception because a company shuttle was operating."
+        },
+        {
+          "id": "C",
+          "text": "It would be paid under the October policy because his train ticket was bought then."
+        },
+        {
+          "id": "D",
+          "text": "It could be approved without supporting evidence as long as the trip was short."
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "inference"
+      ],
+      "ruleId": "personal.p7.inference",
+      "difficulty": 5,
+      "explanation": "นโยบายแท็กซี่หลัง 9 PM ต้องไม่มี shuttle; Evan ระบุ shuttle เปิดถึง 10 PM และเขาใช้ shuttle จึงไม่เข้าเงื่อนไขเบิก taxi แม้เวลาดึก",
+      "explanationTh": "นโยบายแท็กซี่หลัง 9 PM ต้องไม่มี shuttle; Evan ระบุ shuttle เปิดถึง 10 PM และเขาใช้ shuttle จึงไม่เข้าเงื่อนไขเบิก taxi แม้เวลาดึก",
+      "whyOthersTh": {
+        "A": "เวลา/เดือนอย่างเดียวไม่พอ ต้องไม่มี shuttle",
+        "B": "shuttle ยังใช้ได้ จึงไม่เข้าเงื่อนไข exception สำหรับแท็กซี่",
+        "C": "ตัดสิน expense ทีละรายการตามวันที่ incurred ไม่เกี่ยวกับวันที่จ่ายค่ารถไฟ",
+        "D": "นโยบายไม่ได้บอกว่าอนุมัติค่าแท็กซี่โดยไม่มีหลักฐาน"
+      },
+      "evidence": "The availability of a shuttle, rather than the time alone, determines whether this exception applies.",
+      "targetSeconds": 90,
+      "chapterIds": [
+        28,
+        29
+      ]
+    }
+  ],
+  "passages": [
+    {
+      "id": "personal-20261009-p7-01",
+      "part": 7,
+      "kind": "multi",
+      "title": "East Wing Laboratory Handover — E-mail and Work Schedule",
+      "body": "DOCUMENT 1 — PROJECT E-MAIL\nFrom: Laura Kim, Facilities Integration\nTo: Laboratory and IT Supervisors\nDate: Monday, October 12\nSubject: East Wing acceptance and handover dates\n\nThe network monitors can be installed on Tuesday as planned, and the IT team may run connectivity diagnostics immediately afterward. However, the replacement temperature sensor will not reach our site until Wednesday afternoon. The calibration certificate cannot be issued until the new sensor has been installed and checked by the external technician.\n\nFor that reason, the laboratory's final operational tests must remain on Thursday. Please do not schedule a client demonstration before the quality team signs off on the results. I also need each department's final equipment list by 2:00 P.M. on Wednesday so that we can verify that no devices have been left at the old location.\n\nThe Facilities team still expects to turn over the space on Friday, provided that the tests are satisfactory. If the sensor delivery is delayed beyond Wednesday, I will circulate a new schedule rather than ask the laboratory team to shorten its testing period.\n\nDOCUMENT 2 — EAST WING RELOCATION SCHEDULE\nTuesday, October 13, 9:00 A.M. — Install network monitors; IT connectivity diagnostics may follow.\nWednesday, October 14, 1:00 P.M. — Expected delivery of replacement temperature sensor.\nWednesday, October 14, 2:00 P.M. — Department equipment lists due to Facilities.\nThursday, October 15, 10:00 A.M. — External calibration check and certificate; operational tests follow only after certification.\nFriday, October 16, 2:00 P.M. — Planned handover to the laboratory, subject to quality approval.",
+      "questions": [
+        "personal-20261009-p7-01-q1",
+        "personal-20261009-p7-01-q2",
+        "personal-20261009-p7-01-q3",
+        "personal-20261009-p7-01-q4"
+      ],
+      "examStyle": true,
+      "sourceLabel": "Original multi-document practice, not official ETS TOEIC material."
+    },
+    {
+      "id": "personal-20261009-p7-02",
+      "part": 7,
+      "kind": "multi",
+      "title": "Workshop Travel Expenses — Policy and Help-Desk Exchange",
+      "body": "DOCUMENT 1 — REVISED TRAVEL REIMBURSEMENT POLICY\nEffective November 1\n\nEmployees attending an approved training event may claim reasonable travel expenses within ten business days of returning. Claims must include an itemized receipt for each meal; a credit-card transaction notice alone does not meet this requirement.\n\nHotel reservations should be made through the corporate booking portal. Reservations made elsewhere are eligible only when a supervisor authorized the alternative in writing before the reservation was made. The employee must attach the authorization to the claim.\n\nTaxi fares after 9:00 P.M. may be reimbursed when no company shuttle is available. The availability of a shuttle, rather than the time alone, determines whether this exception applies.\n\nThe new policy applies to expenses incurred on or after November 1. Expenses paid before that date remain subject to the previous policy, even if the training event occurs later.\n\nDOCUMENT 2 — HELP-DESK EXCHANGE\nFrom: Evan Brooks, Engineering\nTo: Travel Support\nDate: November 5\nSubject: Workshop reimbursement clarification\n\nI attended the software-security workshop on November 4. I paid for my train ticket on October 28, but my hotel was charged on November 2. The booking portal was unavailable on October 31, so my supervisor e-mailed written permission that morning for me to reserve a room directly with the hotel.\n\nThe hotel invoice is itemized. I also have a restaurant credit-card alert, although the restaurant has not provided an itemized receipt. The workshop shuttle was operating until 10:00 P.M., so I used it instead of a taxi. Which expenses can I submit under the revised policy?\n\nFrom: Travel Support\nDate: November 6\n\nThe hotel charge falls under the November policy. Please include the supervisor's dated authorization and the hotel invoice. The October train purchase falls under the earlier policy. For the meal, request an itemized receipt before submitting that portion of your claim. Thank you for clarifying that the shuttle was available.",
+      "questions": [
+        "personal-20261009-p7-02-q1",
+        "personal-20261009-p7-02-q2",
+        "personal-20261009-p7-02-q3",
+        "personal-20261009-p7-02-q4"
+      ],
+      "examStyle": true,
+      "sourceLabel": "Original multi-document practice, not official ETS TOEIC material."
+    }
+  ]
+}

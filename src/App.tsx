@@ -27,6 +27,7 @@ import {
   studyStreak,
 } from './adaptive'
 import { part5, part6, part7, passageById, skillLabels } from './data'
+import { adaptiveNeeds, adaptiveReason, recommendedReadingPart } from './adaptiveFocus'
 import {
   loadCloudState,
   publishQuestionBankManifest,
@@ -2232,6 +2233,8 @@ function Home({ state, startLesson, navigate, startQuickPart5, questionCounts, v
 }) {
   const lang=useLanguage()
   const focus=nextFocusSkill(state)
+  const recommended= recommendedReadingPart(state)
+  const weakConcepts = adaptiveNeeds(state).filter(item => item.misses >= 2 && item.independentTransfers < 3).slice(0, 3)
   const lesson=lessonBySkill[focus] ?? lessons[0]
   const assessment=skillAssessment(state,focus)
   const today=attemptsToday(state)
@@ -2246,9 +2249,10 @@ function Home({ state, startLesson, navigate, startQuickPart5, questionCounts, v
     </section>
     <section className="daily-route"><div className="section-title"><h2>{L(lang,'Your next 15 minutes','15 นาทีถัดไปของคุณ')}</h2><span className="tiny-label">ADAPTIVE</span></div>
       <button className="route-row" onClick={()=>navigate('learn')}><span className="route-number">01</span><span><b>{L(lang,'Recall one useful pattern','ปลุกความจำด้วยการ์ดทริค')}</b><small>{L(lang,'Recall before revealing','ลองนึกก่อนเปิดคำตอบ')} · {due} {L(lang,'focus cards due','การ์ดในจุดที่ควรทวน')}</small></span><strong>↗</strong></button>
-      <button className="route-row primary-route" onClick={startQuickPart5}><span className="route-number">02</span><span><b>{L(lang,'Practice a short adaptive set','ฝึกชุดสั้น ปรับตามจุดอ่อน')}</b><small>{L(lang,'6 questions · new examples of your weak patterns','6 ข้อ · ฝึก pattern ที่ยังไม่แม่น')}</small></span><strong>→</strong></button>
+      <button className="route-row primary-route" onClick={()=>navigate(recommended.part===5?'part5':recommended.part===6?'part6':'part7')}><span className="route-number">02</span><span><b>{L(lang,`Adaptive Part ${recommended.part} · Personal practice`,`Adaptive Part ${recommended.part} · ฝึกตามจุดอ่อน`)}</b><small>{L(lang,recommended.reasonEn,recommended.reasonTh)}</small></span><strong>→</strong></button>
       <button className="route-row" onClick={()=>startLesson(lesson.skill)}><span className="route-number">03</span><span><b>{L(lang,'Repair, then prove you know it','เข้าใจวิธีคิด แล้ววัดความแม่น')}</b><small>{localizedLesson(lesson,lang).shortTitle} · {uncertain ? L(lang,`${uncertain} recent unsure answers`,`${uncertain} ข้อล่าสุดที่ยังลังเล`) : L(lang,'Worked examples → mastery check','ตัวอย่างสอน → วัดความแม่น')}</small></span><strong>↗</strong></button>
     </section>
+    {weakConcepts.length > 0 && <section className="focus-dashboard"><b>{L(lang,'Priority mistakes from your answers','จุดที่คุณพลาดบ่อยจริง')}</b><div>{weakConcepts.map(item=><span key={item.concept}>{item.concept} · {item.misses}/{item.attempts} {L(lang,'missed','ผิด')}</span>)}</div><small>{L(lang,'New examples are prioritized until you prove transfer on three different questions.','ระบบจะส่งข้อใหม่แนวเดียวกันให้ฝึก จนตอบได้ถูก มั่นใจ และทันเวลา 3 ข้อที่ต่างกัน')}</small></section>}
     <SectionTitle title={L(lang,'Train each Reading part','ฝึก Reading ทีละพาร์ต')} action={L(lang,'See all','ดูทั้งหมด')} onAction={()=>navigate('practice')}/>
     <div className="part-cards-mobile"><PracticePartCard className="mint" part="5" title={L(lang,'Grammar','โครงสร้าง')} count={questionCounts[5]} progress={partAccuracy(state,5)} onClick={startQuickPart5}/><PracticePartCard className="sky" part="6" title={L(lang,'Context','บริบท')} count={questionCounts[6]} progress={partAccuracy(state,6)} onClick={()=>navigate('part6')}/><PracticePartCard className="sun" part="7" title={L(lang,'Evidence','หลักฐาน')} count={questionCounts[7]} progress={partAccuracy(state,7)} onClick={()=>navigate('part7')}/></div>
     <div className="home-links"><button onClick={()=>navigate('vocab')}>Aa {L(lang,'Vocabulary repair','ทวนศัพท์ที่พลาด')} <b>{vocabCount}</b></button><button onClick={()=>navigate('mock')}>◷ {L(lang,'75-min simulation','จำลองสอบ 75 นาที')} →</button></div>
@@ -2295,7 +2299,7 @@ function PracticePartCard({
 function PracticeHub({ state, navigate, counts }: { state: TrainerState; navigate: (view: View) => void; counts: Record<Part, number> }) {
   const lang = useLanguage()
   return <div className="screen practice-hub">
-    <div className="screen-intro"><span className="tiny-label">READING PRACTICE</span><h1>{L(lang,'Practice with a purpose','ฝึกให้แม่นทีละจุด')}</h1><p>{L(lang,'Choose a part. Start with challenging questions, or switch to adaptive review. Explanations appear after you submit.','เลือกพาร์ต เริ่มด้วยโจทย์เข้มข้น หรือเปลี่ยนเป็นทวนจุดอ่อน เฉลยและจุดสังเกตจะเปิดหลังส่งคำตอบ')}</p></div>
+    <div className="screen-intro"><span className="tiny-label">READING PRACTICE</span><h1>{L(lang,'Practice with a purpose','ฝึกให้แม่นทีละจุด')}</h1><p>{L(lang,'Choose a part. Adaptive practice is the default; switch to challenge or the complete archive if needed. Explanations appear after you submit.','เลือกพาร์ต เริ่มจาก Adaptive ที่ปรับตามคำตอบจริง หรือเลือก Challenge/คลังพื้นฐานได้ เฉลยจะแสดงหลังตอบ')}</p></div>
     <div className="part-cards-mobile">
       {([5,6,7] as const).map(part => <PracticePartCard key={part} className={part === 5 ? 'mint' : part === 6 ? 'sky' : 'sun'} part={String(part)} title={part === 5 ? L(lang,'Incomplete Sentences','เติมคำในประโยค') : part === 6 ? L(lang,'Text Completion','เติมข้อความ') : L(lang,'Reading Comprehension','อ่านจับใจความ')} count={counts[part]} progress={partAccuracy(state,part)} onClick={() => navigate(part === 5 ? 'part5' : part === 6 ? 'part6' : 'part7')} />)}
     </div>
@@ -2721,6 +2725,27 @@ function practicePool(questions: Question[], exam: boolean, map: Record<string, 
   return challenging.length ? challenging : pool
 }
 
+// Adaptive practice is different from the full foundational archive. It requires
+// individual A-D explanations wherever available and still calibrates difficulty.
+function adaptivePracticePool(questions: Question[], map: Record<string, Passage> = passageById) {
+  const all = practicePool(questions, false, map)
+  if (all[0]?.part === 5) {
+    const vetted = all.filter(q => q.difficulty >= 2 && hasReviewedRationales(q))
+    return vetted.length >= 24 ? vetted : all
+  }
+  if (all[0]?.part === 6) {
+    const byId = new Map(all.map(q => [q.id, q]))
+    const vetted = new Set(Object.values(map).filter(p => p.part === 6 && p.examStyle
+      && p.questions.length === 4 && p.questions.every(id => {
+        const q = byId.get(id)
+        return Boolean(q && hasReviewedRationales(q))
+      })).map(p => p.id))
+    const eligible = all.filter(q => q.passageId && vetted.has(q.passageId))
+    return eligible.length >= 16 ? eligible : all
+  }
+  return all
+}
+
 function PracticeScreen({
   part,
   state,
@@ -2739,9 +2764,12 @@ function PracticeScreen({
   readingSwitch?: (part: 6 | 7) => void
 }) {
   const lang = useLanguage()
-  const [exam, setExam] = useState(true)
+  const [practiceMode, setPracticeMode] = useState<'adaptive'|'challenge'|'foundation'>('adaptive')
   const activePassageMap = passageMap ?? passageById
-  const pool = useMemo(() => practicePool(sourcePool, exam, activePassageMap), [sourcePool, exam, activePassageMap])
+  const pool = useMemo(() => practiceMode === 'adaptive'
+    ? adaptivePracticePool(sourcePool, activePassageMap)
+    : practicePool(sourcePool, practiceMode === 'challenge', activePassageMap),
+  [sourcePool, practiceMode, activePassageMap])
   const [question, setQuestion] = useState<Question>(() => firstQuestionOfPickedPassage(state, pool, activePassageMap))
   const [selected, setSelected] = useState('')
   const [checked, setChecked] = useState(false)
@@ -2767,7 +2795,7 @@ function PracticeScreen({
     startedAt.current = performance.now()
     // reset only when pool/part changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [part, exam])
+  }, [part, practiceMode])
 
   const passage = question?.passageId ? activePassageMap[question.passageId] : undefined
   const passageQuestionIds = passage?.questions.filter(id => pool.some(q => q.id === id)) ?? []
@@ -2878,14 +2906,14 @@ function PracticeScreen({
         </div>
       )}
 
-      <label className="practice-mode">{L(lang,'Question difficulty','ความเข้มข้นของโจทย์')}<select aria-label={L(lang,'Question difficulty','ความเข้มข้นของโจทย์')} value={exam ? 'exam' : 'adaptive'} onChange={event => setExam(event.target.value === 'exam')}><option value="exam">{L(lang,'Challenge · Reviewed 4–5','เข้มข้น · ตรวจเฉลยแล้ว ระดับ 4–5')}</option><option value="adaptive">{L(lang,'Foundation · Full bank','ฝึกพื้นฐาน · คลังทั้งหมด')}</option></select></label>
+      <label className="practice-mode">{L(lang,'Practice mode','โหมดฝึก')}<select aria-label={L(lang,'Practice mode','โหมดฝึก')} value={practiceMode} onChange={event => setPracticeMode(event.target.value as 'adaptive'|'challenge'|'foundation')}><option value="adaptive">{L(lang,'Adaptive · Personalized practice','Adaptive · ปรับตามข้อที่ผิดจริง')}</option><option value="challenge">{L(lang,'Challenge · Reviewed 4–5','Challenge · ข้อเข้มข้น 4–5')}</option><option value="foundation">{L(lang,'Foundation · Full archive','พื้นฐาน · คลังโจทย์ทั้งหมด')}</option></select></label>
       <div className="practice-progress">
         <Progress value={partDone / Math.max(1, partTarget) * 100} />
         <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}{extraPractice ? L(lang, ' · extra', ' · ฝึกเพิ่ม') : ''}</span>
       </div>
       <div className="session-status"><b>{L(lang,'SHORT SET','ชุดสั้น')} · {L(lang,'Question','ข้อ')} {session.length + (checked ? 0 : 1)}</b><span>{L(lang,'6+ questions · finish the whole passage','6 ข้อขึ้นไป · ทำให้จบทั้งบทความ')}</span></div>
       <p className="fresh-bank-meter">{L(lang, 'Unseen', 'ยังไม่เคยทำ')}: <b>{unseenCount}/{poolTotal}</b> {part === 5 ? L(lang,'unique questions','ข้อไม่ซ้ำ') : L(lang,'complete passages','บทอ่าน')} {unseenCount === 0 && <span>· {L(lang,'All new items completed; review mode','ทำข้อใหม่ครบแล้ว เริ่มทบทวนข้อเก่า')}</span>}</p>
-      {checked && <details className="adaptive-why"><summary>{L(lang,'Why this question?','ทำไมระบบเลือกข้อนี้?')}</summary><p>{L(lang,'Selection balances difficulty with weak skills, missed patterns, confidence, speed, spacing and recent exposure.','ระบบจัดน้ำหนักจากระดับที่ทำได้ จุดอ่อน pattern ที่พลาด ความมั่นใจ เวลา และระยะทบทวน พร้อมลดข้อที่เพิ่งเห็น')} · {question.skills.map(skill=>`${localizedSkill(skill,lang)} ${skillAssessment(state,skill).value??'—'}%`).join(' / ')}</p></details>}
+      {checked && <details className="adaptive-why"><summary>{L(lang,'Why this question?','ทำไมระบบเลือกข้อนี้?')} · {L(lang,adaptiveReason(state,question).labelEn,adaptiveReason(state,question).labelTh)}</summary><p>{L(lang,adaptiveReason(state,question).detailEn,adaptiveReason(state,question).detailTh)} · {question.skills.map(skill=>`${localizedSkill(skill,lang)} ${skillAssessment(state,skill).value??'—'}%`).join(' / ')}</p></details>}
 
       {passage && (
         <PassageDocument
