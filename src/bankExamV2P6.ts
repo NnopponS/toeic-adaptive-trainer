@@ -21,7 +21,7 @@ export const advancedPart6Passages: Passage[] = [
     "part": 6,
     "kind": "notice",
     "title": "Client Workshop — Updated Registration Procedure",
-    "body": "CLIENT EDUCATION DEPARTMENT\nNOTICE: NOVEMBER SOFTWARE WORKSHOP\n\nThe workshop originally scheduled for November 6 will now take place on November 13 because the instructor will be attending an industry conference. All confirmed participants will retain their seats, and no additional registration fee will be charged.\n\nParticipants who have already paid for optional training materials should keep their receipts. These charges will be [1] _____ to their accounts if the materials are no longer needed. Requests must be submitted through the registration portal by November 4 so that the accounting team can process them in time.\n\nThe online portal will close temporarily for maintenance on November 3. [2] _____, attendees who need to update dietary requirements after that date may send the information directly to the event coordinator by e-mail.\n\n[3] _____\n\nPlease note that the workshop has been moved to the South Conference Center, which is a short walk from the original venue. A location map will be sent with the final confirmation e-mail. [4] _____ Please allow enough time to reach the new location before the 9:00 A.M. opening session.",
+    "body": "CLIENT EDUCATION DEPARTMENT\nNOTICE: NOVEMBER SOFTWARE WORKSHOP\n\nThe workshop originally scheduled for November 6 will now take place on November 13 because the instructor will be attending an industry conference. All confirmed participants will retain their seats, and no additional registration fee will be charged.\n\nParticipants who have already paid for optional training materials should keep their receipts. These charges will be [1] _____ to their accounts if the materials are no longer needed. Requests must be submitted through the registration portal by November 4 so that the accounting team can process them in time.\n\nThe online portal will close temporarily for maintenance on November 3. [2] _____, attendees who need to update dietary requirements after that date may send the information directly to the event coordinator by e-mail.\n\n[3] _____\n\nPlease note that the workshop has been moved to the South Conference Center, which is a short walk from the original venue. A location map will be sent with the final confirmation e-mail. [4] _____, a printable copy will also be available through the registration portal. Please allow enough time to reach the new location before the 9:00 A.M. opening session.",
     "questions": [
       "exam2-p6-02-q1",
       "exam2-p6-02-q2",
@@ -505,27 +505,27 @@ export const advancedPart6: Question[] = [
     ],
     "ruleId": "exam2.p6.context",
     "difficulty": 4,
-    "explanation": "ประโยคก่อนบอกว่าจะส่ง location map; ประโยคหลังเตือนให้เผื่อเวลาไปถึงสถานที่ใหม่ จึงเป็นการเพิ่มคำแนะนำใช้ In addition",
-    "explanationTh": "ประโยคก่อนบอกว่าจะส่ง location map; ประโยคหลังเตือนให้เผื่อเวลาไปถึงสถานที่ใหม่ จึงเป็นการเพิ่มคำแนะนำใช้ In addition",
+    "explanation": "แจ้งว่าจะส่งแผนที่ทางอีเมล แล้วเพิ่มช่องทางดาวน์โหลดไฟล์พิมพ์จากพอร์ทัล จึงใช้ In addition = นอกจากนี้ เพื่อเพิ่มข้อมูลอีกช่องทาง",
+    "explanationTh": "แจ้งว่าจะส่งแผนที่ทางอีเมล แล้วเพิ่มช่องทางดาวน์โหลดไฟล์พิมพ์จากพอร์ทัล จึงใช้ In addition = นอกจากนี้ เพื่อเพิ่มข้อมูลอีกช่องทาง",
     "whyOthersTh": {
-      "A": "Therefore = ดังนั้น อาจสื่อผลต่อเนื่องได้ แต่ข้อมูลใหม่เป็นข้อเตือนเพิ่มเติม ไม่ใช่ผลโดยตรงของการส่งแผนที่",
-      "B": "Otherwise = มิฉะนั้น ต้องมีผลเสียตามเงื่อนไข แต่ประโยคนี้เป็นคำแนะนำเพิ่ม",
-      "C": "Meanwhile = ขณะเดียวกัน มักเชื่อมเหตุการณ์พร้อมกัน ไม่เข้ากับประโยคคำเตือน",
-      "D": "In addition = นอกจากนี้ นำคำแนะนำอีกเรื่องต่อจาก location map"
+      "A": "Therefore แปลว่า ดังนั้น/จึง เป็นผลที่ตามมาจากเหตุ แต่การส่งแผนที่ทางอีเมลไม่ได้เป็นเหตุที่ทำให้ไฟล์พิมพ์มีในพอร์ทัล",
+      "B": "Otherwise = มิฉะนั้น ใช้แสดงผลของการไม่ทำบางอย่าง แต่ประโยคนี้กำลังเพิ่มช่องทางเข้าถึงแผนที่",
+      "C": "Meanwhile = ในระหว่างนั้น/ขณะเดียวกัน เน้นสองเหตุการณ์เกิดพร้อมกัน ไม่ใช่ช่องทางเพิ่มเติม",
+      "D": "In addition = นอกจากนี้ ใช้เพิ่มช่องทางดาวน์โหลดแผนที่จากพอร์ทัลต่อจากแผนที่ทางอีเมล"
     },
     "coaching": {
       "focus": [],
       "steps": [
-        "ก่อนช่องแจ้งว่าจะส่ง location map",
-        "หลังช่องเป็นคำแนะนำให้เผื่อเวลาไปถึง",
-        "In addition = ข้อมูลเพิ่มเติมที่สอดคล้องกัน"
+        "ประโยคก่อนหน้า: A location map will be sent with the final confirmation e-mail",
+        "ประโยคหลัง: a printable copy will also be available through the portal คือเพิ่มช่องทาง",
+        "ใช้ In addition = เพิ่มข้อมูลในทิศทางเดียวกัน ไม่ใช่ผลลัพธ์หรือข้อยกเว้น"
       ],
-      "memory": "In addition = เพิ่มข้อมูล; Otherwise = มิฉะนั้น",
+      "memory": "In addition = กล่าวเพิ่ม; Therefore = ผลลัพธ์; Otherwise = มิฉะนั้น",
       "choiceReasons": {
-        "A": "Therefore = ดังนั้น อาจสื่อผลต่อเนื่องได้ แต่ข้อมูลใหม่เป็นข้อเตือนเพิ่มเติม ไม่ใช่ผลโดยตรงของการส่งแผนที่",
-        "B": "Otherwise = มิฉะนั้น ต้องมีผลเสียตามเงื่อนไข แต่ประโยคนี้เป็นคำแนะนำเพิ่ม",
-        "C": "Meanwhile = ขณะเดียวกัน มักเชื่อมเหตุการณ์พร้อมกัน ไม่เข้ากับประโยคคำเตือน",
-        "D": "In addition = นอกจากนี้ นำคำแนะนำอีกเรื่องต่อจาก location map"
+        "A": "Therefore แปลว่า ดังนั้น/จึง เป็นผลที่ตามมาจากเหตุ แต่การส่งแผนที่ทางอีเมลไม่ได้เป็นเหตุที่ทำให้ไฟล์พิมพ์มีในพอร์ทัล",
+        "B": "Otherwise = มิฉะนั้น ใช้แสดงผลของการไม่ทำบางอย่าง แต่ประโยคนี้กำลังเพิ่มช่องทางเข้าถึงแผนที่",
+        "C": "Meanwhile = ในระหว่างนั้น/ขณะเดียวกัน เน้นสองเหตุการณ์เกิดพร้อมกัน ไม่ใช่ช่องทางเพิ่มเติม",
+        "D": "In addition = นอกจากนี้ ใช้เพิ่มช่องทางดาวน์โหลดแผนที่จากพอร์ทัลต่อจากแผนที่ทางอีเมล"
       }
     },
     "targetSeconds": 45,

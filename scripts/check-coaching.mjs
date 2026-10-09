@@ -56,6 +56,7 @@ try {
   const { advancedPart5 } = await import(pathToFileURL(path.join(dir,'bankExamV2P5.mjs')))
   const { advancedPart6, advancedPart6Passages } = await import(pathToFileURL(path.join(dir,'bankExamV2P6.mjs')))
   assert.ok(advancedPart5.length>=25,'challenge bank needs meaningful breadth beyond the eight earlier items')
+  assert.ok(Math.max(...'ABCD'.split('').map(letter=>advancedPart5.filter(q=>q.answer===letter).length)) - Math.min(...'ABCD'.split('').map(letter=>advancedPart5.filter(q=>q.answer===letter).length)) <=1, 'reviewed challenge answers should not have a giveaway letter bias')
   for (const q of advancedPart5) {
     assert.equal(q.choices.length,4)
     assert.deepEqual(Object.keys(q.coaching.choiceReasons),['A','B','C','D'])
@@ -82,6 +83,7 @@ try {
   const firstTime=part5.find(q=>q.id==='v3-p5-009')
   assert.equal(firstTime.coaching.choiceReasons.B.includes('Past Simple'),true,'first-time trap needs specific Past Simple reasoning')
   assert.equal(firstTime.coaching.choiceReasons.D.includes('Past Perfect'),true,'first-time trap needs Past Perfect comparison')
+  assert.ok(practicePool(part5,true).every(q=>q.choices.every(c=>!inspectionText(q,c.id,'th').includes('ไม่ตรงทั้งรูปแบบ'))),'reviewed challenge has no broad wrong-answer fallback')
   const invoiceQuestion=part5.find(q=>q.id==='p5-v4-09-07')
   assert.ok(invoiceQuestion.coaching.choiceReasons.D.includes('Past Participle'), 'been approve must explain V3 vs V1 exactly')
   assert.ok(practicePool(part5,false).length>150,'full Part 5 pool must not be limited to grammar-map examples')
@@ -317,7 +319,7 @@ try {
     assert.ok(before.includes('sentence-exam') && before.includes('_____'), 'practice starts as a normal exam-style sentence')
     assert.ok(!before.includes('word-pos') && !before.includes('word-function') && !before.includes('sentence-tools') && !before.includes('clause-outline') && !before.includes('grammar-estimate'), 'grammar/POS/function hints stay hidden until submission')
     const overview = renderToStaticMarkup(createElement(QuestionCard, { question:q, selected:q.answer, checked:true, onSelect:()=>{} }))
-    assert.ok(overview.includes('เหตุผลที่ถูก') && !overview.includes('/4'), 'short explanation is visible immediately')
+    assert.ok(overview.includes('analysis-answer') && overview.includes('คำตอบที่ถูก') && !overview.includes('/4'), 'answer-analysis card is visible immediately')
   }
   assert.match(blankRequirement(coachingQuestions.find(q => q.id === 'coach-p5-11')).labelEn, /gerund/)
   assert.ok(practicePool(part5, true).every(q => q.difficulty >= 3))
