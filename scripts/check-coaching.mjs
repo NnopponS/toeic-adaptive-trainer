@@ -28,6 +28,7 @@ try {
   await compile('App')
   const { labelWords, correctSentenceForMap, inspectionText, blankRequirement, QuestionCard, practicePool, BottomNav, PassageDocument, stepWordIndexes } = await import(pathToFileURL(path.join(dir, 'App.mjs')))
   const { allQuestions, part5, part6, part7, passageById } = await import(pathToFileURL(path.join(dir, 'data.mjs')))
+  const { emptyState, recordAttempt, addFeedbackToLatest, pickAdaptiveQuestion, completeReadingSample, markVocabReview, classifyAttempt, questionTargetMs, repairNeeds, questionWeight, questionFingerprint } = await import(pathToFileURL(path.join(dir,'adaptive.mjs')))
   const { adaptiveNeeds, adaptiveReason, recommendedReadingPart, conceptKey } = await import(pathToFileURL(path.join(dir, 'adaptiveFocus.mjs')))
   assert.equal(conceptKey('exam2.conjunction.27',['conjunction'],5),'connector.clause-vs-phrase')
   assert.equal(conceptKey('exam.conjunction.5',['conjunction'],5),'connector.clause-vs-phrase')
@@ -75,7 +76,7 @@ try {
   const { coachingQuestions, coachingPart6, coachingPart7, foundationCoaching } = await import(pathToFileURL(path.join(dir, 'bankCoaching.mjs')))
   const { reviewedGrammar, grammarClasses, grammarFunctions } = await import(pathToFileURL(path.join(dir, 'grammarGuide.mjs')))
   const { lessons } = await import(pathToFileURL(path.join(dir, 'lessons.mjs')))
-  const { emptyState, recordAttempt, addFeedbackToLatest, pickAdaptiveQuestion, completeReadingSample, markVocabReview, classifyAttempt, questionTargetMs, repairNeeds, questionWeight, questionFingerprint } = await import(pathToFileURL(path.join(dir,'adaptive.mjs')))
+
   const { courseCards, courseSources, cardIsDue, recallForQuestion } = await import(pathToFileURL(path.join(dir,'courseCards.mjs')))
   assert.equal(recallForQuestion(coachingQuestions.find(q=>q.id==='coach-p5-14')).chapter,19,'connector errors should recall connectors, not unrelated if-clause notes')
   assert.equal(courseSources.length,30)
