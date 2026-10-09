@@ -176,8 +176,8 @@ try {
   assert.deepEqual(grouped.filter(g=>g.tone==='subordinate').flatMap(g=>g.words).filter(w=>!w.punctuation).map(w=>w.text), ['which','was','released','last','week'], 'relative clause underline must cover its whole phrase')
   const repairQ = coachingQuestions.find(q=>q.id==='coach-p5-12')
   const missed = recordAttempt(emptyState(),repairQ,'C',30_000)
-  const transferQ = {...repairQ,id:'new-transfer'}
-  const unrelatedQ = {...repairQ,id:'other-rule',ruleId:'other.rule'}
+  const transferQ = {...repairQ,id:'new-transfer',stem:'The same principle applies here: _____ should be chosen for the transfer example.'}
+  const unrelatedQ = {...repairQ,id:'other-rule',ruleId:'other.rule',stem:'This unrelated practice sentence has a different blank: _____.'}
   assert.ok(repairNeeds(missed)[repairQ.ruleId]>=24)
   assert.ok(questionWeight(missed,transferQ)>questionWeight(missed,unrelatedQ), 'new questions on the missed pattern get priority')
   let repaired=missed
