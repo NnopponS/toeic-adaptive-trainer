@@ -32,7 +32,7 @@ jobs:
               }
               if (passages[p.id]) throw new Error('Duplicate passage id: ' + p.id);
               if (p.part === 6 && (p.questions.length !== 4 || !p.questions.every((id,i) =>
-                p.body.includes('[' + (i+1) + '] _____'))) throw new Error('Part 6 needs four matching blanks: ' + p.id);
+                p.body.includes('[' + (i+1) + '] _____')))) throw new Error('Part 6 needs four matching blanks: ' + p.id);
               passages[p.id] = p;
             }
             for (const q of pack.questions ?? []) {
