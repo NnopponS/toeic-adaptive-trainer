@@ -119,7 +119,7 @@ export function watchPersonalizedPassages(callback: (passages: Passage[]) => voi
 export async function publishQuestionBankManifest(counts: { part5: number; part6: number; part7: number }) {
   await update(ref(db, 'questionBank/meta'), {
     ...counts,
-    appBankVersion: 7,
+    appBankVersion: 8,
     updatedAt: Date.now(),
     note: 'Core bank is bundled with the app; personalized questions and Part 6/7 passages are loaded live from Firebase.',
   })

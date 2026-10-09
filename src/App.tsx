@@ -28,6 +28,7 @@ import {
 } from './adaptive'
 import { part5, part6, part7, passageById, skillLabels } from './data'
 import { adaptiveNeeds, adaptiveReason, conceptKey, recommendedReadingPart } from './adaptiveFocus'
+import { completeRationales } from './rationaleCompletion'
 import {
   loadCloudState,
   publishQuestionBankManifest,
@@ -1336,8 +1337,8 @@ function inspectionText(question: Question, choiceId: string, lang: Language) {
   const choice = question.choices.find(item => item.id === choiceId)
   if (!choice) return ''
   if (lang === 'th' && question.coaching?.choiceReasons[choiceId]) return question.coaching.choiceReasons[choiceId]
-  if (choiceId === question.answer) return localizedQuestionExplanation(question, lang)
   if (lang === 'th' && question.whyOthersTh?.[choiceId]) return question.whyOthersTh[choiceId]
+  if (choiceId === question.answer) return localizedQuestionExplanation(question, lang)
   if (question.whyOthers?.[choiceId]) {
     const reason = question.whyOthers[choiceId]
     return lang === 'th' ? `${reason} · หลักที่ใช้ตัดสิน: ${localizedQuestionExplanation(question, lang)}` : reason
@@ -1411,10 +1412,9 @@ function AnswerWalkthrough({ question, selected, contextText }: { question: Ques
   const chosen = question.choices.find(choice => choice.id === selected)
   const memory = authored?.memory ?? (question.part < 7 ? spottingRules(question, contextText, lang)[0] : undefined)
   const steps = authored?.steps ?? (question.part < 7 ? buildQuestionAnalysis(question, lang).steps : [])
-  const reasonsReviewed = question.part < 7 && question.choices.every(choice =>
-    Boolean(authored?.choiceReasons[choice.id] || (choice.id === question.answer
-      ? question.explanationTh
-      : question.whyOthersTh?.[choice.id] || question.whyOthers?.[choice.id])))
+  const explanationsComplete = question.choices.every(choice =>
+    Boolean(question.coaching?.choiceReasons[choice.id] || question.whyOthersTh?.[choice.id]))
+  const reasonsReviewed = explanationsComplete && question.rationaleSource !== 'contextualized'
   return (
     <div className="answer-summary">
       <header className="analysis-header">
@@ -1423,7 +1423,11 @@ function AnswerWalkthrough({ question, selected, contextText }: { question: Ques
           <span className="analysis-eyebrow">{L(lang,'AFTER-ANSWER COACH','เฉลยหลังตอบ')}</span>
           <h3>{L(lang,'See the reason, not just the rule','เข้าใจเหตุผล ไม่ใช่แค่จำกฎ')}</h3>
         </div>
-        {question.part < 7 && <span className={'analysis-status ' + (reasonsReviewed ? 'verified' : 'basic')}>{reasonsReviewed ? L(lang,'Reviewed','ตรวจแยกรายข้อ') : L(lang,'Basic','อธิบายพื้นฐาน')}</span>}
+        <span className={'analysis-status ' + (reasonsReviewed ? 'verified' : 'basic')}>{reasonsReviewed
+          ? L(lang,'Reviewed A–D','ตรวจรายตัวเลือก A–D')
+          : explanationsComplete
+          ? L(lang,'Contextual A–D','แยกรายตัวเลือก A–D')
+          : L(lang,'Basic','อธิบายพื้นฐาน')}</span>
       </header>
 
       {breakdown && (
@@ -1960,21 +1964,23 @@ function App() {
   const [lessonSkill, setLessonSkill] = useState<SkillId | null>(null)
   const [lang, setLang] = useState<Language>(() => localStorage.getItem(LANG_STORAGE_KEY) === 'en' ? 'en' : 'th')
 
-  const allPart5 = useMemo(
-    () => [...part5, ...remoteQuestions.filter(q => q.part === 5)],
-    [remoteQuestions],
-  )
-  const allPart6 = useMemo(
-    () => [...part6, ...remoteQuestions.filter(q => q.part === 6)],
-    [remoteQuestions],
-  )
-  const allPart7 = useMemo(
-    () => [...part7, ...remoteQuestions.filter(q => q.part === 7)],
-    [remoteQuestions],
-  )
   const allPassageById = useMemo(
     () => ({ ...passageById, ...Object.fromEntries(remotePassages.map(p => [p.id, p])) }),
     [remotePassages],
+  )
+  // Remote (older) personalized questions receive the same specific A-D
+  // contextual annotation as bundled legacy banks; learner state is untouched.
+  const allPart5 = useMemo(
+    () => [...part5, ...remoteQuestions.filter(q => q.part === 5).map(q => completeRationales(q,allPassageById))],
+    [remoteQuestions, allPassageById],
+  )
+  const allPart6 = useMemo(
+    () => [...part6, ...remoteQuestions.filter(q => q.part === 6).map(q => completeRationales(q,allPassageById))],
+    [remoteQuestions, allPassageById],
+  )
+  const allPart7 = useMemo(
+    () => [...part7, ...remoteQuestions.filter(q => q.part === 7).map(q => completeRationales(q,allPassageById))],
+    [remoteQuestions, allPassageById],
   )
   const allQuestionById = useMemo(
     () => Object.fromEntries([...allPart5, ...allPart6, ...allPart7].map(question => [question.id, question])),
@@ -2706,6 +2712,8 @@ function DailyPartComplete({
 // A difficulty label alone is not a quality review. Challenge mode only admits
 // questions whose actual A-D distractors have individual editorial explanations.
 function hasReviewedRationales(question: Question) {
+  // Do not silently promote generated legacy coverage to editorial review.
+  if (question.rationaleSource === 'contextualized') return false
   const correct = question.explanationTh || question.coaching?.choiceReasons[question.answer]
   if (!correct) return false
   return question.choices.every(choice =>

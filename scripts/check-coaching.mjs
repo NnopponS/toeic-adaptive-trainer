@@ -30,6 +30,43 @@ try {
   const { allQuestions, part5, part6, part7, passageById } = await import(pathToFileURL(path.join(dir, 'data.mjs')))
   const { emptyState, recordAttempt, addFeedbackToLatest, pickAdaptiveQuestion, completeReadingSample, markVocabReview, classifyAttempt, questionTargetMs, repairNeeds, questionWeight, questionFingerprint } = await import(pathToFileURL(path.join(dir,'adaptive.mjs')))
   const { adaptiveNeeds, adaptiveReason, recommendedReadingPart, conceptKey } = await import(pathToFileURL(path.join(dir, 'adaptiveFocus.mjs')))
+
+  // A-D audit covers the ENTIRE shipped catalog, not just the small Challenge pool.
+  const byPartEditorial = [part5,part6,part7].map(bank => ({
+    part:bank[0].part,
+    total:bank.length,
+    authored:bank.filter(q=>q.rationaleSource==='authored').length,
+    contextualized:bank.filter(q=>q.rationaleSource==='contextualized').length,
+    withAllFour:bank.filter(q=>q.choices.every(c=>Boolean(q.coaching?.choiceReasons[c.id] || q.whyOthersTh?.[c.id]))).length,
+  }))
+  assert.equal(byPartEditorial.reduce((n,r)=>n+r.total,0),allQuestions.length)
+  for(const stats of byPartEditorial) assert.equal(stats.withAllFour,stats.total,'missing individual A-D reasons in Part '+stats.part)
+  const ids=new Set()
+  for(const q of allQuestions){
+    assert.ok(!ids.has(q.id),'duplicate ID: '+q.id); ids.add(q.id)
+    assert.equal(q.choices.length,4,'wrong choices count: '+q.id)
+    assert.deepEqual(q.choices.map(c=>c.id),['A','B','C','D'],'unexpected choice IDs: '+q.id)
+    assert.ok(q.choices.some(c=>c.id===q.answer),'answer absent: '+q.id)
+    assert.ok(q.explanation?.trim(),'answer reason absent: '+q.id)
+    assert.ok(q.rationaleSource === 'authored' || q.rationaleSource === 'contextualized','missing reason provenance: '+q.id)
+    const phrases=q.choices.map(c=>c.text.toLowerCase().replace(/\s+/g,' ').trim())
+    assert.equal(new Set(phrases).size,4,'identical distractors: '+q.id)
+    for(const c of q.choices){
+      const reason=q.coaching?.choiceReasons[c.id] || q.whyOthersTh?.[c.id]
+      assert.ok(reason?.length>=12,'empty or trivial rationale: '+q.id+' '+c.id)
+      assert.ok(!/ไม่ตรงทั้งรูปแบบ|ไม่มีเหตุผลเจาะจง|does not satisfy the required pattern/i.test(reason),
+        'legacy vague fallback survived: '+q.id+' '+c.id)
+    }
+    if(q.part>=6) assert.ok(passageById[q.passageId] && passageById[q.passageId].questions.includes(q.id),'missing matching passage: '+q.id)
+  }
+  const sampleGenerated=allQuestions.find(q=>q.id==='v2-p7-01-q1')
+  assert.equal(sampleGenerated.rationaleSource,'contextualized')
+  assert.ok(sampleGenerated.whyOthersTh.A.includes('The current room has faulty equipment'))
+  assert.ok(sampleGenerated.whyOthersTh.B.includes('Three additional attendees'))
+  const sampleNot=allQuestions.find(q=>q.id==='v8-p7-01-q4')
+  assert.ok(sampleNot.whyOthersTh.A.includes('NOT/EXCEPT') && sampleNot.whyOthersTh.C.includes('180 THB'))
+  console.log('COMPLETE_A_D_EDITORIAL_AUDIT '+JSON.stringify(byPartEditorial))
+
   assert.equal(conceptKey('exam2.conjunction.27',['conjunction'],5),'connector.clause-vs-phrase')
   assert.equal(conceptKey('exam.conjunction.5',['conjunction'],5),'connector.clause-vs-phrase')
   const coverage = [part5, part6, part7].map(pool => ({

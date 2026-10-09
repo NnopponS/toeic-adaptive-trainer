@@ -46,6 +46,8 @@ export interface Question {
   evidence?: string
   whyOthers?: Record<string, string>
   whyOthersTh?: Record<string, string>
+  /** Authored = checked item-specific Thai A-D; contextualized = evidence-based enhancement from legacy source. */
+  rationaleSource?: 'authored' | 'contextualized'
   passageId?: string
   source?: 'core' | 'personalized'
   createdAt?: number
