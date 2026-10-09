@@ -225,10 +225,30 @@ function evidenceTh(q:Question,p?:Passage){
   return [evidence?'หลักฐานในเอกสาร: '+highlight(evidence):'',
     original?'คำอธิบายประจำข้อ: '+shrink(original,245):''].filter(Boolean).join(' · ')
 }
+function evidenceForAlternative(choice:string,p?:Passage){
+  if(!p) return ''
+  const words=unique(tokens(choice))
+  if(words.length<2)return ''
+  const sentences=p.body.split(/(?<=[.!?])\s+|\n+/).map(x=>x.trim()).filter(x=>x.length>25)
+  let best='',highest=0
+  for(const line of sentences){
+    const ts=new Set(tokens(line))
+    const overlap=words.filter(w=>ts.has(w)).length+
+      words.filter(w=>/\d/.test(w)&&ts.has(w)).length
+    if(overlap>highest){highest=overlap;best=line}
+  }
+  return highest>=2?shrink(best,160):''
+}
+function questionAsksUnsupported(stem:string){
+  const up=stem.toUpperCase()
+  return ['EXCEPT','NOT INDICATED','NOT MENTIONED','NOT TRUE','NOT STATED','NOT CORRECT','NOT SUPPORTED','NOT ONE OF','NOT INCLUDED','NOT LISTED','NOT SHOWN','NOT PROVIDED'].some(phrase=>up.includes(phrase))
+}
 function explainCorrect(q:Question,text:string,sentence:string,p?:Passage){
   const w=wordOf(text),th=meaningFor(q,q.answer,text),rule=(q.ruleId??'').toLowerCase()
   const meaning=th?' ความหมาย: '+th+'.':''
-  if(q.part===7) return 'เลือก '+highlight(text)+' เพราะเป็นข้อความที่สอดคล้องกับสิ่งที่คำถามต้องการโดยตรง. '+evidenceTh(q,p)
+  if(q.part===7) return questionAsksUnsupported(q.stem)
+    ? 'เลือก '+highlight(text)+' เพราะโจทย์ให้หาตัวเลือกที่ไม่มีข้อมูลรองรับหรือขัดกับเอกสาร ไม่ใช่สิ่งที่มีหลักฐานยืนยัน. '+evidenceTh(q,p)
+    : 'เลือก '+highlight(text)+' เพราะข้อมูลในเอกสารสนับสนุนคำตอบตามรูปแบบคำถาม. '+evidenceTh(q,p)
   if(q.skills.includes('sentence-placement') || (q.part===6&&text.split(/\s+/).length>=6)){
     return 'ประโยค '+highlight(text)+' ต่อเรื่องจากข้อความก่อนช่องและพาไปยังประโยคหลังช่องได้ โดยไม่เปลี่ยนตัวบุคคล ลำดับเวลา หรือสิ่งที่สรรพนามอ้างถึง. บริบท: '+fragment(sentence,190)+' · '+evidenceTh(q,p)
   }
@@ -257,12 +277,20 @@ function explainWrong(q:Question,id:string,text:string,sentence:string,p?:Passag
   const gloss=meaning?' ความหมาย/หน้าที่: '+meaning+'.':''
   const rule=(q.ruleId??'').toLowerCase()
   if(q.part===7){
-    const isNot=/\bNOT\b|\bEXCEPT\b|\bNOT indicated\b|\bNOT mentioned\b|\bNOT supported\b/i.test(q.stem)
+    const isNot=questionAsksUnsupported(q.stem)
     const detail=evidenceTh(q,p)
+    const match=evidenceForAlternative(text,p)
+    const proof=match?' ส่วนของเอกสารที่ต้องเทียบกับตัวเลือกนี้คือ '+highlight(match)+'.':''
+    const focus=/\b(?:purpose|primarily|mainly|main idea)\b/i.test(q.stem)
+      ? 'คำถามถามวัตถุประสงค์หลัก ไม่ใช่รายละเอียดที่อาจปรากฏเพียงช่วงหนึ่ง.'
+      : /\b(?:infer|imply|suggest|most likely)\b/i.test(q.stem)
+      ? 'การอนุมานต้องมีข้อความรองรับ ไม่ใช่เลือกสิ่งที่เพียงอาจเกิดขึ้นได้.'
+      : 'ให้เทียบคน การกระทำ เวลา จำนวน และเงื่อนไขที่ถามโดยตรง.'
     return isNot
-      ? 'ตัวเลือก '+highlight(text)+' ไม่ใช่ข้อยกเว้นที่โจทย์ถาม (NOT/EXCEPT). ต้องแยกสิ่งที่เอกสารระบุไว้กับสิ่งที่ไม่ปรากฏหรือขัดข้อมูล; ข้อที่เลือกได้คือ '+highlight(right)+'. '+detail+note
-      : 'ตัวเลือก '+highlight(text)+' เป็นข้อสรุป/รายละเอียดอีกทางหนึ่ง แต่หลักฐานที่ตอบคำถาม '+highlight(q.stem)+' ชี้ไปที่ '+highlight(right)+
-        ' ไม่ใช่ข้อความในตัวเลือกนี้; อย่าเติมสมมติฐานที่เอกสารไม่ได้รับรอง. '+detail+note
+      ? 'ตัวเลือก '+highlight(text)+' ไม่ใช่ข้อความผิดหรือไม่มีระบุที่โจทย์ NOT/EXCEPT ให้หา; ต้องตรวจว่าข้อความนี้มีหลักฐานรองรับอย่างไร.'+
+        proof+' คำตอบที่เป็นข้อยกเว้นคือ '+highlight(right)+'. '+detail+note
+      : 'ตัวเลือก '+highlight(text)+' กล่าวถึงรายละเอียดอีกทางหนึ่ง ไม่ใช่ '+highlight(right)+' ที่ตอบโจทย์ '+highlight(q.stem)+'. '+
+        focus+proof+' เทียบคำอธิบายคำตอบจริง: '+detail+note
   }
   if(q.skills.includes('sentence-placement')||(q.part===6 && text.split(/\s+/).length>=6)){
     const ptext=fragment(sentence,170)

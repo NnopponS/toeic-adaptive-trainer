@@ -63,6 +63,8 @@ try {
   assert.equal(sampleGenerated.rationaleSource,'contextualized')
   assert.ok(sampleGenerated.whyOthersTh.A.includes('The current room has faulty equipment'))
   assert.ok(sampleGenerated.whyOthersTh.B.includes('Three additional attendees'))
+  const otherNot=allQuestions.find(q=>q.id==='v2-p7-02-q4')
+  assert.ok(otherNot.whyOthersTh[otherNot.answer].includes('ข้อมูลในเอกสารสนับสนุน'), 'What is NOT changing asks for a supported fact')
   const sampleNot=allQuestions.find(q=>q.id==='v8-p7-01-q4')
   assert.ok(sampleNot.whyOthersTh.A.includes('NOT/EXCEPT') && sampleNot.whyOthersTh.C.includes('180 THB'))
   console.log('COMPLETE_A_D_EDITORIAL_AUDIT '+JSON.stringify(byPartEditorial))

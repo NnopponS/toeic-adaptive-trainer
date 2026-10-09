@@ -2460,9 +2460,9 @@ function LessonSession({
             </div>
           </details>
         )}
-        <QuestionCard key={example.id} question={{ ...example, part: 5, skills: [lesson.skill], explanation: example.explanation, explanationTh: exampleText.explanation,
+        <QuestionCard key={example.id} question={completeRationales({ ...example, part: 5, skills: [lesson.skill], explanation: example.explanation, explanationTh: exampleText.explanation,
           coaching: { focus: example.clue.match(/[“”]([^“”]+)[“”]/)?.slice(1) ?? [], steps: [exampleText.clue, exampleText.rule, exampleText.explanation], memory: exampleText.rule, choiceReasons: { [example.answer]: exampleText.explanation } },
-        }} selected={example.answer} checked onSelect={() => undefined} />
+        })} selected={example.answer} checked onSelect={() => undefined} />
         <button className="back-link" onClick={() => { setPhase('practice'); startedAt.current = performance.now() }}>{L(lang,'Already know this? Go to mastery check','จำหลักได้แล้ว → ไปวัดความแม่น')}</button>
         <button className="big-next" onClick={() => {
           if (exampleIndex < lesson.workedExamples.length - 1) {
