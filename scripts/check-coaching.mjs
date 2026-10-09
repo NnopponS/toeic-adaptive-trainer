@@ -53,6 +53,21 @@ try {
   const recalled=markVocabReview(emptyState(),`card:${courseCards[0].id}`,true)
   assert.equal(cardIsDue(recalled,courseCards[0].id),false)
   assert.equal(cardIsDue(recalled,courseCards[0].id,Date.now()+4*86_400_000),true)
+  const { advancedPart5 } = await import(pathToFileURL(path.join(dir,'bankExamV2P5.mjs')))
+  const { advancedPart6, advancedPart6Passages } = await import(pathToFileURL(path.join(dir,'bankExamV2P6.mjs')))
+  assert.ok(advancedPart5.length>=25,'challenge bank needs meaningful breadth beyond the eight earlier items')
+  for (const q of advancedPart5) {
+    assert.equal(q.choices.length,4)
+    assert.deepEqual(Object.keys(q.coaching.choiceReasons),['A','B','C','D'])
+    assert.ok(q.coaching.breakdown.subject && q.coaching.breakdown.verb && q.coaching.breakdown.pattern)
+    assert.ok(q.coaching.choiceReasons[q.answer].length>=24)
+  }
+  assert.equal(advancedPart6Passages.length,4)
+  assert.equal(advancedPart6.length,16)
+  for (const passage of advancedPart6Passages) {
+    assert.equal(passage.questions.length,4)
+    for (const id of passage.questions) assert.ok(advancedPart6.find(q=>q.id===id)?.coaching?.choiceReasons)
+  }
   for (const [pool,target] of [[part6,16],[part7,54]]) {
     for (let i=0;i<20;i++) {
       const sample=completeReadingSample(practicePool(pool,true),passageById,target)
@@ -62,6 +77,13 @@ try {
     }
   }
   assert.ok(practicePool(part5,true).length>=30,'there must be enough challenging Part 5 questions for the mock')
+  assert.ok(practicePool(part5,true).every(q=>q.difficulty>=4 && q.coaching?.choiceReasons && q.choices.every(c=>q.coaching.choiceReasons[c.id])), 'every Challenge Part 5 question needs vetted four-choice feedback')
+  assert.ok(!practicePool(part5,true).some(q=>q.ruleId==='passive.core'), 'foundational passive templates must not appear as Challenge')
+  const firstTime=part5.find(q=>q.id==='v3-p5-009')
+  assert.equal(firstTime.coaching.choiceReasons.B.includes('Past Simple'),true,'first-time trap needs specific Past Simple reasoning')
+  assert.equal(firstTime.coaching.choiceReasons.D.includes('Past Perfect'),true,'first-time trap needs Past Perfect comparison')
+  const invoiceQuestion=part5.find(q=>q.id==='p5-v4-09-07')
+  assert.ok(invoiceQuestion.coaching.choiceReasons.D.includes('Past Participle'), 'been approve must explain V3 vs V1 exactly')
   assert.ok(practicePool(part5,false).length>150,'full Part 5 pool must not be limited to grammar-map examples')
   assert.ok(new Set(practicePool(part5,false).map(q=>q.id)).size===practicePool(part5,false).length,'no duplicate IDs in practice');
   const { chooseFresher } = await import(pathToFileURL(path.join(dir,'App.mjs')))
@@ -287,6 +309,7 @@ try {
       const html = renderToStaticMarkup(createElement(QuestionCard, { question: q, selected, checked: true, activeStep:3, onSelect: () => {} }))
       assert.equal((html.match(/<h2/g) ?? []).length, 1, 'one sentence, annotated in place')
       assert.ok(html.includes('answer-summary') && !html.includes('popover='), 'explanation is inline without a step popup')
+      assert.ok(html.includes('answer-logic') && html.includes('analysis-answer'), 'post-answer explanations use structured cards')
       assert.ok(html.includes(q.coaching.memory))
     }
     const before = renderToStaticMarkup(createElement(QuestionCard, { question: q, selected: '', checked: false, onSelect: () => {} }))

@@ -809,7 +809,7 @@ function preciseChoiceReason(question: Question, choiceId: string, lang: Languag
   }
 
   return lang === 'th'
-    ? '✗ "' + choice.text + '" เป็น ' + pos + '; ' + (requirement ? requirement.clueTh + ' ' : '') + 'คำตอบที่ถูกคือ "' + (answer?.text ?? '') + '" เพราะ ' + localizedQuestionExplanation(question, lang)
+    ? 'ตัวเลือก "' + choice.text + '" (รูปคำโดยประมาณ: ' + pos + ') ยังไม่มีคำวิเคราะห์รายตัวเลือกที่ตรวจโดยผู้เขียน — ดูหลักเฉลยของข้อนี้: ' + localizedQuestionExplanation(question, lang)
     : '✗ "' + choice.text + '" is ' + pos + '. ' + (requirement ? requirement.clueEn + ' ' : '') + 'The correct answer is "' + (answer?.text ?? '') + '" because ' + question.explanation
 }
 
@@ -869,7 +869,7 @@ function explainChoice(question: Question, choiceId: string, analysis: QuestionA
     : `✗ ${lex.pos}: ${lex.en}, but its meaning/collocation does not fit this sentence.`
 
   return lang === 'th'
-    ? `✗ “${choice.text}” ไม่ตรงทั้งรูปแบบที่ต้องการ (${analysis.needed}) หรือความหมาย/collocation ของประโยคนี้`
+    ? `ข้อนี้ยังไม่มีเหตุผลเจาะจงตัวเลือก “${choice.text}” ที่ผ่านการตรวจ — กฎหลักที่ใช้ในข้อนี้: ${localizedQuestionExplanation(question, lang)}`
     : `✗ “${choice.text}” does not satisfy the required pattern (${analysis.needed}) or the sentence’s meaning/collocation.`
 }
 
@@ -1403,31 +1403,79 @@ if (import.meta.env.DEV) {
 function AnswerWalkthrough({ question, selected, contextText }: { question: Question; selected: string; contextText?: string }) {
   const lang = useLanguage()
   const authored = lang === 'th' ? question.coaching : undefined
+  const breakdown = authored?.breakdown
   const clues = authored?.focus ?? (question.evidence ? [question.evidence] : [])
   const reason = inspectionText(question, question.answer, lang)
+  const correct = question.choices.find(choice => choice.id === question.answer)
+  const chosen = question.choices.find(choice => choice.id === selected)
   const memory = authored?.memory ?? (question.part < 7 ? spottingRules(question, contextText, lang)[0] : undefined)
   const steps = authored?.steps ?? (question.part < 7 ? buildQuestionAnalysis(question, lang).steps : [])
+  const reasonsReviewed = question.part < 7 && question.choices.every(choice =>
+    Boolean(authored?.choiceReasons[choice.id] || (choice.id === question.answer
+      ? question.explanationTh
+      : question.whyOthersTh?.[choice.id] || question.whyOthers?.[choice.id])))
   return (
     <div className="answer-summary">
-      {question.part < 7 && steps.length > 0 && (
-        <div className="answer-logic"><b>{L(lang,'Reason through the sentence','วิเคราะห์ทีละขั้น: โครงสร้าง → หน้าที่ → คำตอบ')}</b>
-          <ol>{steps.map((step,index)=><li key={index}>{step}</li>)}</ol>
+      <header className="analysis-header">
+        <div className="analysis-icon" aria-hidden="true">✦</div>
+        <div className="analysis-heading">
+          <span className="analysis-eyebrow">{L(lang,'AFTER-ANSWER COACH','เฉลยหลังตอบ')}</span>
+          <h3>{L(lang,'See the reason, not just the rule','เข้าใจเหตุผล ไม่ใช่แค่จำกฎ')}</h3>
         </div>
+        {question.part < 7 && <span className={'analysis-status ' + (reasonsReviewed ? 'verified' : 'basic')}>{reasonsReviewed ? L(lang,'Reviewed','ตรวจแยกรายข้อ') : L(lang,'Basic','อธิบายพื้นฐาน')}</span>}
+      </header>
+
+      {breakdown && (
+        <section className="analysis-structure" aria-label={L(lang,'Sentence structure','โครงสร้างประโยค')}>
+          <div className="analysis-section-heading">{L(lang,'Sentence roles','หน้าที่จริงในประโยค')}</div>
+          <div className="syntax-grid">
+            <div className="syntax-chip subject"><small>SUBJECT · S</small><b>{breakdown.subject}</b></div>
+            <div className="syntax-chip verb"><small>VERB · V</small><b>{breakdown.verb}</b></div>
+            {breakdown.object && <div className="syntax-chip object"><small>OBJECT · O</small><b>{breakdown.object}</b></div>}
+          </div>
+          <div className="blank-function"><span>{L(lang,'Blank function','หน้าที่ของช่องว่าง')}</span><b>{breakdown.blankRole}</b></div>
+          <div className="signal-formula"><div><small>{L(lang,'CLUE','คำบอกใบ้')}</small><strong>{breakdown.signal}</strong></div><div><small>{L(lang,'PATTERN','โครงสร้างที่ใช้')}</small><strong>{breakdown.pattern}</strong></div></div>
+        </section>
       )}
-      {clues.length > 0 && <p><b>{L(lang,'Look for','จุดสังเกต')}:</b> {clues.map((clue, index) => <span key={clue}>{index > 0 && ' · '}<u>{clue}</u></span>)}</p>}
-      <p><b>{L(lang,'Why it works','เหตุผลที่ถูก')}:</b> {reason}</p>
-      {selected && selected !== question.answer && <p className="choice-trap"><b>{L(lang,'Your choice','ตัวที่คุณเลือก')}:</b> {inspectionText(question, selected, lang)}</p>}
-      {memory && memory !== reason && <p className="memory-line"><b>{L(lang,'Remember','จำสั้น ๆ')}:</b> {memory}</p>}
-      {question.part < 7 && <details className="answer-alternatives"><summary>{L(lang,'Compare all four choices (A–D)','เทียบเหตุผลครบทั้ง A–D')}</summary>
-        {question.choices.map(choice=><div className="answer-alternative" key={choice.id}>
-          <b>{choice.id}. {choice.text} {choice.id===question.answer?'✓':''}</b>
-          <p>{inspectionText(question,choice.id,lang)}</p>
-        </div>)}
+
+      {question.part < 7 && steps.length > 0 && (
+        <section className="answer-logic">
+          <div className="analysis-section-heading">{L(lang,'Work it out in 3 steps','คิดทีละขั้น')}</div>
+          <ol>{steps.map((step,index)=><li key={index}><span className="analysis-step-num">{String(index+1).padStart(2,'0')}</span><p>{step}</p></li>)}</ol>
+        </section>
+      )}
+
+      {!breakdown && clues.length > 0 && <p className="analysis-clues"><b>{L(lang,'Clues','หลักฐาน')}:</b> {clues.map((clue,index)=><span key={index}>{index>0?' · ':''}<u>{clue}</u></span>)}</p>}
+
+      <section className="analysis-answer">
+        <span className="analysis-answer-label">{L(lang,'CORRECT ANSWER','คำตอบที่ถูก')}</span>
+        <strong>{question.answer}. {correct?.text}</strong>
+        <p>{reason}</p>
+      </section>
+
+      {selected && selected !== question.answer && <section className="analysis-mistake">
+        <span className="analysis-mistake-label">{L(lang,'YOUR CHOICE — WHAT FAILED','คำตอบที่เลือก — ผิดตรงไหน')}</span>
+        <strong>{selected}. {chosen?.text}</strong>
+        <p>{inspectionText(question, selected, lang)}</p>
+      </section>}
+
+      {memory && memory !== reason && <p className="analysis-takeaway"><span aria-hidden="true">⌁</span><b>{L(lang,'Memory cue','จำให้ขึ้นใจ')}:</b> {memory}</p>}
+
+      {question.part < 7 && <details className="answer-alternatives">
+        <summary><span>{L(lang,'Compare A–D with individual reasons','เปรียบเทียบเหตุผลครบทุกตัวเลือก A–D')}</span><span className="analysis-toggle" aria-hidden="true">⌄</span></summary>
+        <div className="answer-options-grid">
+          {question.choices.map(choice => <div className={'answer-alternative ' + (choice.id === question.answer ? 'is-correct' : selected === choice.id ? 'is-selected' : '')} key={choice.id}>
+            <div className="answer-option-heading"><span className="answer-option-letter">{choice.id}</span><b>{choice.text}</b><span className="answer-option-status">{choice.id === question.answer ? L(lang,'Correct','ถูก') : selected === choice.id ? L(lang,'Your choice','ที่เลือก') : L(lang,'Distractor','ตัวลวง')}</span></div>
+            <p>{inspectionText(question,choice.id,lang)}</p>
+          </div>)}
+        </div>
       </details>}
-      {question.translationTh && lang === 'th' && <details><summary>แปลประโยค</summary><p>{question.translationTh}</p></details>}
+
+      {question.translationTh && lang === 'th' && <details className="analysis-translation"><summary>คำแปลประโยคฉบับเต็ม</summary><p>{question.translationTh}</p></details>}
     </div>
   )
 }
+
 
 function lineKey(row: string[], index: number) {
   return `${index}-${row.join('-')}`
@@ -2633,16 +2681,43 @@ function DailyPartComplete({
   )
 }
 
+// A difficulty label alone is not a quality review. Challenge mode only admits
+// questions whose actual A-D distractors have individual editorial explanations.
+function hasReviewedRationales(question: Question) {
+  const correct = question.explanationTh || question.coaching?.choiceReasons[question.answer]
+  if (!correct) return false
+  return question.choices.every(choice =>
+    choice.id === question.answer || Boolean(
+      question.coaching?.choiceReasons[choice.id]
+      || question.whyOthersTh?.[choice.id]
+      || question.whyOthers?.[choice.id]
+    )
+  )
+}
+
 function practicePool(questions: Question[], exam: boolean, map: Record<string, Passage> = passageById) {
-  // All original Part 5 questions are usable. The old grammar-map-only filter
-  // silently discarded hundreds of different questions.
   const unique = uniqueQuestionPool(questions)
   const realistic = unique[0]?.part === 5 ? unique : unique.filter(q => q.passageId && map[q.passageId]?.examStyle)
   const pool = realistic.length ? realistic : unique
   if (!exam) return pool
-  // Select ENTIRE reading passages when one question is challenging.
+  if (pool[0]?.part === 5) {
+    // Do not pass a basic "have not _____ yet" or undocumented random item as exam difficulty.
+    return pool.filter(q => q.difficulty >= 4 && hasReviewedRationales(q))
+  }
+  if (pool[0]?.part === 6) {
+    const byId = new Map(pool.map(q => [q.id,q]))
+    const vetted = new Set(Object.values(map).filter(p =>
+      p.part === 6 && p.examStyle && p.questions.length === 4
+      && p.questions.every(id => {
+        const q = byId.get(id)
+        return Boolean(q && q.difficulty >= 3 && hasReviewedRationales(q))
+      })
+    ).map(p => p.id))
+    return pool.filter(q => q.passageId && vetted.has(q.passageId))
+  }
+  // Part 7 is a reading task; keep entire eligible documents together.
   const passageIds = new Set(pool.filter(q => q.difficulty >= 3).map(q => q.passageId).filter(Boolean))
-  const challenging = pool.filter(q => q.passageId ? passageIds.has(q.passageId) : q.difficulty >= 3)
+  const challenging = pool.filter(q => q.passageId && passageIds.has(q.passageId))
   return challenging.length ? challenging : pool
 }
 
@@ -2803,7 +2878,7 @@ function PracticeScreen({
         </div>
       )}
 
-      <label className="practice-mode">{L(lang,'Question difficulty','ความเข้มข้นของโจทย์')}<select aria-label={L(lang,'Question difficulty','ความเข้มข้นของโจทย์')} value={exam ? 'exam' : 'adaptive'} onChange={event => setExam(event.target.value === 'exam')}><option value="exam">{L(lang,'Challenge · Level 3–5','เข้มข้น · ระดับ 3–5')}</option><option value="adaptive">{L(lang,'Adaptive · All levels','ปรับตามจุดอ่อน · ทุกระดับ')}</option></select></label>
+      <label className="practice-mode">{L(lang,'Question difficulty','ความเข้มข้นของโจทย์')}<select aria-label={L(lang,'Question difficulty','ความเข้มข้นของโจทย์')} value={exam ? 'exam' : 'adaptive'} onChange={event => setExam(event.target.value === 'exam')}><option value="exam">{L(lang,'Challenge · Reviewed 4–5','เข้มข้น · ตรวจเฉลยแล้ว ระดับ 4–5')}</option><option value="adaptive">{L(lang,'Foundation · Full bank','ฝึกพื้นฐาน · คลังทั้งหมด')}</option></select></label>
       <div className="practice-progress">
         <Progress value={partDone / Math.max(1, partTarget) * 100} />
         <span>{partDone}/{partTarget} {L(lang, `Part ${part} today`, `ข้อ Part ${part} วันนี้`)}{extraPractice ? L(lang, ' · extra', ' · ฝึกเพิ่ม') : ''}</span>

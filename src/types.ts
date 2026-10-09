@@ -57,6 +57,7 @@ export interface Question {
     steps: [string, string, string]
     memory: string
     choiceReasons: Record<string, string>
+    breakdown?: { subject: string; verb: string; object?: string; blankRole: string; signal: string; pattern: string }
   }
 }
 
