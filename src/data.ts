@@ -1,4 +1,5 @@
 import type { Passage, Question, SkillId } from './types'
+import { examPart5 } from './bankExamP5'
 import { coachingQuestions, coachingPart6, coachingPart7, coachingPassages, foundationCoaching } from './bankCoaching'
 import { extraPart5, extraPart6, extraPart7, extraPassages } from './bankV2'
 import { extraPart5V3, extraPart6V3, extraPassagesV3 } from './bankV3'
@@ -128,7 +129,7 @@ const basePart7: Question[] = [
   { id:'p7-03-q4', part:7, passageId:'p7-03', stem:'What can be inferred about the 10:00 time slot?', choices:c('Daniel has two conflicting commitments.','Priya is unavailable all morning.','The client call was postponed.','The website review was cancelled.'), answer:'A', skills:['multi-text','inference'], difficulty:2, explanation:'Both the design check-in and supplier meeting are scheduled at 10:00, creating a conflict for Daniel.' },
 ]
 
-export const part5 = [...basePart5, ...extraPart5, ...extraPart5V3, ...extraPart5V4, ...vocabRepairQuestions, ...coachingQuestions].map(q=>({...q,...foundationCoaching[q.id]}))
+export const part5 = [...basePart5, ...extraPart5, ...extraPart5V3, ...extraPart5V4, ...vocabRepairQuestions, ...coachingQuestions, ...examPart5].map(q=>({...q,...foundationCoaching[q.id]}))
 export const part6 = [...extraPart6, ...extraPart6V3, ...extraPart6V4, ...extraPart6V6, ...coachingPart6, ...extraReadingV9.filter(q => q.part === 6)]
 export const part7 = [...basePart7, ...extraPart7, ...extraPart7V4, ...extraPart7V5, ...extraPart7V7, ...extraPart7V8, ...coachingPart7, ...extraReadingV9.filter(q => q.part === 7)]
 export const passages = [...basePassages, ...extraPassages, ...extraPassagesV3, ...extraPassagesV4, ...extraPassagesV5, ...extraPassagesV6, ...extraPassagesV7, ...extraPassagesV8, ...coachingPassages, ...extraPassagesV9]
