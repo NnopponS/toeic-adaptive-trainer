@@ -552,7 +552,7 @@
   stroke-linejoin: round;
 }
 
-.nav-button b { font-size: .78rem; }
+.nav-button b { font-size: .72rem; text-align: center; line-height: 1.2; max-width: 100%; overflow-wrap: anywhere; }
 .nav-button.active { color: var(--green-dark); }
 
 .screen-intro { margin-bottom: 18px; }

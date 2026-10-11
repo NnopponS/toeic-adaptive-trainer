@@ -34,7 +34,7 @@ export default function MistakeLab({ state, setState, english }: { state: Traine
       Math.round((100 - (mastery ?? 50)) / 7) + Math.round((rule?.dueBoost ?? 0) / 8)
     const related = (content?.questions ?? []).filter(q => q.focusId === topic.id)
     const answered = related.filter(q => state.attempts.some(a => a.questionId === q.id)).length
-    return { ...topic, past, mastery, score, answered, total: related.length }
+    return { ...topic, past, mastery: rule?.mastery, score, answered, total: related.length }
   }).sort((a, b) => b.score - a.score), [content, state])
 
   const questionPool = useMemo(() => (content?.questions ?? []).filter(q =>
@@ -118,7 +118,7 @@ export default function MistakeLab({ state, setState, english }: { state: Traine
           <div className="ml-topic-title"><span className="ml-rank">{index + 1}</span><div><b>{english ? topic.titleEn : topic.titleTh}</b><small>{topic.source} · {topic.past} {t('previous misses in this skill', 'ข้อผิดเดิมในทักษะนี้')}</small></div><span className="ml-kind">{topic.kind}</span></div>
           <p><strong>{t('Where you went wrong: ', 'พลาดตรงไหน: ')}</strong>{topic.diagnosisTh}</p>
           <p><strong>{t('How to improve: ', 'ต้องปรับอย่างไร: ')}</strong>{topic.actionTh}</p>
-          <div className="ml-topic-footer"><small>{topic.answered}/{topic.total} {t('new drills attempted','โจทย์ใหม่ที่ได้ลอง')} {topic.mastery == null ? '' : '· Mastery ' + Math.round(topic.mastery) + '%'}</small>
+          <div className="ml-topic-footer"><small>{topic.answered}/{topic.total} {t('new drills attempted','โจทย์ใหม่ที่ได้ลอง')} {topic.mastery == null ? '' : t(' · Pattern accuracy estimate ', ' · ความแม่นกฎย่อย ') + Math.round(topic.mastery) + '%'}</small>
             {topic.kind === 'vocab' ? <button onClick={() => setTab('cards')}>{t('Review cards','ทวนศัพท์')} →</button> : <button onClick={() => startPractice(topic.id)}>{t('Train this topic','ฝึกเฉพาะเรื่องนี้')} →</button>}</div>
         </article>)}
       </section>
