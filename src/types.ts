@@ -176,4 +176,4 @@ export interface FirebaseQuestionBank {
   passages?: Record<string, Passage>
 }
 
-export type View = 'home' | 'learn' | 'practice' | 'part5' | 'part6' | 'part7' | 'mock' | 'analytics' | 'review' | 'vocab'
+export type View = 'home' | 'learn' | 'practice' | 'part5' | 'part6' | 'part7' | 'mock' | 'analytics' | 'review' | 'vocab' | 'mistakes'

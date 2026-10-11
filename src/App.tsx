@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import './App.css'
+import MistakeLab from './MistakeLab'
 import {
   addFeedbackToLatest,
   attemptsToday,
@@ -2137,6 +2138,7 @@ function App() {
             />
           )}
           {view === 'mock' && <MockTest setState={setState} />}
+          {view === 'mistakes' && <MistakeLab state={state} navigate={part => navigate(part === 5 ? 'part5' : part === 6 ? 'part6' : 'part7')} english={lang === 'en'} />}
           {view === 'analytics' && (
             <Analytics
               state={state}
@@ -2212,12 +2214,13 @@ function BottomNav({ view, navigate }: { view: View; navigate: (view: View) => v
       <NavButton active={view === 'home'} label={L(lang, 'Home', 'หน้าหลัก')} icon="home" onClick={() => navigate('home')} />
       <NavButton active={view === 'learn'} label={L(lang, 'Learn', 'เรียน')} icon="learn" onClick={() => navigate('learn')} />
       <NavButton active={['practice','part5','part6','part7','mock'].includes(view)} label={L(lang, 'Practice', 'ฝึก')} icon="practice" onClick={() => navigate('practice')} />
+      <NavButton active={view === 'mistakes'} label={L(lang, 'Mistakes', 'ข้อที่พลาด')} icon="mistakes" onClick={() => navigate('mistakes')} />
       <NavButton active={view === 'analytics'} label={L(lang, 'Progress', 'ผลลัพธ์')} icon="progress" onClick={() => navigate('analytics')} />
     </nav>
   )
 }
 
-function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: 'home' | 'learn' | 'practice' | 'progress'; onClick: () => void }) {
+function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: 'home' | 'learn' | 'practice' | 'progress' | 'mistakes'; onClick: () => void }) {
   return (
     <button className={active ? 'nav-button active' : 'nav-button'} onClick={onClick}>
       <NavIcon kind={icon} />
@@ -2226,9 +2229,10 @@ function NavButton({ active, label, icon, onClick }: { active: boolean; label: s
   )
 }
 
-function NavIcon({ kind }: { kind: 'home' | 'learn' | 'practice' | 'progress' }) {
+function NavIcon({ kind }: { kind: 'home' | 'learn' | 'practice' | 'progress' | 'mistakes' }) {
   if (kind === 'home') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3l8.5 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-5v-6h-4v6H5a1.5 1.5 0 0 1-1.5-1.5z" /></svg>
   if (kind === 'learn') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11a2 2 0 0 1 2 2v15a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 20.5zM20 5.5A2.5 2.5 0 0 0 17.5 3H13a2 2 0 0 0-2 2v15a2 2 0 0 1 2-2h4.5a2.5 2.5 0 0 1 2.5 2.5z" /></svg>
+  if (kind === 'mistakes') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3zm0 6v5m0 3v1" /></svg>
   if (kind === 'practice') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8.5 9.5l2 2 5-5M8.5 15.5h7" /></svg>
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11h3v9zm5.5 0V5h3v15zm5.5 0v-7h3v7z" /></svg>
 }
