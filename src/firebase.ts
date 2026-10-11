@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app'
 import { get, getDatabase, onValue, ref, update } from 'firebase/database'
 import { buildAgentSummary, dailyTargets, normalizeState } from './adaptive'
-import type { Passage, Question, TrainerState } from './types'
+import type { Passage, Question, TrainerState, MistakeLabContent } from './types'
 
 // Firebase web configuration is intentionally client-visible. Environment
 // variables override these defaults when present, but the defaults keep
@@ -123,6 +123,25 @@ export async function publishQuestionBankManifest(counts: { part5: number; part6
     updatedAt: Date.now(),
     note: 'Core bank is bundled with the app; personalized questions and Part 6/7 passages are loaded live from Firebase.',
   })
+}
+
+
+// Content is authored through chat and published separately from learner progress.
+// Realtime subscriptions make future uploaded analyses and drills visible without a rebuild.
+export function watchMistakeLab(callback: (content: MistakeLabContent | null, error?: string) => void) {
+  return onValue(ref(db, 'mistakeLab'), snapshot => {
+    if (!snapshot.exists()) { callback(null); return }
+    const data = snapshot.val() as Partial<Record<keyof MistakeLabContent, Record<string, unknown>>>
+    const rows = <T,>(key: keyof MistakeLabContent): T[] =>
+      Object.values(data[key] ?? {}) as T[]
+    callback({
+      topics: rows<MistakeLabContent['topics'][number]>('topics').filter(item => item?.id),
+      mistakes: rows<MistakeLabContent['mistakes'][number]>('mistakes').filter(item => item?.id),
+      flashcards: rows<MistakeLabContent['flashcards'][number]>('flashcards').filter(item => item?.id),
+      questions: rows<MistakeLabContent['questions'][number]>('questions').filter(item => item?.id && item?.choices?.length === 4),
+      passages: rows<MistakeLabContent['passages'][number]>('passages').filter(item => item?.id),
+    })
+  }, error => callback(null, error.message))
 }
 
 export { db }

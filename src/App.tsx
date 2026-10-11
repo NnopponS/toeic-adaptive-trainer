@@ -2138,7 +2138,7 @@ function App() {
             />
           )}
           {view === 'mock' && <MockTest setState={setState} />}
-          {view === 'mistakes' && <MistakeLab state={state} navigate={part => navigate(part === 5 ? 'part5' : part === 6 ? 'part6' : 'part7')} english={lang === 'en'} />}
+          {view === 'mistakes' && <MistakeLab state={state} setState={setState} english={lang === 'en'} />}
           {view === 'analytics' && (
             <Analytics
               state={state}

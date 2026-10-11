@@ -14,7 +14,7 @@ const compiled = new Set()
 async function compile(name) {
   if (compiled.has(name)) return
   compiled.add(name)
-  let source = await readFile(`src/${name}.ts${name === 'App' ? 'x' : ''}`, 'utf8')
+  let source = await readFile(`src/${name}.ts${['App', 'MistakeLab'].includes(name) ? 'x' : ''}`, 'utf8')
   source = source.replace(/import '\.\/[^']+\.css'/g, '').replaceAll('import.meta.env', '({ DEV: false, BASE_URL: '/' })')
   const imports = [...source.matchAll(/from ['"]\.\/([^'"]+)['"]/g)].map(m => m[1])
   for (const dep of imports) await compile(dep)

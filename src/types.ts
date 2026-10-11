@@ -176,4 +176,50 @@ export interface FirebaseQuestionBank {
   passages?: Record<string, Passage>
 }
 
+
+export interface RepairTopic {
+  id: string
+  kind: 'vocab' | 'grammar' | 'reading'
+  titleEn: string
+  titleTh: string
+  source: string
+  diagnosisTh: string
+  actionTh: string
+  ruleId: string
+  skill: SkillId
+  priority: number
+  part: Part
+}
+export interface ExternalMistake {
+  id: string
+  part: Part
+  focusId: string
+  stem: string
+  chosen: string
+  correct: string
+  chosenText: string
+  correctText: string
+  analysisTh: string
+  source: string
+}
+export interface RepairFlashcard {
+  id: string
+  word: string
+  pos: string
+  meaningTh: string
+  pattern: string
+  example: string
+  translationTh: string
+  contrastTh: string
+  source: string
+}
+export type RepairQuestion = Question & { focusId: string }
+export interface MistakeLabContent {
+  topics: RepairTopic[]
+  mistakes: ExternalMistake[]
+  flashcards: RepairFlashcard[]
+  questions: RepairQuestion[]
+  passages: Passage[]
+}
+
 export type View = 'home' | 'learn' | 'practice' | 'part5' | 'part6' | 'part7' | 'mock' | 'analytics' | 'review' | 'vocab' | 'mistakes'

@@ -1,0 +1,2211 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T22:30:00+07:00",
+  "notes": "Original practice based on user-reported mistakes; not copied from external test material",
+  "topics": [
+    {
+      "id": "wordform",
+      "kind": "grammar",
+      "titleEn": "Word Form: Noun vs Adjective",
+      "titleTh": "ตำแหน่ง Noun / Adjective",
+      "source": "Q10; Firebase: noun-position 1/3, adjective-before-noun",
+      "diagnosisTh": "เลือก confidential (adj) หลัง maintain client แทน confidentiality (noun); เคยสลับ convenience/convenient, approved/approval",
+      "actionTh": "แยกกริยาหลักและหาหัวนาม: maintain + noun phrase; adjective อยู่หน้าคำนาม",
+      "ruleId": "wordform.noun-position",
+      "skill": "part-of-speech",
+      "priority": 99,
+      "part": 5
+    },
+    {
+      "id": "fixed-phrase",
+      "kind": "grammar",
+      "titleEn": "Part 6 Business Fixed Phrases",
+      "titleTh": "Part 6 วลีสำเร็จรูปในเอกสารธุรกิจ",
+      "source": "Firebase: p6.fixed-phrase 0/3",
+      "diagnosisTh": "ยังไม่แม่นวลีที่ต้องอ่านทั้งข้อความ เช่น in accordance with, do not hesitate to, appreciate your patience",
+      "actionTh": "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท",
+      "ruleId": "p6.fixed-phrase",
+      "skill": "collocation",
+      "priority": 100,
+      "part": 6
+    },
+    {
+      "id": "gerund",
+      "kind": "grammar",
+      "titleEn": "Gerund after Prepositions",
+      "titleTh": "V-ing หลัง Preposition",
+      "source": "Firebase: gerund.after-preposition 2/6",
+      "diagnosisTh": "สับสน to ที่เป็น preposition กับ to-infinitive และ verb + preposition ที่ต้องตาม V-ing",
+      "actionTh": "วง preposition; practice succeed in doing, committed to improving, responsible for checking",
+      "ruleId": "gerund.after-preposition",
+      "skill": "preposition",
+      "priority": 96,
+      "part": 5
+    },
+    {
+      "id": "connectors",
+      "kind": "grammar",
+      "titleEn": "Clause vs Noun Phrase",
+      "titleTh": "คำเชื่อม Clause vs Phrase",
+      "source": "Firebase: multiple connector misses, despite vs provided that",
+      "diagnosisTh": "เลือกคำเชื่อมจากความหมายโดยไม่ตรวจว่าตามด้วย noun phrase หรือ subject + verb",
+      "actionTh": "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)",
+      "ruleId": "connector.clause-vs-phrase",
+      "skill": "conjunction",
+      "priority": 95,
+      "part": 5
+    },
+    {
+      "id": "reduced-relative",
+      "kind": "grammar",
+      "titleEn": "Reduced Passive Relative Clause",
+      "titleTh": "Relative Clause ลดรูป V3/V-ing",
+      "source": "Q28",
+      "diagnosisTh": "เลือก are eliminated เมื่อ are encouraged เป็นกริยาหลักแล้ว; ลืมว่ากลุ่มคำหน้า verb หลักขยายนาม",
+      "actionTh": "ขยาย performers [who were eliminated] -> performers eliminated; ห้ามเพิ่ม finite verb ซ้ำ",
+      "ruleId": "relative-clause",
+      "skill": "relative-clause",
+      "priority": 95,
+      "part": 5
+    },
+    {
+      "id": "active-passive",
+      "kind": "grammar",
+      "titleEn": "Voice: Agent and Recipient",
+      "titleTh": "Active/Passive ใครเป็นผู้ทำ",
+      "source": "Q35; Firebase: had cleaned vs had been cleaned",
+      "diagnosisTh": "เลือก passive ด้วยรูป verb โดยไม่ตรวจว่าประธานเป็นคนทำหรือคนถูกกระทำ",
+      "actionTh": "ถามก่อนเสมอว่าใครเป็นคนทำ booking/cleaning แล้วเลือก active หรือ passive พร้อม tense",
+      "ruleId": "passive",
+      "skill": "passive",
+      "priority": 94,
+      "part": 5
+    },
+    {
+      "id": "noun-clause",
+      "kind": "grammar",
+      "titleEn": "How / Why / Whether Clauses",
+      "titleTh": "Noun Clause และ Indirect Question",
+      "source": "Q22",
+      "diagnosisTh": "เลือก among (preposition) เมื่อหลังช่องว่างเป็น clause 'investors react' ต้องมี noun clause เริ่มด้วย how",
+      "actionTh": "อ่านหลังช่องว่าง: S + V ครบหรือยัง และต้องการวิธี เหตุผล หรือความไม่แน่ใจ",
+      "ruleId": "context",
+      "skill": "context",
+      "priority": 91,
+      "part": 5
+    },
+    {
+      "id": "present-perfect",
+      "kind": "grammar",
+      "titleEn": "Present Perfect Time Signals",
+      "titleTh": "Present Perfect กับประสบการณ์",
+      "source": "Firebase: v3-p5-009 hosts vs has hosted; This is the first time",
+      "diagnosisTh": "พลาด signal ที่เชื่อมอดีตถึงตอนนี้ เช่น This is the first time",
+      "actionTh": "ดู present reference + first time/since/for แล้วเลือก have/has + V3",
+      "ruleId": "verb-tense",
+      "skill": "verb-tense",
+      "priority": 90,
+      "part": 5
+    },
+    {
+      "id": "reading-reference",
+      "kind": "reading",
+      "titleEn": "Reference and Sentence Placement",
+      "titleTh": "Part 6–7 Reference & Sentence Insertion",
+      "source": "Q37; Firebase: wrong p6 sentence placement, limited Part 7 attempts",
+      "diagnosisTh": "มองข้าม antecedent ของ one/it/they; เลือกประโยคที่เกี่ยวข้องแต่ไม่ได้ต่อเนื่องด้วยหลักฐานจริง",
+      "actionTh": "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค",
+      "ruleId": "p6.sentence-placement",
+      "skill": "sentence-placement",
+      "priority": 94,
+      "part": 6
+    },
+    {
+      "id": "vocab",
+      "kind": "vocab",
+      "titleEn": "Missed Vocabulary and Collocations",
+      "titleTh": "ศัพท์/Collocation ที่ตอบผิด",
+      "source": "Q8, Q18; Firebase: regardless vs regarding; simulated vs historical",
+      "diagnosisTh": "เลือกศัพท์ที่ชนิดคำเข้ากันแต่ความหมายและสำนวนผิด เช่น spacious support, allowed for creating",
+      "actionTh": "ทวนเฉพาะคำที่มีหลักฐานว่าผิดจริงด้วย Flashcards; เทียบ collocation และตัวลวง",
+      "ruleId": "vocab.business-collocation",
+      "skill": "vocabulary",
+      "priority": 97,
+      "part": 5
+    }
+  ],
+  "mistakes": [
+    {
+      "id": "external-20261011-q8",
+      "part": 5,
+      "focusId": "vocab",
+      "stem": "Peggy Amos was _____ by the director for creating the library's popular Future Entrepreneurs lecture series.",
+      "chosen": "D",
+      "correct": "C",
+      "chosenText": "allowed",
+      "correctText": "commended",
+      "analysisTh": "Passive was + V3 เป็นโครงสร้างที่ทั้งสองคำใส่ได้ แต่ allowed = ได้รับอนุญาต ต้องใช้ allow somebody to do something; commend somebody for + V-ing = ชมเชยที่ได้ทำผลงาน",
+      "source": "External TOEIC practice screenshots · 2026-10-11"
+    },
+    {
+      "id": "external-20261011-q10",
+      "part": 5,
+      "focusId": "wordform",
+      "stem": "To maintain client _____, the destruction of old files must be carried out carefully.",
+      "chosen": "B",
+      "correct": "C",
+      "chosenText": "confidential",
+      "correctText": "confidentiality",
+      "analysisTh": "maintain ต้องมีกรรมเป็น noun phrase; confidentiality = การรักษาความลับ, ส่วน confidential เป็น adj เช่น confidential information",
+      "source": "External TOEIC practice screenshots · 2026-10-11"
+    },
+    {
+      "id": "external-20261011-q18",
+      "part": 5,
+      "focusId": "vocab",
+      "stem": "The opening of the community center was only possible through the public's _____ support.",
+      "chosen": "D",
+      "correct": "A",
+      "chosenText": "spacious",
+      "correctText": "generous",
+      "analysisTh": "ทั้งคู่เป็น adjective แต่ generous support หมายถึงการสนับสนุนอย่างเอื้อเฟื้อ ส่วน spacious ใช้ขยายห้อง/พื้นที่ที่กว้าง",
+      "source": "External TOEIC practice screenshots · 2026-10-11"
+    },
+    {
+      "id": "external-20261011-q22",
+      "part": 5,
+      "focusId": "noun-clause",
+      "stem": "The focus of the board members is _____ investors react to the CEO's retirement.",
+      "chosen": "A",
+      "correct": "D",
+      "chosenText": "among",
+      "correctText": "how",
+      "analysisTh": "Investors + react เป็นประธานและกริยา จึงต้องมี noun clause how investors react; among เป็น preposition ไม่สามารถเชื่อม clause แบบนี้",
+      "source": "External TOEIC practice screenshots · 2026-10-11"
+    },
+    {
+      "id": "external-20261011-q28",
+      "part": 5,
+      "focusId": "reduced-relative",
+      "stem": "Performers _____ from the competition are encouraged to stay and watch the remainder of the show.",
+      "chosen": "B",
+      "correct": "C",
+      "chosenText": "are eliminated",
+      "correctText": "eliminated",
+      "analysisTh": "ประโยคมี are encouraged เป็น verb หลัก; eliminated เป็น V3 ขยายนาม performers ลดรูปจาก who were eliminated",
+      "source": "External TOEIC practice screenshots · 2026-10-11"
+    },
+    {
+      "id": "external-20261011-q35",
+      "part": 6,
+      "focusId": "active-passive",
+      "stem": "Nevertheless, I _____ an appointment with the firm again.",
+      "chosen": "A",
+      "correct": "C",
+      "chosenText": "will not be booked",
+      "correctText": "will not be booking",
+      "analysisTh": "I เป็นผู้จอง appointment เอง ต้องใช้ active will not be booking; passive will not be booked หมายถึงผู้พูดเป็นฝ่ายถูกจอง จึงไม่รับกรรม an appointment",
+      "source": "External TOEIC practice screenshots · 2026-10-11"
+    },
+    {
+      "id": "external-20261011-q37",
+      "part": 6,
+      "focusId": "reading-reference",
+      "stem": "I found no fewer than three errors in the tax return. _____. What is more, it took several rounds of discussion to fix them.",
+      "chosen": "B",
+      "correct": "D",
+      "chosenText": "It turned out that he had misplaced them.",
+      "correctText": "One could have cost me thousands of dollars.",
+      "analysisTh": "One ย้อนกลับไปหา one of the three errors ประโยคก่อน; คำตอบ B มี them ที่ไม่อ้างถึงสิ่งใดชัด และไม่ต่อจากผลเสียของ error ที่พบทันที",
+      "source": "External TOEIC practice screenshots · 2026-10-11"
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "commend",
+      "word": "commend",
+      "pos": "verb",
+      "meaningTh": "ยกย่อง / ชื่นชมอย่างเป็นทางการ",
+      "pattern": "commend somebody for + noun / V-ing",
+      "example": "The regional director commended the service team for resolving the outage promptly.",
+      "translationTh": "ผู้อำนวยการฝ่ายภูมิภาคชื่นชมทีมบริการที่แก้เหตุระบบขัดข้องได้รวดเร็ว",
+      "contrastTh": "allow somebody to + verb = อนุญาตให้ทำ (ต่างจาก commend ... for + V-ing)",
+      "source": "Q8 · selected allowed"
+    },
+    {
+      "id": "generous",
+      "word": "generous",
+      "pos": "adjective",
+      "meaningTh": "เอื้อเฟื้อ / มากและเต็มใจให้",
+      "pattern": "generous support / generous contribution / generous offer",
+      "example": "The research initiative was made possible by generous contributions from local businesses.",
+      "translationTh": "โครงการวิจัยเกิดขึ้นได้จากการสนับสนุนอย่างเอื้อเฟื้อของธุรกิจในท้องถิ่น",
+      "contrastTh": "spacious = กว้างขวาง ใช้กับพื้นที่ เช่น spacious office ไม่ใช่ generous support",
+      "source": "Q18 · selected spacious"
+    },
+    {
+      "id": "regardless",
+      "word": "regardless",
+      "pos": "adverb (fixed phrase)",
+      "meaningTh": "ไม่คำนึงถึง / ไม่ว่า ... จะเป็นอย่างไร",
+      "pattern": "regardless of + noun / V-ing",
+      "example": "All contractors must wear protective gear regardless of their experience.",
+      "translationTh": "ผู้รับเหมาทุกคนต้องสวมอุปกรณ์ป้องกันโดยไม่คำนึงถึงประสบการณ์",
+      "contrastTh": "regarding = เกี่ยวกับ; regardless of = ไม่ว่า/โดยไม่คำนึงถึง",
+      "source": "Firebase wrong answer · coach-p5-22 (regarding)"
+    },
+    {
+      "id": "simulated",
+      "word": "simulated",
+      "pos": "adjective / past participle",
+      "meaningTh": "จำลองขึ้น / ที่ถูกจำลอง",
+      "pattern": "simulated transaction / simulated environment",
+      "example": "The staff practiced responding to simulated customer complaints before the launch.",
+      "translationTh": "พนักงานฝึกตอบข้อร้องเรียนลูกค้าจำลองก่อนเปิดตัว",
+      "contrastTh": "historical = ที่เกิดขึ้นจริงในอดีต; simulated = สถานการณ์จำลอง",
+      "source": "Firebase wrong answer · v9-p6-04-q2 (historical)"
+    }
+  ],
+  "questions": [
+    {
+      "id": "repair-20261011-wf1",
+      "part": 5,
+      "stem": "Before renewing the partnership, the agency will assess the supplier's _____ with its data-protection standards.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "comply"
+        },
+        {
+          "id": "B",
+          "text": "compliant"
+        },
+        {
+          "id": "C",
+          "text": "compliance"
+        },
+        {
+          "id": "D",
+          "text": "compliantly"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.noun-position",
+      "focusId": "wordform",
+      "difficulty": 4,
+      "explanationTh": "compliance เป็นคำนาม หมายถึงการปฏิบัติตามข้อกำหนด: assess the supplier's compliance • Pattern: supplier's + noun; compliance with standards",
+      "explanation": "Choose the option matching the grammar pattern and meaning: supplier's + noun; compliance with standards",
+      "whyOthersTh": {
+        "A": "comply เป็นกริยารูปพื้นฐาน แต่หลัง possessive supplier's ต้องการ noun phrase",
+        "B": "compliant เป็น adjective; ถ้าจะใช้ต้องมีคำนามตาม เช่น compliant procedures",
+        "C": "compliance เป็นคำนาม หมายถึงการปฏิบัติตามข้อกำหนด: assess the supplier's compliance",
+        "D": "compliantly เป็น adverb ไม่ทำหน้าที่กรรมของ assess"
+      },
+      "coaching": {
+        "focus": [
+          "แยกกริยาหลักและหาหัวนาม: maintain + noun phrase; adjective อยู่หน้าคำนาม"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "แยกกริยาหลักและหาหัวนาม: maintain + noun phrase; adjective อยู่หน้าคำนาม",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "supplier's + noun; compliance with standards",
+        "choiceReasons": {
+          "A": "comply เป็นกริยารูปพื้นฐาน แต่หลัง possessive supplier's ต้องการ noun phrase",
+          "B": "compliant เป็น adjective; ถ้าจะใช้ต้องมีคำนามตาม เช่น compliant procedures",
+          "C": "compliance เป็นคำนาม หมายถึงการปฏิบัติตามข้อกำหนด: assess the supplier's compliance",
+          "D": "compliantly เป็น adverb ไม่ทำหน้าที่กรรมของ assess"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-wf2",
+      "part": 5,
+      "stem": "The consultant offered a remarkably _____ explanation of the revised expense forecast.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "clarity"
+        },
+        {
+          "id": "B",
+          "text": "clear"
+        },
+        {
+          "id": "C",
+          "text": "clearly"
+        },
+        {
+          "id": "D",
+          "text": "clearance"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.noun-position",
+      "focusId": "wordform",
+      "difficulty": 4,
+      "explanationTh": "clear เป็น adjective ที่ขยาย explanation โดยมี remarkably เป็น adverb ขยาย clear • Pattern: remarkably + adjective + noun",
+      "explanation": "Choose the option matching the grammar pattern and meaning: remarkably + adjective + noun",
+      "whyOthersTh": {
+        "A": "clarity เป็น noun แต่หลัง remarkably และหน้านาม explanation ต้องเป็น adjective",
+        "B": "clear เป็น adjective ที่ขยาย explanation โดยมี remarkably เป็น adverb ขยาย clear",
+        "C": "clearly เป็น adverb ซึ่งไม่ขยายนาม explanation โดยตรงในช่องนี้",
+        "D": "clearance เป็น noun หมายถึงการอนุญาตหรือการเคลียร์พื้นที่ ไม่เข้าหน้าที่หรือความหมาย"
+      },
+      "coaching": {
+        "focus": [
+          "แยกกริยาหลักและหาหัวนาม: maintain + noun phrase; adjective อยู่หน้าคำนาม"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "แยกกริยาหลักและหาหัวนาม: maintain + noun phrase; adjective อยู่หน้าคำนาม",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "remarkably + adjective + noun",
+        "choiceReasons": {
+          "A": "clarity เป็น noun แต่หลัง remarkably และหน้านาม explanation ต้องเป็น adjective",
+          "B": "clear เป็น adjective ที่ขยาย explanation โดยมี remarkably เป็น adverb ขยาย clear",
+          "C": "clearly เป็น adverb ซึ่งไม่ขยายนาม explanation โดยตรงในช่องนี้",
+          "D": "clearance เป็น noun หมายถึงการอนุญาตหรือการเคลียร์พื้นที่ ไม่เข้าหน้าที่หรือความหมาย"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-wf3",
+      "part": 5,
+      "stem": "The audit department is responsible for the _____ of archived client records.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "secure"
+        },
+        {
+          "id": "B",
+          "text": "security"
+        },
+        {
+          "id": "C",
+          "text": "securely"
+        },
+        {
+          "id": "D",
+          "text": "secured"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "ruleId": "wordform.noun-position",
+      "focusId": "wordform",
+      "difficulty": 4,
+      "explanationTh": "security เป็น noun หมายถึงความปลอดภัย: the security of records • Pattern: the + noun + of",
+      "explanation": "Choose the option matching the grammar pattern and meaning: the + noun + of",
+      "whyOthersTh": {
+        "A": "secure เป็น adjective/verb แต่ after the และก่อน of archived records ต้องการ noun",
+        "B": "security เป็น noun หมายถึงความปลอดภัย: the security of records",
+        "C": "securely เป็น adverb ไม่ตาม the เพื่อเป็นหัว noun phrase",
+        "D": "secured เป็น V3/adjective จำเป็นต้องมีคำนามตามเมื่อทำหน้าที่ขยาย"
+      },
+      "coaching": {
+        "focus": [
+          "แยกกริยาหลักและหาหัวนาม: maintain + noun phrase; adjective อยู่หน้าคำนาม"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "แยกกริยาหลักและหาหัวนาม: maintain + noun phrase; adjective อยู่หน้าคำนาม",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "the + noun + of",
+        "choiceReasons": {
+          "A": "secure เป็น adjective/verb แต่ after the และก่อน of archived records ต้องการ noun",
+          "B": "security เป็น noun หมายถึงความปลอดภัย: the security of records",
+          "C": "securely เป็น adverb ไม่ตาม the เพื่อเป็นหัว noun phrase",
+          "D": "secured เป็น V3/adjective จำเป็นต้องมีคำนามตามเมื่อทำหน้าที่ขยาย"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-nc1",
+      "part": 5,
+      "stem": "The committee has yet to determine _____ the overseas supplier can deliver all components before the holiday shutdown.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "whether"
+        },
+        {
+          "id": "B",
+          "text": "among"
+        },
+        {
+          "id": "C",
+          "text": "whose"
+        },
+        {
+          "id": "D",
+          "text": "that"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "context"
+      ],
+      "ruleId": "context",
+      "focusId": "noun-clause",
+      "difficulty": 4,
+      "explanationTh": "whether introduces an indirect yes/no question: ไม่แน่ว่าจะส่งทันหรือไม่ • Pattern: determine whether + subject + verb",
+      "explanation": "Choose the option matching the grammar pattern and meaning: determine whether + subject + verb",
+      "whyOthersTh": {
+        "A": "whether introduces an indirect yes/no question: ไม่แน่ว่าจะส่งทันหรือไม่",
+        "B": "among เป็น preposition ต้องตาม noun phrase ไม่ใช่ supplier can deliver ซึ่งเป็น clause",
+        "C": "whose แสดงความเป็นเจ้าของ ต้องมี noun ตาม เช่น whose shipment",
+        "D": "that ระบุข้อเท็จจริง แต่ determine ยังหมายถึงต้องตรวจว่าทำได้หรือไม่ จึงใช้ whether ตรงกว่า"
+      },
+      "coaching": {
+        "focus": [
+          "อ่านหลังช่องว่าง: S + V ครบหรือยัง และต้องการวิธี เหตุผล หรือความไม่แน่ใจ"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "อ่านหลังช่องว่าง: S + V ครบหรือยัง และต้องการวิธี เหตุผล หรือความไม่แน่ใจ",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "determine whether + subject + verb",
+        "choiceReasons": {
+          "A": "whether introduces an indirect yes/no question: ไม่แน่ว่าจะส่งทันหรือไม่",
+          "B": "among เป็น preposition ต้องตาม noun phrase ไม่ใช่ supplier can deliver ซึ่งเป็น clause",
+          "C": "whose แสดงความเป็นเจ้าของ ต้องมี noun ตาม เช่น whose shipment",
+          "D": "that ระบุข้อเท็จจริง แต่ determine ยังหมายถึงต้องตรวจว่าทำได้หรือไม่ จึงใช้ whether ตรงกว่า"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-nc2",
+      "part": 5,
+      "stem": "In the meeting minutes, the auditor explained _____ several invoices had been excluded from the financial report.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "whom"
+        },
+        {
+          "id": "B",
+          "text": "why"
+        },
+        {
+          "id": "C",
+          "text": "among"
+        },
+        {
+          "id": "D",
+          "text": "whose"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "context"
+      ],
+      "ruleId": "context",
+      "focusId": "noun-clause",
+      "difficulty": 4,
+      "explanationTh": "why นำ noun clause เพื่อบอกเหตุผลว่าทำไม invoice จึงถูกตัดออก • Pattern: explain why + subject + verb",
+      "explanation": "Choose the option matching the grammar pattern and meaning: explain why + subject + verb",
+      "whyOthersTh": {
+        "A": "whom หมายถึงผู้ที่เป็นกรรมของกริยา แต่หลังช่องว่างเป็น clause ครบแล้ว",
+        "B": "why นำ noun clause เพื่อบอกเหตุผลว่าทำไม invoice จึงถูกตัดออก",
+        "C": "among ไม่ได้นำ clause ที่มี subject + finite verb ได้",
+        "D": "whose ต้องขยายนามที่ตามมาติด ๆ เช่น whose invoices"
+      },
+      "coaching": {
+        "focus": [
+          "อ่านหลังช่องว่าง: S + V ครบหรือยัง และต้องการวิธี เหตุผล หรือความไม่แน่ใจ"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "อ่านหลังช่องว่าง: S + V ครบหรือยัง และต้องการวิธี เหตุผล หรือความไม่แน่ใจ",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "explain why + subject + verb",
+        "choiceReasons": {
+          "A": "whom หมายถึงผู้ที่เป็นกรรมของกริยา แต่หลังช่องว่างเป็น clause ครบแล้ว",
+          "B": "why นำ noun clause เพื่อบอกเหตุผลว่าทำไม invoice จึงถูกตัดออก",
+          "C": "among ไม่ได้นำ clause ที่มี subject + finite verb ได้",
+          "D": "whose ต้องขยายนามที่ตามมาติด ๆ เช่น whose invoices"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-nc3",
+      "part": 5,
+      "stem": "What management wants to know is _____ the new software will affect the time required to process refunds.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "during"
+        },
+        {
+          "id": "B",
+          "text": "who"
+        },
+        {
+          "id": "C",
+          "text": "how"
+        },
+        {
+          "id": "D",
+          "text": "whose"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "context"
+      ],
+      "ruleId": "context",
+      "focusId": "noun-clause",
+      "difficulty": 4,
+      "explanationTh": "how + subject + verb เป็น noun clause บอกลักษณะหรือวิธีที่ซอฟต์แวร์ส่งผลต่อการทำงาน • Pattern: is + how + subject + verb",
+      "explanation": "Choose the option matching the grammar pattern and meaning: is + how + subject + verb",
+      "whyOthersTh": {
+        "A": "during เป็น preposition ตามด้วยเวลา/เหตุการณ์ ไม่ได้นำ complete clause",
+        "B": "who ถามบุคคล แต่ software เป็นประธานและประโยคถามถึงวิธีที่ส่งผลต่อเวลา",
+        "C": "how + subject + verb เป็น noun clause บอกลักษณะหรือวิธีที่ซอฟต์แวร์ส่งผลต่อการทำงาน",
+        "D": "whose แสดงความเป็นเจ้าของไม่สัมพันธ์กับ will affect"
+      },
+      "coaching": {
+        "focus": [
+          "อ่านหลังช่องว่าง: S + V ครบหรือยัง และต้องการวิธี เหตุผล หรือความไม่แน่ใจ"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "อ่านหลังช่องว่าง: S + V ครบหรือยัง และต้องการวิธี เหตุผล หรือความไม่แน่ใจ",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "is + how + subject + verb",
+        "choiceReasons": {
+          "A": "during เป็น preposition ตามด้วยเวลา/เหตุการณ์ ไม่ได้นำ complete clause",
+          "B": "who ถามบุคคล แต่ software เป็นประธานและประโยคถามถึงวิธีที่ส่งผลต่อเวลา",
+          "C": "how + subject + verb เป็น noun clause บอกลักษณะหรือวิธีที่ซอฟต์แวร์ส่งผลต่อการทำงาน",
+          "D": "whose แสดงความเป็นเจ้าของไม่สัมพันธ์กับ will affect"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-rr1",
+      "part": 5,
+      "stem": "Applications _____ after the published deadline will not be considered for the fellowship.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "submitting"
+        },
+        {
+          "id": "B",
+          "text": "submitted"
+        },
+        {
+          "id": "C",
+          "text": "are submitted"
+        },
+        {
+          "id": "D",
+          "text": "that submit"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "relative-clause"
+      ],
+      "ruleId": "relative-clause",
+      "focusId": "reduced-relative",
+      "difficulty": 4,
+      "explanationTh": "submitted เป็น V3 ลดรูปจาก applications that are submitted และไม่มี finite verb ซ้ำ • Pattern: N + V3 = N that are/were + V3",
+      "explanation": "Choose the option matching the grammar pattern and meaning: N + V3 = N that are/were + V3",
+      "whyOthersTh": {
+        "A": "submitting เป็น active V-ing เหมือน applications ยื่นเอกสารเอง ซึ่งไม่ใช่",
+        "B": "submitted เป็น V3 ลดรูปจาก applications that are submitted และไม่มี finite verb ซ้ำ",
+        "C": "are submitted ทำให้เกิด are submitted และ will not be considered เป็นกริยาหลักสองชุดที่ไม่เชื่อมกัน",
+        "D": "that submit เป็น active relative ที่ applications เป็นผู้ submit ซึ่งผิดความหมาย"
+      },
+      "coaching": {
+        "focus": [
+          "ขยาย performers [who were eliminated] -> performers eliminated; ห้ามเพิ่ม finite verb ซ้ำ"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ขยาย performers [who were eliminated] -> performers eliminated; ห้ามเพิ่ม finite verb ซ้ำ",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "N + V3 = N that are/were + V3",
+        "choiceReasons": {
+          "A": "submitting เป็น active V-ing เหมือน applications ยื่นเอกสารเอง ซึ่งไม่ใช่",
+          "B": "submitted เป็น V3 ลดรูปจาก applications that are submitted และไม่มี finite verb ซ้ำ",
+          "C": "are submitted ทำให้เกิด are submitted และ will not be considered เป็นกริยาหลักสองชุดที่ไม่เชื่อมกัน",
+          "D": "that submit เป็น active relative ที่ applications เป็นผู้ submit ซึ่งผิดความหมาย"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-rr2",
+      "part": 5,
+      "stem": "All instruments _____ during last week's safety inspection must be recalibrated before use.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "identifying"
+        },
+        {
+          "id": "B",
+          "text": "identified"
+        },
+        {
+          "id": "C",
+          "text": "were identified"
+        },
+        {
+          "id": "D",
+          "text": "that identify"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "relative-clause"
+      ],
+      "ruleId": "relative-clause",
+      "focusId": "reduced-relative",
+      "difficulty": 4,
+      "explanationTh": "identified เป็น passive participle ขยาย instruments; verb หลักคือ must be recalibrated • Pattern: N + identified = instruments that were identified",
+      "explanation": "Choose the option matching the grammar pattern and meaning: N + identified = instruments that were identified",
+      "whyOthersTh": {
+        "A": "identifying เป็น active แต่ instruments ถูกตรวจพบ ไม่ได้เป็นผู้ระบุ",
+        "B": "identified เป็น passive participle ขยาย instruments; verb หลักคือ must be recalibrated",
+        "C": "were identified เพิ่ม finite verb อีกตัวโดยไม่เชื่อม ทำให้ประโยคผิด",
+        "D": "that identify แปลว่าเครื่องมือเป็นผู้ระบุสิ่งอื่น ไม่ตรงกับบริบท"
+      },
+      "coaching": {
+        "focus": [
+          "ขยาย performers [who were eliminated] -> performers eliminated; ห้ามเพิ่ม finite verb ซ้ำ"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ขยาย performers [who were eliminated] -> performers eliminated; ห้ามเพิ่ม finite verb ซ้ำ",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "N + identified = instruments that were identified",
+        "choiceReasons": {
+          "A": "identifying เป็น active แต่ instruments ถูกตรวจพบ ไม่ได้เป็นผู้ระบุ",
+          "B": "identified เป็น passive participle ขยาย instruments; verb หลักคือ must be recalibrated",
+          "C": "were identified เพิ่ม finite verb อีกตัวโดยไม่เชื่อม ทำให้ประโยคผิด",
+          "D": "that identify แปลว่าเครื่องมือเป็นผู้ระบุสิ่งอื่น ไม่ตรงกับบริบท"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-rr3",
+      "part": 5,
+      "stem": "Employees _____ to lead the product demonstration will receive additional technical training.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "selecting"
+        },
+        {
+          "id": "B",
+          "text": "are selecting"
+        },
+        {
+          "id": "C",
+          "text": "selected"
+        },
+        {
+          "id": "D",
+          "text": "who select"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "relative-clause"
+      ],
+      "ruleId": "relative-clause",
+      "focusId": "reduced-relative",
+      "difficulty": 4,
+      "explanationTh": "selected เป็น V3 passive ขยาย employees = employees who were selected • Pattern: Employees [who were selected] will receive",
+      "explanation": "Choose the option matching the grammar pattern and meaning: Employees [who were selected] will receive",
+      "whyOthersTh": {
+        "A": "selecting เป็นผู้กำลังเลือก ไม่ใช่พนักงานที่ถูกเลือก",
+        "B": "are selecting เพิ่ม finite verb ซ้ำกับ will receive",
+        "C": "selected เป็น V3 passive ขยาย employees = employees who were selected",
+        "D": "who select ทำให้พนักงานเป็นผู้เลือกบางสิ่ง ไม่ใช่ถูกเลือกให้สาธิต"
+      },
+      "coaching": {
+        "focus": [
+          "ขยาย performers [who were eliminated] -> performers eliminated; ห้ามเพิ่ม finite verb ซ้ำ"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ขยาย performers [who were eliminated] -> performers eliminated; ห้ามเพิ่ม finite verb ซ้ำ",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "Employees [who were selected] will receive",
+        "choiceReasons": {
+          "A": "selecting เป็นผู้กำลังเลือก ไม่ใช่พนักงานที่ถูกเลือก",
+          "B": "are selecting เพิ่ม finite verb ซ้ำกับ will receive",
+          "C": "selected เป็น V3 passive ขยาย employees = employees who were selected",
+          "D": "who select ทำให้พนักงานเป็นผู้เลือกบางสิ่ง ไม่ใช่ถูกเลือกให้สาธิต"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-ap1",
+      "part": 5,
+      "stem": "Following the unsatisfactory trial period, we _____ the same software license when it expires next month.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "will not be renewing"
+        },
+        {
+          "id": "B",
+          "text": "will not be renewed"
+        },
+        {
+          "id": "C",
+          "text": "were not renewed"
+        },
+        {
+          "id": "D",
+          "text": "had not been renewed"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "passive"
+      ],
+      "ruleId": "passive",
+      "focusId": "active-passive",
+      "difficulty": 4,
+      "explanationTh": "we เป็นผู้ตัดสินใจต่ออายุ ใช้ will not be renewing + object license เป็น active future progressive • Pattern: We renew a license; license is renewed by us",
+      "explanation": "Choose the option matching the grammar pattern and meaning: We renew a license; license is renewed by us",
+      "whyOthersTh": {
+        "A": "we เป็นผู้ตัดสินใจต่ออายุ ใช้ will not be renewing + object license เป็น active future progressive",
+        "B": "will not be renewed เป็น passive ทำให้ we ถูกต่ออายุ และตามด้วยกรรมตรงไม่ได้",
+        "C": "were not renewed เป็น passive past สื่อว่าอดีตถูกต่ออายุ ไม่ตรง when it expires next month",
+        "D": "had not been renewed เป็น past perfect passive และเวลาผิดจากแผนอนาคต"
+      },
+      "coaching": {
+        "focus": [
+          "ถามก่อนเสมอว่าใครเป็นคนทำ booking/cleaning แล้วเลือก active หรือ passive พร้อม tense"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ถามก่อนเสมอว่าใครเป็นคนทำ booking/cleaning แล้วเลือก active หรือ passive พร้อม tense",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "We renew a license; license is renewed by us",
+        "choiceReasons": {
+          "A": "we เป็นผู้ตัดสินใจต่ออายุ ใช้ will not be renewing + object license เป็น active future progressive",
+          "B": "will not be renewed เป็น passive ทำให้ we ถูกต่ออายุ และตามด้วยกรรมตรงไม่ได้",
+          "C": "were not renewed เป็น passive past สื่อว่าอดีตถูกต่ออายุ ไม่ตรง when it expires next month",
+          "D": "had not been renewed เป็น past perfect passive และเวลาผิดจากแผนอนาคต"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-ap2",
+      "part": 5,
+      "stem": "By the time the inspectors arrived on Monday, the defective units _____ from the production line.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "had removed"
+        },
+        {
+          "id": "B",
+          "text": "had been removed"
+        },
+        {
+          "id": "C",
+          "text": "have been removing"
+        },
+        {
+          "id": "D",
+          "text": "were removing"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "passive"
+      ],
+      "ruleId": "passive",
+      "focusId": "active-passive",
+      "difficulty": 4,
+      "explanationTh": "had been removed คือ past perfect passive: หน่วยสินค้าถูกเอาออกก่อนเวลาที่ inspectors มาถึง • Pattern: before past event + had been + V3",
+      "explanation": "Choose the option matching the grammar pattern and meaning: before past event + had been + V3",
+      "whyOthersTh": {
+        "A": "had removed เป็น active เหมือน units ถอดตัวเองจากสายผลิต",
+        "B": "had been removed คือ past perfect passive: หน่วยสินค้าถูกเอาออกก่อนเวลาที่ inspectors มาถึง",
+        "C": "have been removing เป็น present perfect continuous active และเวลาไม่ตรงอดีต",
+        "D": "were removing เป็น past continuous active เหมือน units ทำงานเอง"
+      },
+      "coaching": {
+        "focus": [
+          "ถามก่อนเสมอว่าใครเป็นคนทำ booking/cleaning แล้วเลือก active หรือ passive พร้อม tense"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ถามก่อนเสมอว่าใครเป็นคนทำ booking/cleaning แล้วเลือก active หรือ passive พร้อม tense",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "before past event + had been + V3",
+        "choiceReasons": {
+          "A": "had removed เป็น active เหมือน units ถอดตัวเองจากสายผลิต",
+          "B": "had been removed คือ past perfect passive: หน่วยสินค้าถูกเอาออกก่อนเวลาที่ inspectors มาถึง",
+          "C": "have been removing เป็น present perfect continuous active และเวลาไม่ตรงอดีต",
+          "D": "were removing เป็น past continuous active เหมือน units ทำงานเอง"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-ap3",
+      "part": 5,
+      "stem": "The invoices are complete and _____ by the accounting team before payment is authorized.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "are reviewing"
+        },
+        {
+          "id": "B",
+          "text": "have reviewed"
+        },
+        {
+          "id": "C",
+          "text": "are reviewed"
+        },
+        {
+          "id": "D",
+          "text": "review"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "passive"
+      ],
+      "ruleId": "passive",
+      "focusId": "active-passive",
+      "difficulty": 4,
+      "explanationTh": "are reviewed เป็น passive เพราะ accounting team เป็นผู้ตรวจ invoices • Pattern: invoices are reviewed by accounting",
+      "explanation": "Choose the option matching the grammar pattern and meaning: invoices are reviewed by accounting",
+      "whyOthersTh": {
+        "A": "are reviewing เป็น active continuous ทำให้ invoices เป็นฝ่ายทบทวนผู้อื่น",
+        "B": "have reviewed เป็น present perfect active แต่ invoices ไม่ใช่ผู้ทบทวน",
+        "C": "are reviewed เป็น passive เพราะ accounting team เป็นผู้ตรวจ invoices",
+        "D": "review เป็น bare verb ไม่สอดคล้องกับโครงสร้างประโยคที่ประธานคือ invoices"
+      },
+      "coaching": {
+        "focus": [
+          "ถามก่อนเสมอว่าใครเป็นคนทำ booking/cleaning แล้วเลือก active หรือ passive พร้อม tense"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ถามก่อนเสมอว่าใครเป็นคนทำ booking/cleaning แล้วเลือก active หรือ passive พร้อม tense",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "invoices are reviewed by accounting",
+        "choiceReasons": {
+          "A": "are reviewing เป็น active continuous ทำให้ invoices เป็นฝ่ายทบทวนผู้อื่น",
+          "B": "have reviewed เป็น present perfect active แต่ invoices ไม่ใช่ผู้ทบทวน",
+          "C": "are reviewed เป็น passive เพราะ accounting team เป็นผู้ตรวจ invoices",
+          "D": "review เป็น bare verb ไม่สอดคล้องกับโครงสร้างประโยคที่ประธานคือ invoices"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-co1",
+      "part": 5,
+      "stem": "The trial will proceed as planned _____ the quality-control team discovers a critical safety issue.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "unless"
+        },
+        {
+          "id": "B",
+          "text": "despite"
+        },
+        {
+          "id": "C",
+          "text": "because of"
+        },
+        {
+          "id": "D",
+          "text": "during"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "focusId": "connectors",
+      "difficulty": 4,
+      "explanationTh": "unless + clause ให้เงื่อนไขว่าจะแผนเดิมต่อ ยกเว้นพบปัญหาร้ายแรง • Pattern: unless + S + V",
+      "explanation": "Choose the option matching the grammar pattern and meaning: unless + S + V",
+      "whyOthersTh": {
+        "A": "unless + clause ให้เงื่อนไขว่าจะแผนเดิมต่อ ยกเว้นพบปัญหาร้ายแรง",
+        "B": "despite ต้องตามด้วย noun phrase / V-ing ไม่ใช่ทีม discovers ซึ่งเป็น clause",
+        "C": "because of ตาม noun phrase ไม่รับ S + V",
+        "D": "during ต้องตามระยะเวลาหรือเหตุการณ์ ไม่ใช่ clause"
+      },
+      "coaching": {
+        "focus": [
+          "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "unless + S + V",
+        "choiceReasons": {
+          "A": "unless + clause ให้เงื่อนไขว่าจะแผนเดิมต่อ ยกเว้นพบปัญหาร้ายแรง",
+          "B": "despite ต้องตามด้วย noun phrase / V-ing ไม่ใช่ทีม discovers ซึ่งเป็น clause",
+          "C": "because of ตาม noun phrase ไม่รับ S + V",
+          "D": "during ต้องตามระยะเวลาหรือเหตุการณ์ ไม่ใช่ clause"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-co2",
+      "part": 5,
+      "stem": "_____ the increased cost of raw materials, the manufacturer kept its prices unchanged for existing clients.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Although"
+        },
+        {
+          "id": "B",
+          "text": "Despite"
+        },
+        {
+          "id": "C",
+          "text": "Whereas"
+        },
+        {
+          "id": "D",
+          "text": "Even though"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "focusId": "connectors",
+      "difficulty": 4,
+      "explanationTh": "despite ตามด้วย noun phrase the increased cost ได้ และแสดงความขัดแย้งชัดเจน • Pattern: despite + noun phrase; although + clause",
+      "explanation": "Choose the option matching the grammar pattern and meaning: despite + noun phrase; although + clause",
+      "whyOthersTh": {
+        "A": "although ต้องตาม clause (S+V) เช่น Although costs rose",
+        "B": "despite ตามด้วย noun phrase the increased cost ได้ และแสดงความขัดแย้งชัดเจน",
+        "C": "whereas ตาม clause ใช้เทียบต่าง แต่ด้านหลังเป็น noun phrase",
+        "D": "even though ต้องตาม S + V ไม่ใช่แค่ noun phrase"
+      },
+      "coaching": {
+        "focus": [
+          "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "despite + noun phrase; although + clause",
+        "choiceReasons": {
+          "A": "although ต้องตาม clause (S+V) เช่น Although costs rose",
+          "B": "despite ตามด้วย noun phrase the increased cost ได้ และแสดงความขัดแย้งชัดเจน",
+          "C": "whereas ตาม clause ใช้เทียบต่าง แต่ด้านหลังเป็น noun phrase",
+          "D": "even though ต้องตาม S + V ไม่ใช่แค่ noun phrase"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-co3",
+      "part": 5,
+      "stem": "The revised contract was returned to the supplier _____ several delivery dates had not been confirmed.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "because of"
+        },
+        {
+          "id": "B",
+          "text": "because"
+        },
+        {
+          "id": "C",
+          "text": "despite"
+        },
+        {
+          "id": "D",
+          "text": "during"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "focusId": "connectors",
+      "difficulty": 4,
+      "explanationTh": "because ตาม clause ที่มี several delivery dates เป็น subject และ had not been confirmed เป็น verb • Pattern: because + subject + verb",
+      "explanation": "Choose the option matching the grammar pattern and meaning: because + subject + verb",
+      "whyOthersTh": {
+        "A": "because of ต้องตาม noun phrase เช่น because of unconfirmed dates",
+        "B": "because ตาม clause ที่มี several delivery dates เป็น subject และ had not been confirmed เป็น verb",
+        "C": "despite เป็นความขัดแย้งและต้องตาม noun phrase",
+        "D": "during ต้องรับช่วงเวลา ไม่ได้เชื่อมเหตุผลแบบ clause"
+      },
+      "coaching": {
+        "focus": [
+          "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "because + subject + verb",
+        "choiceReasons": {
+          "A": "because of ต้องตาม noun phrase เช่น because of unconfirmed dates",
+          "B": "because ตาม clause ที่มี several delivery dates เป็น subject และ had not been confirmed เป็น verb",
+          "C": "despite เป็นความขัดแย้งและต้องตาม noun phrase",
+          "D": "during ต้องรับช่วงเวลา ไม่ได้เชื่อมเหตุผลแบบ clause"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-ge1",
+      "part": 5,
+      "stem": "The operations director is committed to _____ the rate of processing errors by the end of the quarter.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "reduce"
+        },
+        {
+          "id": "B",
+          "text": "reducing"
+        },
+        {
+          "id": "C",
+          "text": "reduced"
+        },
+        {
+          "id": "D",
+          "text": "reduction"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "preposition"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "focusId": "gerund",
+      "difficulty": 4,
+      "explanationTh": "reducing เป็น V-ing หลัง committed to ถูกต้อง • Pattern: be committed to + V-ing",
+      "explanation": "Choose the option matching the grammar pattern and meaning: be committed to + V-ing",
+      "whyOthersTh": {
+        "A": "reduce เป็น V1 แต่ to ใน committed to เป็น preposition ไม่ใช่ infinitive marker",
+        "B": "reducing เป็น V-ing หลัง committed to ถูกต้อง",
+        "C": "reduced เป็น V3 ไม่ทำหน้าที่หลัง preposition to แบบนี้",
+        "D": "reduction เป็น noun แต่ committed to reduction อาจใช้ได้หากเขียน construction ใหม่; ในประโยคนี้ reduction of the rate จะซ้ำความหมายและไม่รับ the rate ตรง ๆ"
+      },
+      "coaching": {
+        "focus": [
+          "วง preposition; practice succeed in doing, committed to improving, responsible for checking"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "วง preposition; practice succeed in doing, committed to improving, responsible for checking",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "be committed to + V-ing",
+        "choiceReasons": {
+          "A": "reduce เป็น V1 แต่ to ใน committed to เป็น preposition ไม่ใช่ infinitive marker",
+          "B": "reducing เป็น V-ing หลัง committed to ถูกต้อง",
+          "C": "reduced เป็น V3 ไม่ทำหน้าที่หลัง preposition to แบบนี้",
+          "D": "reduction เป็น noun แต่ committed to reduction อาจใช้ได้หากเขียน construction ใหม่; ในประโยคนี้ reduction of the rate จะซ้ำความหมายและไม่รับ the rate ตรง ๆ"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-ge2",
+      "part": 5,
+      "stem": "The finance officer apologized for _____ the signed invoices to the wrong department.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "send"
+        },
+        {
+          "id": "B",
+          "text": "to send"
+        },
+        {
+          "id": "C",
+          "text": "sending"
+        },
+        {
+          "id": "D",
+          "text": "sent"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "preposition"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "focusId": "gerund",
+      "difficulty": 4,
+      "explanationTh": "sending เป็น gerund ทำหน้าที่กรรมของ for • Pattern: apologize for + V-ing",
+      "explanation": "Choose the option matching the grammar pattern and meaning: apologize for + V-ing",
+      "whyOthersTh": {
+        "A": "send เป็น bare verb ไม่ใช่รูปกรรมหลังกริยาบุพบท for",
+        "B": "to send เป็น infinitive แต่ apologize for ใช้ noun / V-ing",
+        "C": "sending เป็น gerund ทำหน้าที่กรรมของ for",
+        "D": "sent เป็น V3 ไม่ได้ทำหน้าที่กรรมหลังกริยาบุพบท for"
+      },
+      "coaching": {
+        "focus": [
+          "วง preposition; practice succeed in doing, committed to improving, responsible for checking"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "วง preposition; practice succeed in doing, committed to improving, responsible for checking",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "apologize for + V-ing",
+        "choiceReasons": {
+          "A": "send เป็น bare verb ไม่ใช่รูปกรรมหลังกริยาบุพบท for",
+          "B": "to send เป็น infinitive แต่ apologize for ใช้ noun / V-ing",
+          "C": "sending เป็น gerund ทำหน้าที่กรรมของ for",
+          "D": "sent เป็น V3 ไม่ได้ทำหน้าที่กรรมหลังกริยาบุพบท for"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-ge3",
+      "part": 5,
+      "stem": "The research team succeeded in _____ the energy consumption of the test equipment without reducing accuracy.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "lowering"
+        },
+        {
+          "id": "B",
+          "text": "to lower"
+        },
+        {
+          "id": "C",
+          "text": "lowered"
+        },
+        {
+          "id": "D",
+          "text": "low"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "preposition"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "focusId": "gerund",
+      "difficulty": 4,
+      "explanationTh": "succeed in + V-ing ตามด้วย lowering (การลด) • Pattern: succeed in + V-ing",
+      "explanation": "Choose the option matching the grammar pattern and meaning: succeed in + V-ing",
+      "whyOthersTh": {
+        "A": "succeed in + V-ing ตามด้วย lowering (การลด)",
+        "B": "to lower เป็น infinitive แต่ in ต้องรับ noun / V-ing",
+        "C": "lowered เป็นอดีต/กริยาช่องสามไม่ใช่ gerund หลัง in",
+        "D": "low เป็น adjective ไม่สามารถรับกรรม energy consumption ตรงนี้"
+      },
+      "coaching": {
+        "focus": [
+          "วง preposition; practice succeed in doing, committed to improving, responsible for checking"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "วง preposition; practice succeed in doing, committed to improving, responsible for checking",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "succeed in + V-ing",
+        "choiceReasons": {
+          "A": "succeed in + V-ing ตามด้วย lowering (การลด)",
+          "B": "to lower เป็น infinitive แต่ in ต้องรับ noun / V-ing",
+          "C": "lowered เป็นอดีต/กริยาช่องสามไม่ใช่ gerund หลัง in",
+          "D": "low เป็น adjective ไม่สามารถรับกรรม energy consumption ตรงนี้"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-pt1",
+      "part": 5,
+      "stem": "This is the first time our regional office _____ a customer satisfaction survey in three languages.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "issues"
+        },
+        {
+          "id": "B",
+          "text": "has issued"
+        },
+        {
+          "id": "C",
+          "text": "issued"
+        },
+        {
+          "id": "D",
+          "text": "had issue"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "verb-tense",
+      "focusId": "present-perfect",
+      "difficulty": 4,
+      "explanationTh": "has issued คือ has + V3 ใช้กับ first time ที่สัมพันธ์กับปัจจุบัน • Pattern: This is the first time + has/have + V3",
+      "explanation": "Choose the option matching the grammar pattern and meaning: This is the first time + has/have + V3",
+      "whyOthersTh": {
+        "A": "issues เป็น present simple ใช้กับนิสัย แต่ This is the first time บอกประสบการณ์จนถึงตอนนี้",
+        "B": "has issued คือ has + V3 ใช้กับ first time ที่สัมพันธ์กับปัจจุบัน",
+        "C": "issued เป็น past simple ไม่มี present perfect auxiliary",
+        "D": "had issue เป็นโครงสร้างผิด (had + V3 ต้องมี issued); past perfect ไม่ตรงกับ is"
+      },
+      "coaching": {
+        "focus": [
+          "ดู present reference + first time/since/for แล้วเลือก have/has + V3"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ดู present reference + first time/since/for แล้วเลือก have/has + V3",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "This is the first time + has/have + V3",
+        "choiceReasons": {
+          "A": "issues เป็น present simple ใช้กับนิสัย แต่ This is the first time บอกประสบการณ์จนถึงตอนนี้",
+          "B": "has issued คือ has + V3 ใช้กับ first time ที่สัมพันธ์กับปัจจุบัน",
+          "C": "issued เป็น past simple ไม่มี present perfect auxiliary",
+          "D": "had issue เป็นโครงสร้างผิด (had + V3 ต้องมี issued); past perfect ไม่ตรงกับ is"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-pt2",
+      "part": 5,
+      "stem": "Since the automated checklist was introduced in April, technicians _____ fewer documentation errors.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "reported"
+        },
+        {
+          "id": "B",
+          "text": "have reported"
+        },
+        {
+          "id": "C",
+          "text": "had reported"
+        },
+        {
+          "id": "D",
+          "text": "are report"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "verb-tense",
+      "focusId": "present-perfect",
+      "difficulty": 4,
+      "explanationTh": "have reported เป็น present perfect สื่อว่าตั้งแต่เริ่มใช้ checklist จนถึงปัจจุบัน • Pattern: since + past event -> present perfect for up-to-now result",
+      "explanation": "Choose the option matching the grammar pattern and meaning: since + past event -> present perfect for up-to-now result",
+      "whyOthersTh": {
+        "A": "reported เป็น past simple ไม่เน้นช่วงที่ต่อเนื่องจาก April ถึงปัจจุบัน",
+        "B": "have reported เป็น present perfect สื่อว่าตั้งแต่เริ่มใช้ checklist จนถึงปัจจุบัน",
+        "C": "had reported เป็น past perfect ต้องมีอีกจุดอ้างอิงในอดีต",
+        "D": "are report รูปกริยาผิด ต้อง are reporting หากเป็น continuous"
+      },
+      "coaching": {
+        "focus": [
+          "ดู present reference + first time/since/for แล้วเลือก have/has + V3"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ดู present reference + first time/since/for แล้วเลือก have/has + V3",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "since + past event -> present perfect for up-to-now result",
+        "choiceReasons": {
+          "A": "reported เป็น past simple ไม่เน้นช่วงที่ต่อเนื่องจาก April ถึงปัจจุบัน",
+          "B": "have reported เป็น present perfect สื่อว่าตั้งแต่เริ่มใช้ checklist จนถึงปัจจุบัน",
+          "C": "had reported เป็น past perfect ต้องมีอีกจุดอ้างอิงในอดีต",
+          "D": "are report รูปกริยาผิด ต้อง are reporting หากเป็น continuous"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-pt3",
+      "part": 5,
+      "stem": "Ms. Ogawa _____ three major client accounts since joining the consulting firm two years ago.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "managed"
+        },
+        {
+          "id": "B",
+          "text": "has managed"
+        },
+        {
+          "id": "C",
+          "text": "had managed"
+        },
+        {
+          "id": "D",
+          "text": "manages"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "verb-tense"
+      ],
+      "ruleId": "verb-tense",
+      "focusId": "present-perfect",
+      "difficulty": 4,
+      "explanationTh": "has managed บอกประสบการณ์และผลงานสะสมตั้งแต่เข้าบริษัทจนถึงปัจจุบัน • Pattern: since joining -> has/have + past participle",
+      "explanation": "Choose the option matching the grammar pattern and meaning: since joining -> has/have + past participle",
+      "whyOthersTh": {
+        "A": "managed เป็น simple past ไม่ครอบคลุมช่วงถึงปัจจุบันตาม since joining",
+        "B": "has managed บอกประสบการณ์และผลงานสะสมตั้งแต่เข้าบริษัทจนถึงปัจจุบัน",
+        "C": "had managed เป็น past perfect ที่ต้องมี reference point อดีตอีกอัน",
+        "D": "manages เป็น present simple ใช้กับข้อเท็จจริงปัจจุบัน แต่ประโยคต้องการช่วงสะสม since joining"
+      },
+      "coaching": {
+        "focus": [
+          "ดู present reference + first time/since/for แล้วเลือก have/has + V3"
+        ],
+        "steps": [
+          "อ่านทั้งประโยคและหาประธาน กริยาหลัก และตำแหน่งช่องว่าง",
+          "ดู present reference + first time/since/for แล้วเลือก have/has + V3",
+          "พิจารณาทั้งชนิดคำ/ความหมาย แล้วเทียบตัวลวงทีละข้อ"
+        ],
+        "memory": "since joining -> has/have + past participle",
+        "choiceReasons": {
+          "A": "managed เป็น simple past ไม่ครอบคลุมช่วงถึงปัจจุบันตาม since joining",
+          "B": "has managed บอกประสบการณ์และผลงานสะสมตั้งแต่เข้าบริษัทจนถึงปัจจุบัน",
+          "C": "had managed เป็น past perfect ที่ต้องมี reference point อดีตอีกอัน",
+          "D": "manages เป็น present simple ใช้กับข้อเท็จจริงปัจจุบัน แต่ประโยคต้องการช่วงสะสม since joining"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-v1",
+      "part": 6,
+      "stem": "[1] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "assure"
+        },
+        {
+          "id": "B",
+          "text": "ensure"
+        },
+        {
+          "id": "C",
+          "text": "assurance"
+        },
+        {
+          "id": "D",
+          "text": "ensuring"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "collocation"
+      ],
+      "ruleId": "p6.fixed-phrase",
+      "focusId": "fixed-phrase",
+      "difficulty": 4,
+      "explanationTh": "ensure that + clause = ทำให้แน่ใจว่า รายละเอียดในระบบตรงสัญญา • Pattern: please ensure that + clause",
+      "explanation": "Use passage evidence and the following rule: please ensure that + clause",
+      "whyOthersTh": {
+        "A": "assure usually takes a person as its object (assure someone that...), not a that-clause alone in this construction",
+        "B": "ensure that + clause = ทำให้แน่ใจว่า รายละเอียดในระบบตรงสัญญา",
+        "C": "assurance เป็น noun ไม่ตาม please โดยไม่มี verb",
+        "D": "ensuring เป็น V-ing แต่ please ตามด้วย base verb"
+      },
+      "coaching": {
+        "focus": [
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "please ensure that + clause",
+        "choiceReasons": {
+          "A": "assure usually takes a person as its object (assure someone that...), not a that-clause alone in this construction",
+          "B": "ensure that + clause = ทำให้แน่ใจว่า รายละเอียดในระบบตรงสัญญา",
+          "C": "assurance เป็น noun ไม่ตาม please โดยไม่มี verb",
+          "D": "ensuring เป็น V-ing แต่ please ตามด้วย base verb"
+        }
+      },
+      "targetSeconds": 55,
+      "passageId": "repair-20261011-p6-vendor",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-v2",
+      "part": 6,
+      "stem": "[2] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "bring it to the attention of"
+        },
+        {
+          "id": "B",
+          "text": "take advantage of"
+        },
+        {
+          "id": "C",
+          "text": "keep in touch with"
+        },
+        {
+          "id": "D",
+          "text": "make use of"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "collocation"
+      ],
+      "ruleId": "p6.fixed-phrase",
+      "focusId": "fixed-phrase",
+      "difficulty": 4,
+      "explanationTh": "bring it to the attention of your supervisor = แจ้งให้ผู้บังคับบัญชาทราบถึงปัญหาก่อนแก้ข้อมูล • Pattern: bring something to the attention of someone",
+      "explanation": "Use passage evidence and the following rule: bring something to the attention of someone",
+      "whyOthersTh": {
+        "A": "bring it to the attention of your supervisor = แจ้งให้ผู้บังคับบัญชาทราบถึงปัญหาก่อนแก้ข้อมูล",
+        "B": "take advantage of your supervisor = ฉวยประโยชน์จากหัวหน้า ผิดความหมาย",
+        "C": "keep in touch with = ติดต่อกันเรื่อย ๆ ไม่ใช่แจ้ง discrepancy ให้ตรวจ",
+        "D": "make use of = ใช้ประโยชน์จาก ไม่ใช่แจ้งเรื่องให้ตรวจ"
+      },
+      "coaching": {
+        "focus": [
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "bring something to the attention of someone",
+        "choiceReasons": {
+          "A": "bring it to the attention of your supervisor = แจ้งให้ผู้บังคับบัญชาทราบถึงปัญหาก่อนแก้ข้อมูล",
+          "B": "take advantage of your supervisor = ฉวยประโยชน์จากหัวหน้า ผิดความหมาย",
+          "C": "keep in touch with = ติดต่อกันเรื่อย ๆ ไม่ใช่แจ้ง discrepancy ให้ตรวจ",
+          "D": "make use of = ใช้ประโยชน์จาก ไม่ใช่แจ้งเรื่องให้ตรวจ"
+        }
+      },
+      "targetSeconds": 55,
+      "passageId": "repair-20261011-p6-vendor",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-v3",
+      "part": 6,
+      "stem": "[3] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "patient"
+        },
+        {
+          "id": "B",
+          "text": "patients"
+        },
+        {
+          "id": "C",
+          "text": "patience"
+        },
+        {
+          "id": "D",
+          "text": "patiently"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "collocation"
+      ],
+      "ruleId": "p6.fixed-phrase",
+      "focusId": "fixed-phrase",
+      "difficulty": 4,
+      "explanationTh": "appreciate your patience คือสำนวนขอบคุณที่อดทนรอ เหมาะกับการตรวจที่ยังไม่จบ • Pattern: We appreciate your patience while + clause",
+      "explanation": "Use passage evidence and the following rule: We appreciate your patience while + clause",
+      "whyOthersTh": {
+        "A": "patient เป็น adjective/คนไข้ ไม่ใช่นามความอดทนของผู้รับสารในสำนวนนี้",
+        "B": "patients เป็นพหูพจน์ คนไข้ ไม่ใช่ความอดทน",
+        "C": "appreciate your patience คือสำนวนขอบคุณที่อดทนรอ เหมาะกับการตรวจที่ยังไม่จบ",
+        "D": "patiently เป็น adverb แต่หลัง your ต้องการ noun"
+      },
+      "coaching": {
+        "focus": [
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "We appreciate your patience while + clause",
+        "choiceReasons": {
+          "A": "patient เป็น adjective/คนไข้ ไม่ใช่นามความอดทนของผู้รับสารในสำนวนนี้",
+          "B": "patients เป็นพหูพจน์ คนไข้ ไม่ใช่ความอดทน",
+          "C": "appreciate your patience คือสำนวนขอบคุณที่อดทนรอ เหมาะกับการตรวจที่ยังไม่จบ",
+          "D": "patiently เป็น adverb แต่หลัง your ต้องการ noun"
+        }
+      },
+      "targetSeconds": 55,
+      "passageId": "repair-20261011-p6-vendor",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-v4",
+      "part": 6,
+      "stem": "[4] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "The audit office was established more than a decade ago."
+        },
+        {
+          "id": "B",
+          "text": "The suppliers generally submit their annual quotations in January."
+        },
+        {
+          "id": "C",
+          "text": "Please keep a dated record of any amendment you submit."
+        },
+        {
+          "id": "D",
+          "text": "The building's meeting rooms will be unavailable next week."
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "sentence-placement"
+      ],
+      "ruleId": "p6.sentence-placement",
+      "focusId": "reading-reference",
+      "difficulty": 4,
+      "explanationTh": "การเก็บหลักฐานการแก้ไขพร้อมวันที่เป็น procedure ที่ช่วยป้องกันการอนุมัติซ้ำโดยตรง • Pattern: This procedure ต้องอ้างกลับไปที่ขั้นตอนที่เพิ่งกล่าวถึง",
+      "explanation": "Use passage evidence and the following rule: This procedure ต้องอ้างกลับไปที่ขั้นตอนที่เพิ่งกล่าวถึง",
+      "whyOthersTh": {
+        "A": "ประวัติ audit office ไม่ใช่วิธีที่ This procedure จะกันการอนุมัติซ้ำ",
+        "B": "ข้อมูล quotation เดือนมกราคมไม่ต่อจากการแก้ record และไม่สอดคล้อง This procedure",
+        "C": "การเก็บหลักฐานการแก้ไขพร้อมวันที่เป็น procedure ที่ช่วยป้องกันการอนุมัติซ้ำโดยตรง",
+        "D": "สถานะห้องประชุมไม่ต่อหัวข้อการจัดการบันทึก supplier"
+      },
+      "coaching": {
+        "focus": [
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "This procedure ต้องอ้างกลับไปที่ขั้นตอนที่เพิ่งกล่าวถึง",
+        "choiceReasons": {
+          "A": "ประวัติ audit office ไม่ใช่วิธีที่ This procedure จะกันการอนุมัติซ้ำ",
+          "B": "ข้อมูล quotation เดือนมกราคมไม่ต่อจากการแก้ record และไม่สอดคล้อง This procedure",
+          "C": "การเก็บหลักฐานการแก้ไขพร้อมวันที่เป็น procedure ที่ช่วยป้องกันการอนุมัติซ้ำโดยตรง",
+          "D": "สถานะห้องประชุมไม่ต่อหัวข้อการจัดการบันทึก supplier"
+        }
+      },
+      "targetSeconds": 55,
+      "passageId": "repair-20261011-p6-vendor",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-t1",
+      "part": 6,
+      "stem": "[1] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "postponed"
+        },
+        {
+          "id": "B",
+          "text": "prevented"
+        },
+        {
+          "id": "C",
+          "text": "progressed"
+        },
+        {
+          "id": "D",
+          "text": "persuaded"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "collocation"
+      ],
+      "ruleId": "p6.fixed-phrase",
+      "focusId": "fixed-phrase",
+      "difficulty": 4,
+      "explanationTh": "postponed until Tuesday = เลื่อนกำหนดจากพฤหัสไปอังคารถัดไป เหตุผลคืออาคารตรวจ • Pattern: postpone an event until + date",
+      "explanation": "Use passage evidence and the following rule: postpone an event until + date",
+      "whyOthersTh": {
+        "A": "postponed until Tuesday = เลื่อนกำหนดจากพฤหัสไปอังคารถัดไป เหตุผลคืออาคารตรวจ",
+        "B": "prevented usually means stopped, but prevented until Tuesday ไม่ใช่สำนวนการเลื่อนงาน",
+        "C": "progressed แปลว่าคืบหน้า ไม่เข้ากับ has been ... until a date",
+        "D": "persuaded = โน้มน้าวคน ไม่ใช่เลื่อนกิจกรรม"
+      },
+      "coaching": {
+        "focus": [
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "postpone an event until + date",
+        "choiceReasons": {
+          "A": "postponed until Tuesday = เลื่อนกำหนดจากพฤหัสไปอังคารถัดไป เหตุผลคืออาคารตรวจ",
+          "B": "prevented usually means stopped, but prevented until Tuesday ไม่ใช่สำนวนการเลื่อนงาน",
+          "C": "progressed แปลว่าคืบหน้า ไม่เข้ากับ has been ... until a date",
+          "D": "persuaded = โน้มน้าวคน ไม่ใช่เลื่อนกิจกรรม"
+        }
+      },
+      "targetSeconds": 55,
+      "passageId": "repair-20261011-p6-training",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-t2",
+      "part": 6,
+      "stem": "[2] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Nevertheless"
+        },
+        {
+          "id": "B",
+          "text": "Alternatively"
+        },
+        {
+          "id": "C",
+          "text": "Likewise"
+        },
+        {
+          "id": "D",
+          "text": "Consequently"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "conjunction"
+      ],
+      "ruleId": "connector.clause-vs-phrase",
+      "focusId": "connectors",
+      "difficulty": 4,
+      "explanationTh": "alternatively แสดงทางเลือกที่สอง: ย้ายวัน หรือขอ refund • Pattern: Alternatively = as another option",
+      "explanation": "Use passage evidence and the following rule: Alternatively = as another option",
+      "whyOthersTh": {
+        "A": "nevertheless เน้นความขัดแย้ง ไม่ได้เสนออีกทางเลือกชัด ๆ",
+        "B": "alternatively แสดงทางเลือกที่สอง: ย้ายวัน หรือขอ refund",
+        "C": "likewise แปลว่าเช่นเดียวกัน ไม่ใช่ทางเลือกใหม่",
+        "D": "consequently บอกผลลัพธ์ ไม่ใช่ตัวเลือกสองทาง"
+      },
+      "coaching": {
+        "focus": [
+          "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "เช็ก clause/phrase ก่อน แล้วตรวจ logic (เหตุ, แม้ว่า, เงื่อนไข)",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "Alternatively = as another option",
+        "choiceReasons": {
+          "A": "nevertheless เน้นความขัดแย้ง ไม่ได้เสนออีกทางเลือกชัด ๆ",
+          "B": "alternatively แสดงทางเลือกที่สอง: ย้ายวัน หรือขอ refund",
+          "C": "likewise แปลว่าเช่นเดียวกัน ไม่ใช่ทางเลือกใหม่",
+          "D": "consequently บอกผลลัพธ์ ไม่ใช่ตัวเลือกสองทาง"
+        }
+      },
+      "targetSeconds": 55,
+      "passageId": "repair-20261011-p6-training",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-t3",
+      "part": 6,
+      "stem": "[3] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "preference"
+        },
+        {
+          "id": "B",
+          "text": "reference"
+        },
+        {
+          "id": "C",
+          "text": "referral"
+        },
+        {
+          "id": "D",
+          "text": "interference"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "collocation"
+      ],
+      "ruleId": "p6.fixed-phrase",
+      "focusId": "fixed-phrase",
+      "difficulty": 4,
+      "explanationTh": "for your reference = แนบมาเพื่อใช้อ้างอิง/ตรวจสอบ ถูกกับ updated program และ refund instructions • Pattern: For your reference, the document is attached",
+      "explanation": "Use passage evidence and the following rule: For your reference, the document is attached",
+      "whyOthersTh": {
+        "A": "preference หมายถึงความชอบ ไม่ใช่สำนวนสำหรับเอกสารแนบให้ดู",
+        "B": "for your reference = แนบมาเพื่อใช้อ้างอิง/ตรวจสอบ ถูกกับ updated program และ refund instructions",
+        "C": "referral คือการส่งต่อหรือการแนะนำ ไม่ใช่สำนวนแนบเอกสาร",
+        "D": "interference คือการแทรกแซง ความหมายผิด"
+      },
+      "coaching": {
+        "focus": [
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "ฝึกอ่านอีเมลเต็มฉบับ แล้วทดสอบ pattern พร้อมความหมายในบริบท",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "For your reference, the document is attached",
+        "choiceReasons": {
+          "A": "preference หมายถึงความชอบ ไม่ใช่สำนวนสำหรับเอกสารแนบให้ดู",
+          "B": "for your reference = แนบมาเพื่อใช้อ้างอิง/ตรวจสอบ ถูกกับ updated program และ refund instructions",
+          "C": "referral คือการส่งต่อหรือการแนะนำ ไม่ใช่สำนวนแนบเอกสาร",
+          "D": "interference คือการแทรกแซง ความหมายผิด"
+        }
+      },
+      "targetSeconds": 55,
+      "passageId": "repair-20261011-p6-training",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-t4",
+      "part": 6,
+      "stem": "[4] _____",
+      "choices": [
+        {
+          "id": "A",
+          "text": "contacting"
+        },
+        {
+          "id": "B",
+          "text": "to contact"
+        },
+        {
+          "id": "C",
+          "text": "contact"
+        },
+        {
+          "id": "D",
+          "text": "contacted"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "preposition"
+      ],
+      "ruleId": "gerund.after-preposition",
+      "focusId": "gerund",
+      "difficulty": 4,
+      "explanationTh": "do not hesitate to + base verb เป็นสำนวนเชิญให้ติดต่อหากต้องการความช่วยเหลือ • Pattern: do not hesitate to + V1",
+      "explanation": "Use passage evidence and the following rule: do not hesitate to + V1",
+      "whyOthersTh": {
+        "A": "do not hesitate contacting ไม่ใช่รูปที่ใช้กับ hesitate ในความหมายนี้",
+        "B": "do not hesitate to + base verb เป็นสำนวนเชิญให้ติดต่อหากต้องการความช่วยเหลือ",
+        "C": "contact ขาด to หลัง hesitate",
+        "D": "contacted เป็น V3 ไม่ตาม hesitate ในประโยคนี้"
+      },
+      "coaching": {
+        "focus": [
+          "วง preposition; practice succeed in doing, committed to improving, responsible for checking"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "วง preposition; practice succeed in doing, committed to improving, responsible for checking",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "do not hesitate to + V1",
+        "choiceReasons": {
+          "A": "do not hesitate contacting ไม่ใช่รูปที่ใช้กับ hesitate ในความหมายนี้",
+          "B": "do not hesitate to + base verb เป็นสำนวนเชิญให้ติดต่อหากต้องการความช่วยเหลือ",
+          "C": "contact ขาด to หลัง hesitate",
+          "D": "contacted เป็น V3 ไม่ตาม hesitate ในประโยคนี้"
+        }
+      },
+      "targetSeconds": 55,
+      "passageId": "repair-20261011-p6-training",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-r1",
+      "part": 7,
+      "stem": "What does 'That entry' in the second paragraph refer to?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "The shipment recorded twice"
+        },
+        {
+          "id": "B",
+          "text": "The outdated product code"
+        },
+        {
+          "id": "C",
+          "text": "The missing merchandise"
+        },
+        {
+          "id": "D",
+          "text": "The delivery assigned to Cebu"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "sentence-placement"
+      ],
+      "ruleId": "p6.sentence-placement",
+      "focusId": "reading-reference",
+      "difficulty": 4,
+      "explanationTh": "ประโยคก่อนบอกว่า duplicate shipment ทำให้ total สูงเกิน และบรรทัดต่อบอกว่าลบ entry นั้นก่อนส่งรายงาน • Pattern: That entry = the duplicate shipment recorded twice",
+      "explanation": "Use passage evidence and the following rule: That entry = the duplicate shipment recorded twice",
+      "whyOthersTh": {
+        "A": "ประโยคก่อนบอกว่า duplicate shipment ทำให้ total สูงเกิน และบรรทัดต่อบอกว่าลบ entry นั้นก่อนส่งรายงาน",
+        "B": "outdated item code เป็นความผิดอีกข้อที่ยังต้องรอ confirmation ไม่ใช่ entry ที่ลบก่อนส่ง draft",
+        "C": "ไม่มี merchandise สูญหายจริงตาม memo จึงไม่มีรายการ missing ให้ลบ",
+        "D": "wrong warehouse entry อยู่ในกลุ่ม other two ที่ตรวจยืนยันภายหลัง"
+      },
+      "coaching": {
+        "focus": [
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "That entry = the duplicate shipment recorded twice",
+        "choiceReasons": {
+          "A": "ประโยคก่อนบอกว่า duplicate shipment ทำให้ total สูงเกิน และบรรทัดต่อบอกว่าลบ entry นั้นก่อนส่งรายงาน",
+          "B": "outdated item code เป็นความผิดอีกข้อที่ยังต้องรอ confirmation ไม่ใช่ entry ที่ลบก่อนส่ง draft",
+          "C": "ไม่มี merchandise สูญหายจริงตาม memo จึงไม่มีรายการ missing ให้ลบ",
+          "D": "wrong warehouse entry อยู่ในกลุ่ม other two ที่ตรวจยืนยันภายหลัง"
+        }
+      },
+      "targetSeconds": 70,
+      "passageId": "repair-20261011-p7-audit",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-r2",
+      "part": 7,
+      "stem": "What can be inferred about the preliminary monthly shipment total?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "It excluded all transfers made in Cebu."
+        },
+        {
+          "id": "B",
+          "text": "It was overstated until a duplicate entry was corrected."
+        },
+        {
+          "id": "C",
+          "text": "It had already been approved by the regional directors."
+        },
+        {
+          "id": "D",
+          "text": "It remained unchanged after the June 2 review."
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "sentence-placement"
+      ],
+      "ruleId": "p6.sentence-placement",
+      "focusId": "reading-reference",
+      "difficulty": 4,
+      "explanationTh": "Memo ระบุว่า duplicate made the total appear twelve units higher และลบก่อนส่ง draft แปลว่า preliminary total สูงเกินจริง • Pattern: duplicate entry → 12 units too high; revised before finance draft",
+      "explanation": "Use passage evidence and the following rule: duplicate entry → 12 units too high; revised before finance draft",
+      "whyOthersTh": {
+        "A": "Cebu เกี่ยวกับสอง discrepancy ที่ต้องยืนยัน ไม่ใช่ตัด transfer ทั้งหมด",
+        "B": "Memo ระบุว่า duplicate made the total appear twelve units higher และลบก่อนส่ง draft แปลว่า preliminary total สูงเกินจริง",
+        "C": "Regional directors จะได้รับ revised report June 11 ยังไม่อนุมัติ draft",
+        "D": "เมื่อเอา duplicate ออก ยอดต้องแก้ไขไม่คงเดิม"
+      },
+      "coaching": {
+        "focus": [
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "duplicate entry → 12 units too high; revised before finance draft",
+        "choiceReasons": {
+          "A": "Cebu เกี่ยวกับสอง discrepancy ที่ต้องยืนยัน ไม่ใช่ตัด transfer ทั้งหมด",
+          "B": "Memo ระบุว่า duplicate made the total appear twelve units higher และลบก่อนส่ง draft แปลว่า preliminary total สูงเกินจริง",
+          "C": "Regional directors จะได้รับ revised report June 11 ยังไม่อนุมัติ draft",
+          "D": "เมื่อเอา duplicate ออก ยอดต้องแก้ไขไม่คงเดิม"
+        }
+      },
+      "targetSeconds": 70,
+      "passageId": "repair-20261011-p7-audit",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-r3",
+      "part": 7,
+      "stem": "Why did the review team contact the receiving warehouse in Cebu?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "To locate goods that had gone missing"
+        },
+        {
+          "id": "B",
+          "text": "To schedule an inspection of the warehouse building"
+        },
+        {
+          "id": "C",
+          "text": "To confirm a destination and product number for two entries"
+        },
+        {
+          "id": "D",
+          "text": "To ask the warehouse to approve a disciplinary action"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "sentence-placement"
+      ],
+      "ruleId": "p6.sentence-placement",
+      "focusId": "reading-reference",
+      "difficulty": 4,
+      "explanationTh": "Other two discrepancies needed Cebu verification for destination and product number • Pattern: other two discrepancies → wrong destination and outdated item code",
+      "explanation": "Use passage evidence and the following rule: other two discrepancies → wrong destination and outdated item code",
+      "whyOthersTh": {
+        "A": "Memo ยืนยันว่า no merchandise was physically missing",
+        "B": "ไม่มีการกล่าวถึง inspection อาคารใน memo นี้",
+        "C": "Other two discrepancies needed Cebu verification for destination and product number",
+        "D": "Review ไม่เสนอ disciplinary action และไม่เกี่ยวกับ Cebu"
+      },
+      "coaching": {
+        "focus": [
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "other two discrepancies → wrong destination and outdated item code",
+        "choiceReasons": {
+          "A": "Memo ยืนยันว่า no merchandise was physically missing",
+          "B": "ไม่มีการกล่าวถึง inspection อาคารใน memo นี้",
+          "C": "Other two discrepancies needed Cebu verification for destination and product number",
+          "D": "Review ไม่เสนอ disciplinary action และไม่เกี่ยวกับ Cebu"
+        }
+      },
+      "targetSeconds": 70,
+      "passageId": "repair-20261011-p7-audit",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261011-r4",
+      "part": 7,
+      "stem": "Which step must take place before the team can recommend a company-wide software rollout?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Regional directors must conduct a disciplinary hearing."
+        },
+        {
+          "id": "B",
+          "text": "The audit team must change all warehouse addresses immediately."
+        },
+        {
+          "id": "C",
+          "text": "The June report must be postponed until July."
+        },
+        {
+          "id": "D",
+          "text": "The duplicate-number detection feature must first be tested on July data, if available."
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "sentence-placement"
+      ],
+      "ruleId": "p6.sentence-placement",
+      "focusId": "reading-reference",
+      "difficulty": 4,
+      "explanationTh": "If available, the team will test the feature on July data before recommending system-wide rollout • Pattern: test first; recommendation only after trial of July data",
+      "explanation": "Use passage evidence and the following rule: test first; recommendation only after trial of July data",
+      "whyOthersTh": {
+        "A": "Memo บอกชัดว่า no disciplinary action",
+        "B": "การเปลี่ยน warehouse addresses ไม่ได้อยู่ในแผน",
+        "C": "report จะส่ง June 11 ไม่รอจน July",
+        "D": "If available, the team will test the feature on July data before recommending system-wide rollout"
+      },
+      "coaching": {
+        "focus": [
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค"
+        ],
+        "steps": [
+          "อ่านบริบทก่อนและหลังช่องว่าง/คำถาม ไม่ใช้ความรู้สึกอย่างเดียว",
+          "วงคำที่ถูกอ้างอิงในประโยคก่อนและหาเหตุ–ผลระหว่างสองประโยค",
+          "ตรวจคำอ้างอิงและความหมายตัวเลือกทั้ง A–D"
+        ],
+        "memory": "test first; recommendation only after trial of July data",
+        "choiceReasons": {
+          "A": "Memo บอกชัดว่า no disciplinary action",
+          "B": "การเปลี่ยน warehouse addresses ไม่ได้อยู่ในแผน",
+          "C": "report จะส่ง June 11 ไม่รอจน July",
+          "D": "If available, the team will test the feature on July data before recommending system-wide rollout"
+        }
+      },
+      "targetSeconds": 70,
+      "passageId": "repair-20261011-p7-audit",
+      "source": "personalized"
+    }
+  ],
+  "passages": [
+    {
+      "id": "repair-20261011-p6-vendor",
+      "part": 6,
+      "kind": "email",
+      "title": "Subject: Annual Vendor Record Verification",
+      "body": "To: Purchasing and Operations Teams\nFrom: Compliance Office\nSubject: Annual Vendor Record Verification\n\nHello colleagues,\n\nAs part of the annual supplier audit, please [1] _____ that the contact information in the vendor portal matches the most recently signed contracts. Several entries currently show outdated addresses.\n\nIf you discover a discrepancy, please [2] _____ your supervisor before editing the record. The audit team must review every proposed correction.\n\nWe appreciate your [3] _____ while we check the documents. The verification process is expected to finish by Friday.\n\n[4] _____ This procedure will help prevent duplicate approvals during the next purchasing cycle.\n\nBest regards,\nSupplier Compliance Office",
+      "questions": [
+        "repair-20261011-v1",
+        "repair-20261011-v2",
+        "repair-20261011-v3",
+        "repair-20261011-v4"
+      ],
+      "sourceLabel": "Original TOEIC-style email · mistake-focused practice",
+      "examStyle": true
+    },
+    {
+      "id": "repair-20261011-p6-training",
+      "part": 6,
+      "kind": "notice",
+      "title": "Notice: Customer Service Workshop Schedule",
+      "body": "STAFF DEVELOPMENT OFFICE\nImportant Update — Workshop Registration\n\nWe regret to inform registered participants that the customer-service workshop originally scheduled for Thursday has been [1] _____ until the following Tuesday because of a building inspection.\n\nYou may transfer your existing registration to the new date without paying an additional fee. [2] _____, participants who are unable to attend may request a full refund by Friday afternoon.\n\nFor your [3] _____, the updated program and the refund instructions are attached to this notice. The speaker list has not changed.\n\nPlease do not hesitate [4] _____ the training coordinator if you need help choosing an option. We apologize for the inconvenience and thank you for your understanding.",
+      "questions": [
+        "repair-20261011-t1",
+        "repair-20261011-t2",
+        "repair-20261011-t3",
+        "repair-20261011-t4"
+      ],
+      "sourceLabel": "Original TOEIC-style notice · full four-blank passage",
+      "examStyle": true
+    },
+    {
+      "id": "repair-20261011-p7-audit",
+      "part": 7,
+      "kind": "article",
+      "title": "Inventory Exception Review — June 2026",
+      "body": "INTERNAL OPERATIONS MEMORANDUM\nTo: Quality Assurance Committee\nFrom: Logistics Review Team\nDate: June 9\nSubject: Follow-up on transfer report discrepancies\n\nDuring the June 2 inventory review, the team identified three incorrect entries in the transfer report: a shipment recorded twice, a delivery listed under the wrong warehouse, and an outdated item code. No merchandise was physically missing, but the duplicate shipment made the preliminary monthly total appear twelve units higher than it should have been.\n\nThat entry was removed before the draft report was sent to the finance department on June 4. The other two discrepancies required confirmation from the receiving warehouse in Cebu. Its staff verified the destination and product number on June 5, allowing the review team to finalize both corrections the following morning.\n\nThe revised report will be shared with the regional directors on June 11. Before the next reporting cycle, the warehouse supervisors must check whether the software can flag duplicate transfer numbers automatically. If this feature is available, the logistics team will test it on the July data before recommending a system-wide rollout.\n\nPlease note that no disciplinary action has been proposed; the review aims to prevent reporting errors rather than assign individual blame.",
+      "questions": [
+        "repair-20261011-r1",
+        "repair-20261011-r2",
+        "repair-20261011-r3",
+        "repair-20261011-r4"
+      ],
+      "sourceLabel": "Original TOEIC-style operations memo · evidence-based questions",
+      "examStyle": true
+    }
+  ]
+}

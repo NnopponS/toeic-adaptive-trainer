@@ -1,0 +1,30 @@
+name: Publish TOEIC mistake-focused practice
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mistake-lab/**'
+      - 'scripts/publish-mistake-lab.mjs'
+      - '.github/workflows/publish-mistake-lab.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate and publish mistakes and transfer questions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for pack in mistake-lab/*.json; do
+            node scripts/publish-mistake-lab.mjs --check "$pack"
+            node scripts/publish-mistake-lab.mjs "$pack"
+          done

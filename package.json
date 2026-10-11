@@ -10,7 +10,9 @@
     "check:coaching": "node scripts/check-coaching.mjs",
     "preview": "vite preview",
     "firebase:inspect": "node scripts/inspect-firebase.mjs",
-    "firebase:personalize": "node scripts/push-personalized.mjs"
+    "firebase:personalize": "node scripts/push-personalized.mjs",
+    "check:mistake-lab": "node scripts/publish-mistake-lab.mjs --check mistake-lab/2026-10-11-session.json",
+    "firebase:mistake-lab": "node scripts/publish-mistake-lab.mjs mistake-lab/2026-10-11-session.json"
   },
   "dependencies": {
     "firebase": "^12.19.0",
