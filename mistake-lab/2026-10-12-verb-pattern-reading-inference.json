@@ -1,0 +1,794 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-12T15:44:00+07:00",
+  "description": "Original TOEIC-style repair practice from user-provided Q46 verb pattern and Q48 product-inference mistakes. Four Part 5 grammar drills plus two full Part 7 business texts with four evidence-based questions each. Does not replace historical packs or add unverified flashcards.",
+  "topics": [
+    {
+      "id": "verb-pattern-to-infinitive",
+      "kind": "grammar",
+      "titleEn": "Verb patterns: to-infinitive vs V-ing",
+      "titleTh": "Verb Patterns: กริยา + to V1 หรือ V-ing",
+      "source": "ข้อผิดจริง Q46 (Part 6); เสริมจากประวัติ gerund.after-preposition ที่เคยพลาด",
+      "diagnosisTh": "Q46 เลือก receivable (adjective) แต่ข้อความ 'arrange _____ the messages' ต้องการส่วนเติมเต็มกริยาแบบ arrange + to + V1 ไม่ใช่คุณศัพท์หรือนาม การเดาจากคำที่ดูเกี่ยวกับ receive จึงไม่พอ",
+      "actionTh": "หากริยาที่ควบคุมช่องว่างก่อนทุกครั้ง จากนั้นจำเป็นกลุ่ม: arrange/agree/decide + to V1; recommend + V-ing; look forward to + V-ing (to เป็น preposition)",
+      "ruleId": "verb-pattern.to-infinitive-vs-gerund",
+      "skill": "part-of-speech",
+      "priority": 99,
+      "part": 5
+    },
+    {
+      "id": "inference-evidence-trap",
+      "kind": "reading",
+      "titleEn": "Inference: evidence vs tempting distractors",
+      "titleTh": "Reading Inference: หลักฐานจริง vs ตัวลวง",
+      "source": "ข้อผิดจริง Q48 (Part 7); เชื่อมกับประวัติการอ่าน Part 7 ที่ยังมีตัวอย่างฝึกน้อย",
+      "diagnosisTh": "Q48 เลือก 'It is easy to keep clean' เพราะเห็นคำว่า clean dishes แต่บทอ่านกล่าวถึงจานสะอาด ไม่ได้บอกว่าตัวเครื่องทำความสะอาดง่าย ส่วน removable top rack เป็นหลักฐานให้อนุมานว่าโครงสร้างปรับได้",
+      "actionTh": "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency",
+      "ruleId": "p7.inference-evidence-distractor",
+      "skill": "inference",
+      "priority": 99,
+      "part": 7
+    }
+  ],
+  "mistakes": [
+    {
+      "id": "external-20261012-q46",
+      "part": 6,
+      "focusId": "verb-pattern-to-infinitive",
+      "stem": "If this is too frequent for you, you can arrange _____ the messages on a weekly basis instead.",
+      "chosen": "A",
+      "correct": "D",
+      "chosenText": "receivable",
+      "correctText": "to receive",
+      "analysisTh": "arrange เป็นกริยาหลัก; เมื่อต้องการบอกว่าผู้ใช้จัดการเพื่อรับข้อความ ให้ใช้ arrange to receive + object. receivable เป็นคำคุณศัพท์/ศัพท์การบัญชี ไม่ใช่กริยาที่ทำหน้าที่หลัง arrange; receipt เป็นคำนาม; receiving รูป V-ing ไม่ตรงโครงสร้างนี้",
+      "source": "External TOEIC practice · screenshot Q46 · 2026-10-12"
+    },
+    {
+      "id": "external-20261012-q48",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "What is indicated about the Kemper 25 dishwasher? Product text states it cleans dishes rapidly and has a removable top rack.",
+      "chosen": "A",
+      "correct": "D",
+      "chosenText": "It is easy to keep clean.",
+      "correctText": "It has an adjustable structure.",
+      "analysisTh": "บทอ่านพูดถึงการล้าง dishes ไม่ใช่การทำความสะอาดเครื่อง (clean the appliance). removable top rack แสดงว่ามีส่วนประกอบที่ถอด/ปรับพื้นที่ใช้สอยได้ จึงรองรับข้อ D. อีกตัวลวงคือ water efficiency ไม่ได้แปลว่า energy efficiency",
+      "source": "External TOEIC practice · screenshot Q48 · 2026-10-12"
+    }
+  ],
+  "flashcards": [],
+  "questions": [
+    {
+      "id": "repair-20261012-vp01",
+      "part": 5,
+      "focusId": "verb-pattern-to-infinitive",
+      "stem": "The training coordinator arranged _____ with the safety consultant immediately after the equipment inspection.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "meeting"
+        },
+        {
+          "id": "B",
+          "text": "meet"
+        },
+        {
+          "id": "C",
+          "text": "to meet"
+        },
+        {
+          "id": "D",
+          "text": "met"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 4,
+      "ruleId": "verb-pattern.to-infinitive-vs-gerund",
+      "explanation": "Check the governing grammar pattern or the document evidence. arrange + to-infinitive; arrange to meet someone",
+      "explanationTh": "to meet เป็น to-infinitive ที่สมบูรณ์ตาม arrange to meet with the consultant = นัดหมายเพื่อไปพบที่ปรึกษา หลักจำ: arrange + to-infinitive; arrange to meet someone",
+      "whyOthersTh": {
+        "A": "meeting เป็น V-ing/นาม ถ้าหลัง arrange จะต้องมีโครงสร้างอีกแบบ เช่น arrange a meeting; ในประโยคนี้ไม่ใช่รูปที่ตามด้วย with โดยตรง",
+        "B": "meet เป็น bare infinitive; arrange ไม่ได้ตามด้วย V1 เปล่า ๆ ในโครงสร้างนี้",
+        "C": "to meet เป็น to-infinitive ที่สมบูรณ์ตาม arrange to meet with the consultant = นัดหมายเพื่อไปพบที่ปรึกษา",
+        "D": "met เป็นอดีตกาล/ช่อง 3 ไม่สามารถตามหลัง arranged ตรง ๆ โดยไม่มีตัวเชื่อมในความหมายนี้"
+      },
+      "coaching": {
+        "focus": [
+          "หากริยาที่ควบคุมช่องว่างก่อนทุกครั้ง จากนั้นจำเป็นกลุ่ม: arrange/agree/decide + to V1; recommend + V-ing; look forward to + V-ing (to เป็น preposition)"
+        ],
+        "steps": [
+          "หากริยาหลักก่อนช่องว่าง และดูว่าช่องว่างเป็นส่วนเติมเต็มประเภทไหน",
+          "แยกกลุ่มกริยา + to V1 / กริยา + V-ing / preposition + V-ing ก่อนดูตัวเลือก",
+          "อ่านประโยคที่เติมแล้วทั้งประโยคและตัดตัวลวงทีละข้อ"
+        ],
+        "memory": "arrange + to-infinitive; arrange to meet someone",
+        "choiceReasons": {
+          "A": "meeting เป็น V-ing/นาม ถ้าหลัง arrange จะต้องมีโครงสร้างอีกแบบ เช่น arrange a meeting; ในประโยคนี้ไม่ใช่รูปที่ตามด้วย with โดยตรง",
+          "B": "meet เป็น bare infinitive; arrange ไม่ได้ตามด้วย V1 เปล่า ๆ ในโครงสร้างนี้",
+          "C": "to meet เป็น to-infinitive ที่สมบูรณ์ตาม arrange to meet with the consultant = นัดหมายเพื่อไปพบที่ปรึกษา",
+          "D": "met เป็นอดีตกาล/ช่อง 3 ไม่สามารถตามหลัง arranged ตรง ๆ โดยไม่มีตัวเชื่อมในความหมายนี้"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-vp02",
+      "part": 5,
+      "focusId": "verb-pattern-to-infinitive",
+      "stem": "After reviewing the retailer's updated schedule, the distributor agreed _____ the first shipment until Friday.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "to postpone"
+        },
+        {
+          "id": "B",
+          "text": "postponing"
+        },
+        {
+          "id": "C",
+          "text": "postponed"
+        },
+        {
+          "id": "D",
+          "text": "postponement"
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 4,
+      "ruleId": "verb-pattern.to-infinitive-vs-gerund",
+      "explanation": "Check the governing grammar pattern or the document evidence. agree + to V1; agree to postpone + object",
+      "explanationTh": "to postpone เป็น to-infinitive รับกรรม the first shipment: agreed to postpone the shipment หลักจำ: agree + to V1; agree to postpone + object",
+      "whyOthersTh": {
+        "A": "to postpone เป็น to-infinitive รับกรรม the first shipment: agreed to postpone the shipment",
+        "B": "postponing เป็น V-ing ซึ่งไม่ใช่ complement ของ agree ในโครงสร้างนี้; agree to postponing ไม่ใช่ pattern มาตรฐาน",
+        "C": "postponed เป็น V2/V3 ไม่สามารถใช้ต่อหลัง agreed โดยไม่มี auxiliary หรือ clause",
+        "D": "postponement เป็นคำนาม ถ้าใช้ต้องเขียน agree to a postponement of... ไม่สามารถตามด้วย the first shipment เป็นกรรมตรงแบบกริยา"
+      },
+      "coaching": {
+        "focus": [
+          "หากริยาที่ควบคุมช่องว่างก่อนทุกครั้ง จากนั้นจำเป็นกลุ่ม: arrange/agree/decide + to V1; recommend + V-ing; look forward to + V-ing (to เป็น preposition)"
+        ],
+        "steps": [
+          "หากริยาหลักก่อนช่องว่าง และดูว่าช่องว่างเป็นส่วนเติมเต็มประเภทไหน",
+          "แยกกลุ่มกริยา + to V1 / กริยา + V-ing / preposition + V-ing ก่อนดูตัวเลือก",
+          "อ่านประโยคที่เติมแล้วทั้งประโยคและตัดตัวลวงทีละข้อ"
+        ],
+        "memory": "agree + to V1; agree to postpone + object",
+        "choiceReasons": {
+          "A": "to postpone เป็น to-infinitive รับกรรม the first shipment: agreed to postpone the shipment",
+          "B": "postponing เป็น V-ing ซึ่งไม่ใช่ complement ของ agree ในโครงสร้างนี้; agree to postponing ไม่ใช่ pattern มาตรฐาน",
+          "C": "postponed เป็น V2/V3 ไม่สามารถใช้ต่อหลัง agreed โดยไม่มี auxiliary หรือ clause",
+          "D": "postponement เป็นคำนาม ถ้าใช้ต้องเขียน agree to a postponement of... ไม่สามารถตามด้วย the first shipment เป็นกรรมตรงแบบกริยา"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-vp03",
+      "part": 5,
+      "focusId": "verb-pattern-to-infinitive",
+      "stem": "To prevent unnecessary fees, the accounts team recommended _____ all invoices before confirming payment.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "review"
+        },
+        {
+          "id": "B",
+          "text": "to review"
+        },
+        {
+          "id": "C",
+          "text": "reviewed"
+        },
+        {
+          "id": "D",
+          "text": "reviewing"
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 4,
+      "ruleId": "verb-pattern.to-infinitive-vs-gerund",
+      "explanation": "Check the governing grammar pattern or the document evidence. recommend + V-ing (หรือ recommend that + S + V1); ไม่ใช้ recommend to V1 โดยตรง",
+      "explanationTh": "reviewing เป็น gerund ตามหลัง recommended: recommended reviewing all invoices ก่อนยืนยันชำระเงิน หลักจำ: recommend + V-ing (หรือ recommend that + S + V1); ไม่ใช้ recommend to V1 โดยตรง",
+      "whyOthersTh": {
+        "A": "review เป็น V1 เปล่า ๆ; ถ้าใช้ subjunctive ต้องมี recommend that the team review ไม่ใช่ recommend review all invoices",
+        "B": "to review เป็น to-infinitive ซึ่งใช้กับ arrange/agree/decide ได้ แต่ recommend to review ไม่ใช่โครงสร้างที่ต้องการ",
+        "C": "reviewed เป็น V2/V3 ไม่รับกรรม all invoices หลัง recommended ในประโยคนี้",
+        "D": "reviewing เป็น gerund ตามหลัง recommended: recommended reviewing all invoices ก่อนยืนยันชำระเงิน"
+      },
+      "coaching": {
+        "focus": [
+          "หากริยาที่ควบคุมช่องว่างก่อนทุกครั้ง จากนั้นจำเป็นกลุ่ม: arrange/agree/decide + to V1; recommend + V-ing; look forward to + V-ing (to เป็น preposition)"
+        ],
+        "steps": [
+          "หากริยาหลักก่อนช่องว่าง และดูว่าช่องว่างเป็นส่วนเติมเต็มประเภทไหน",
+          "แยกกลุ่มกริยา + to V1 / กริยา + V-ing / preposition + V-ing ก่อนดูตัวเลือก",
+          "อ่านประโยคที่เติมแล้วทั้งประโยคและตัดตัวลวงทีละข้อ"
+        ],
+        "memory": "recommend + V-ing (หรือ recommend that + S + V1); ไม่ใช้ recommend to V1 โดยตรง",
+        "choiceReasons": {
+          "A": "review เป็น V1 เปล่า ๆ; ถ้าใช้ subjunctive ต้องมี recommend that the team review ไม่ใช่ recommend review all invoices",
+          "B": "to review เป็น to-infinitive ซึ่งใช้กับ arrange/agree/decide ได้ แต่ recommend to review ไม่ใช่โครงสร้างที่ต้องการ",
+          "C": "reviewed เป็น V2/V3 ไม่รับกรรม all invoices หลัง recommended ในประโยคนี้",
+          "D": "reviewing เป็น gerund ตามหลัง recommended: recommended reviewing all invoices ก่อนยืนยันชำระเงิน"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-vp04",
+      "part": 5,
+      "focusId": "verb-pattern-to-infinitive",
+      "stem": "The planning committee looks forward to _____ detailed proposals from qualified vendors next month.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "receive"
+        },
+        {
+          "id": "B",
+          "text": "receiving"
+        },
+        {
+          "id": "C",
+          "text": "to receive"
+        },
+        {
+          "id": "D",
+          "text": "received"
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "part-of-speech"
+      ],
+      "difficulty": 4,
+      "ruleId": "verb-pattern.to-infinitive-vs-gerund",
+      "explanation": "Check the governing grammar pattern or the document evidence. look forward to + noun/V-ing; to ตรงนี้เป็น preposition ไม่ใช่ infinitive marker",
+      "explanationTh": "receiving เป็น gerund หลัง preposition to และรับกรรม detailed proposals ได้ถูกต้อง หลักจำ: look forward to + noun/V-ing; to ตรงนี้เป็น preposition ไม่ใช่ infinitive marker",
+      "whyOthersTh": {
+        "A": "receive เป็น V1 แต่หลัง look forward to ต้องมี noun หรือ gerund",
+        "B": "receiving เป็น gerund หลัง preposition to และรับกรรม detailed proposals ได้ถูกต้อง",
+        "C": "to receive จะกลายเป็น look forward to to receive ซึ่งผิด เพราะ to ตัวแรกเป็น preposition",
+        "D": "received เป็น past participle ไม่ใช่ gerund ที่ต้องใช้หลัง look forward to"
+      },
+      "coaching": {
+        "focus": [
+          "หากริยาที่ควบคุมช่องว่างก่อนทุกครั้ง จากนั้นจำเป็นกลุ่ม: arrange/agree/decide + to V1; recommend + V-ing; look forward to + V-ing (to เป็น preposition)"
+        ],
+        "steps": [
+          "หากริยาหลักก่อนช่องว่าง และดูว่าช่องว่างเป็นส่วนเติมเต็มประเภทไหน",
+          "แยกกลุ่มกริยา + to V1 / กริยา + V-ing / preposition + V-ing ก่อนดูตัวเลือก",
+          "อ่านประโยคที่เติมแล้วทั้งประโยคและตัดตัวลวงทีละข้อ"
+        ],
+        "memory": "look forward to + noun/V-ing; to ตรงนี้เป็น preposition ไม่ใช่ infinitive marker",
+        "choiceReasons": {
+          "A": "receive เป็น V1 แต่หลัง look forward to ต้องมี noun หรือ gerund",
+          "B": "receiving เป็น gerund หลัง preposition to และรับกรรม detailed proposals ได้ถูกต้อง",
+          "C": "to receive จะกลายเป็น look forward to to receive ซึ่งผิด เพราะ to ตัวแรกเป็น preposition",
+          "D": "received เป็น past participle ไม่ใช่ gerund ที่ต้องใช้หลัง look forward to"
+        }
+      },
+      "targetSeconds": 36,
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-inf01",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "What is indicated about scanning documents of different widths with the VelaScan X3?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Users must purchase a different tray for each paper size."
+        },
+        {
+          "id": "B",
+          "text": "The input guides can be repositioned for various paper sizes."
+        },
+        {
+          "id": "C",
+          "text": "Receipts must be trimmed to the width of A4 paper."
+        },
+        {
+          "id": "D",
+          "text": "The scanner supports only standard letter-sized paper."
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "inference"
+      ],
+      "difficulty": 5,
+      "ruleId": "p7.inference-evidence-distractor",
+      "explanation": "Check the governing grammar pattern or the document evidence. Two input guides slide independently; no replacement tray is needed.",
+      "explanationTh": "B ถูก เพราะ two input guides slide independently และรองรับทั้งใบเสร็จแคบกับกระดาษ A4 จึงหมายถึงปรับตำแหน่ง guide ได้ หลักจำ: Two input guides slide independently; no replacement tray is needed.",
+      "whyOthersTh": {
+        "A": "A ผิด เพราะเอกสารระบุว่าใช้ same tray และไม่ต้องติดตั้งอุปกรณ์เพิ่มเติมเพื่อขยับ guide",
+        "B": "B ถูก เพราะ two input guides slide independently และรองรับทั้งใบเสร็จแคบกับกระดาษ A4 จึงหมายถึงปรับตำแหน่ง guide ได้",
+        "C": "C ไม่มีข้อความบังคับให้ตัดใบเสร็จให้เท่า A4; เนื้อหากลับพูดว่ารองรับความกว้างต่างกัน",
+        "D": "D ขัดกับข้อความที่ระบุชัดว่ารองรับ narrow receipts และ A4 ไม่ใช่เฉพาะขนาดเดียว"
+      },
+      "coaching": {
+        "focus": [
+          "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency"
+        ],
+        "steps": [
+          "อ่านโจทย์แล้วขีดคุณสมบัติหรือข้อสรุปที่โจทย์ถามให้ชัด",
+          "หาหลักฐานเฉพาะในเอกสาร และแยกว่าเป็น stated, implied หรือ unsupported",
+          "ตรวจทุกข้อโดยเฉพาะตัวเลือกที่ใช้คำคล้ายกับเอกสารแต่เปลี่ยนประธานหรือคุณสมบัติ"
+        ],
+        "memory": "Two input guides slide independently; no replacement tray is needed.",
+        "choiceReasons": {
+          "A": "A ผิด เพราะเอกสารระบุว่าใช้ same tray และไม่ต้องติดตั้งอุปกรณ์เพิ่มเติมเพื่อขยับ guide",
+          "B": "B ถูก เพราะ two input guides slide independently และรองรับทั้งใบเสร็จแคบกับกระดาษ A4 จึงหมายถึงปรับตำแหน่ง guide ได้",
+          "C": "C ไม่มีข้อความบังคับให้ตัดใบเสร็จให้เท่า A4; เนื้อหากลับพูดว่ารองรับความกว้างต่างกัน",
+          "D": "D ขัดกับข้อความที่ระบุชัดว่ารองรับ narrow receipts และ A4 ไม่ใช่เฉพาะขนาดเดียว"
+        }
+      },
+      "targetSeconds": 65,
+      "passageId": "repair-20261012-p7-scanner",
+      "evidence": "Its two input guides slide independently ... narrow receipts and standard A4 sheets ... the same tray.",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-inf02",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "What would an office most likely need in order to send scans over a wireless network?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "A replacement glass panel"
+        },
+        {
+          "id": "B",
+          "text": "A higher-capacity paper tray"
+        },
+        {
+          "id": "C",
+          "text": "An additional network module"
+        },
+        {
+          "id": "D",
+          "text": "An extended maintenance agreement"
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "inference"
+      ],
+      "difficulty": 5,
+      "ruleId": "p7.inference-evidence-distractor",
+      "explanation": "Check the governing grammar pattern or the document evidence. A wireless network requires the separately sold NW-2 module; USB is bundled.",
+      "explanationTh": "C ถูก เพราะระบุ must purchase the NW-2 network module separately สำหรับส่งงานสแกนผ่าน wireless network หลักจำ: A wireless network requires the separately sold NW-2 module; USB is bundled.",
+      "whyOthersTh": {
+        "A": "A ไม่เกี่ยวข้องกับสัญญาณไร้สาย Glass panel ใช้สแกนและทำความสะอาด",
+        "B": "B แม้ tray เป็นชิ้นส่วนของเครื่อง แต่ไม่ได้ระบุว่าช่วยส่งข้อมูลแบบ wireless",
+        "C": "C ถูก เพราะระบุ must purchase the NW-2 network module separately สำหรับส่งงานสแกนผ่าน wireless network",
+        "D": "D warranty ที่ให้มาคุ้มครอง internal components แต่ไม่ได้เปิดความสามารถส่งไฟล์ผ่าน wireless"
+      },
+      "coaching": {
+        "focus": [
+          "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency"
+        ],
+        "steps": [
+          "อ่านโจทย์แล้วขีดคุณสมบัติหรือข้อสรุปที่โจทย์ถามให้ชัด",
+          "หาหลักฐานเฉพาะในเอกสาร และแยกว่าเป็น stated, implied หรือ unsupported",
+          "ตรวจทุกข้อโดยเฉพาะตัวเลือกที่ใช้คำคล้ายกับเอกสารแต่เปลี่ยนประธานหรือคุณสมบัติ"
+        ],
+        "memory": "A wireless network requires the separately sold NW-2 module; USB is bundled.",
+        "choiceReasons": {
+          "A": "A ไม่เกี่ยวข้องกับสัญญาณไร้สาย Glass panel ใช้สแกนและทำความสะอาด",
+          "B": "B แม้ tray เป็นชิ้นส่วนของเครื่อง แต่ไม่ได้ระบุว่าช่วยส่งข้อมูลแบบ wireless",
+          "C": "C ถูก เพราะระบุ must purchase the NW-2 network module separately สำหรับส่งงานสแกนผ่าน wireless network",
+          "D": "D warranty ที่ให้มาคุ้มครอง internal components แต่ไม่ได้เปิดความสามารถส่งไฟล์ผ่าน wireless"
+        }
+      },
+      "targetSeconds": 65,
+      "passageId": "repair-20261012-p7-scanner",
+      "evidence": "Offices wishing to transmit scans over a wireless network must purchase the NW-2 network module separately.",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-inf03",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "What can be inferred about using the enhanced-color setting?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Some pages may take longer to scan than in standard black-and-white mode."
+        },
+        {
+          "id": "B",
+          "text": "The scanner will process more than 24 pages per minute."
+        },
+        {
+          "id": "C",
+          "text": "It enables automatic two-sided scanning of thick identification cards."
+        },
+        {
+          "id": "D",
+          "text": "It eliminates the need for routine glass cleaning."
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "inference"
+      ],
+      "difficulty": 5,
+      "ruleId": "p7.inference-evidence-distractor",
+      "explanation": "Check the governing grammar pattern or the document evidence. Enhanced-color processing takes additional time; 24 ppm is only standard B&W.",
+      "explanationTh": "A ถูก เป็นการอนุมานอย่างมีหลักฐานจาก additional processing time ว่าอาจใช้เวลาต่อหน้านานกว่าระบบ B&W ปกติ หลักจำ: Enhanced-color processing takes additional time; 24 ppm is only standard B&W.",
+      "whyOthersTh": {
+        "A": "A ถูก เป็นการอนุมานอย่างมีหลักฐานจาก additional processing time ว่าอาจใช้เวลาต่อหน้านานกว่าระบบ B&W ปกติ",
+        "B": "B ผิด ข้อความบอก up to 24 pages per minute เฉพาะ standard black-and-white ไม่ได้บอกโหมด color เร็วกว่า",
+        "C": "C ผิด เพราะ thick identification cards must be scanned one side at a time ไม่เกี่ยวกับ color mode",
+        "D": "D ผิด การเปลี่ยนโหมดสีไม่ได้ทำให้กระจกสะอาดเอง และยังต้อง routine cleaning"
+      },
+      "coaching": {
+        "focus": [
+          "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency"
+        ],
+        "steps": [
+          "อ่านโจทย์แล้วขีดคุณสมบัติหรือข้อสรุปที่โจทย์ถามให้ชัด",
+          "หาหลักฐานเฉพาะในเอกสาร และแยกว่าเป็น stated, implied หรือ unsupported",
+          "ตรวจทุกข้อโดยเฉพาะตัวเลือกที่ใช้คำคล้ายกับเอกสารแต่เปลี่ยนประธานหรือคุณสมบัติ"
+        ],
+        "memory": "Enhanced-color processing takes additional time; 24 ppm is only standard B&W.",
+        "choiceReasons": {
+          "A": "A ถูก เป็นการอนุมานอย่างมีหลักฐานจาก additional processing time ว่าอาจใช้เวลาต่อหน้านานกว่าระบบ B&W ปกติ",
+          "B": "B ผิด ข้อความบอก up to 24 pages per minute เฉพาะ standard black-and-white ไม่ได้บอกโหมด color เร็วกว่า",
+          "C": "C ผิด เพราะ thick identification cards must be scanned one side at a time ไม่เกี่ยวกับ color mode",
+          "D": "D ผิด การเปลี่ยนโหมดสีไม่ได้ทำให้กระจกสะอาดเอง และยังต้อง routine cleaning"
+        }
+      },
+      "targetSeconds": 65,
+      "passageId": "repair-20261012-p7-scanner",
+      "evidence": "Selecting the enhanced-color setting requires additional processing time, so customers should not expect the same throughput in every mode.",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-inf04",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "Which product claim is NOT supported by the description?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "It can scan regular sheets on both sides in one pass."
+        },
+        {
+          "id": "B",
+          "text": "Its input guides can be adjusted without an extra accessory."
+        },
+        {
+          "id": "C",
+          "text": "Its output tray may be detached when desk space is limited."
+        },
+        {
+          "id": "D",
+          "text": "The scanning glass cleans itself during operation."
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "inference"
+      ],
+      "difficulty": 5,
+      "ruleId": "p7.inference-evidence-distractor",
+      "explanation": "Check the governing grammar pattern or the document evidence. Removable tray and clean scans do not imply a self-cleaning glass panel.",
+      "explanationTh": "D ถูกในคำถาม NOT เพราะ routine cleaning of scanning glass เป็นหน้าที่ผู้ใช้ และเอกสารไม่เคยอ้างว่าทำความสะอาดตัวเอง หลักจำ: Removable tray and clean scans do not imply a self-cleaning glass panel.",
+      "whyOthersTh": {
+        "A": "A รองรับตรง ๆ จาก capture both sides in a single pass สำหรับ ordinary paper",
+        "B": "B รองรับจาก guides ... without installing additional accessories",
+        "C": "C รองรับจาก output tray can be removed and stored ... when desk space is limited",
+        "D": "D ถูกในคำถาม NOT เพราะ routine cleaning of scanning glass เป็นหน้าที่ผู้ใช้ และเอกสารไม่เคยอ้างว่าทำความสะอาดตัวเอง"
+      },
+      "coaching": {
+        "focus": [
+          "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency"
+        ],
+        "steps": [
+          "อ่านโจทย์แล้วขีดคุณสมบัติหรือข้อสรุปที่โจทย์ถามให้ชัด",
+          "หาหลักฐานเฉพาะในเอกสาร และแยกว่าเป็น stated, implied หรือ unsupported",
+          "ตรวจทุกข้อโดยเฉพาะตัวเลือกที่ใช้คำคล้ายกับเอกสารแต่เปลี่ยนประธานหรือคุณสมบัติ"
+        ],
+        "memory": "Removable tray and clean scans do not imply a self-cleaning glass panel.",
+        "choiceReasons": {
+          "A": "A รองรับตรง ๆ จาก capture both sides in a single pass สำหรับ ordinary paper",
+          "B": "B รองรับจาก guides ... without installing additional accessories",
+          "C": "C รองรับจาก output tray can be removed and stored ... when desk space is limited",
+          "D": "D ถูกในคำถาม NOT เพราะ routine cleaning of scanning glass เป็นหน้าที่ผู้ใช้ และเอกสารไม่เคยอ้างว่าทำความสะอาดตัวเอง"
+        }
+      },
+      "targetSeconds": 65,
+      "passageId": "repair-20261012-p7-scanner",
+      "evidence": "Routine cleaning of the scanning glass remains the user's responsibility ... The description does not claim that the machine cleans itself.",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-inf05",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "Why might the new SR-10 shelving units be useful for the warehouse?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "They can be moved automatically by electric motors."
+        },
+        {
+          "id": "B",
+          "text": "They are certified to support more than 85 kilograms per shelf."
+        },
+        {
+          "id": "C",
+          "text": "They require no storage space when not in use."
+        },
+        {
+          "id": "D",
+          "text": "Their internal layout can be reconfigured to fit unusually tall items."
+        }
+      ],
+      "answer": "D",
+      "skills": [
+        "inference"
+      ],
+      "difficulty": 5,
+      "ruleId": "p7.inference-evidence-distractor",
+      "explanation": "Check the governing grammar pattern or the document evidence. Adjustable shelf rails and a removable upper divider can accommodate tall containers.",
+      "explanationTh": "D ถูก เพราะถอด divider และเลื่อน rails ได้หลายระดับ ช่วยให้เก็บ tall container ที่เดิมต้องย้ายออกนอกพื้นที่ หลักจำ: Adjustable shelf rails and a removable upper divider can accommodate tall containers.",
+      "whyOthersTh": {
+        "A": "A ไม่มีข้อมูลมอเตอร์ และเอกสารระบุว่า racks themselves do not require electricity",
+        "B": "B ผิด เพราะ rated up to 85 kilograms และยังไม่ได้ทดสอบมากกว่านั้น",
+        "C": "C ไม่มีข้อมูลว่าชั้นวางไม่กินพื้นที่ ตัวลวงนำแนวคิดเรื่อง overflow area มาอ้างเกินข้อความ",
+        "D": "D ถูก เพราะถอด divider และเลื่อน rails ได้หลายระดับ ช่วยให้เก็บ tall container ที่เดิมต้องย้ายออกนอกพื้นที่"
+      },
+      "coaching": {
+        "focus": [
+          "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency"
+        ],
+        "steps": [
+          "อ่านโจทย์แล้วขีดคุณสมบัติหรือข้อสรุปที่โจทย์ถามให้ชัด",
+          "หาหลักฐานเฉพาะในเอกสาร และแยกว่าเป็น stated, implied หรือ unsupported",
+          "ตรวจทุกข้อโดยเฉพาะตัวเลือกที่ใช้คำคล้ายกับเอกสารแต่เปลี่ยนประธานหรือคุณสมบัติ"
+        ],
+        "memory": "Adjustable shelf rails and a removable upper divider can accommodate tall containers.",
+        "choiceReasons": {
+          "A": "A ไม่มีข้อมูลมอเตอร์ และเอกสารระบุว่า racks themselves do not require electricity",
+          "B": "B ผิด เพราะ rated up to 85 kilograms และยังไม่ได้ทดสอบมากกว่านั้น",
+          "C": "C ไม่มีข้อมูลว่าชั้นวางไม่กินพื้นที่ ตัวลวงนำแนวคิดเรื่อง overflow area มาอ้างเกินข้อความ",
+          "D": "D ถูก เพราะถอด divider และเลื่อน rails ได้หลายระดับ ช่วยให้เก็บ tall container ที่เดิมต้องย้ายออกนอกพื้นที่"
+        }
+      },
+      "targetSeconds": 65,
+      "passageId": "repair-20261012-p7-racks",
+      "evidence": "The team removed an upper divider to accommodate a tall shipping container ... later replaced it without special tools.",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-inf06",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "Which feature of the SR-10 has NOT been established?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Its ability to safely hold loads heavier than the published rating."
+        },
+        {
+          "id": "B",
+          "text": "The possibility of removing an upper divider without special tools."
+        },
+        {
+          "id": "C",
+          "text": "The availability of three rail-height positions."
+        },
+        {
+          "id": "D",
+          "text": "The construction of its frame from powder-coated steel."
+        }
+      ],
+      "answer": "A",
+      "skills": [
+        "inference"
+      ],
+      "difficulty": 5,
+      "ruleId": "p7.inference-evidence-distractor",
+      "explanation": "Check the governing grammar pattern or the document evidence. Vendor rating is UP TO 85kg evenly distributed; heavier load capacity has not been tested.",
+      "explanationTh": "A ถูกสำหรับ NOT established เพราะผู้ขายรับรองเพียง up to 85 kilograms และทีมไม่ได้ทดสอบน้ำหนักมากกว่านั้น หลักจำ: Vendor rating is UP TO 85kg evenly distributed; heavier load capacity has not been tested.",
+      "whyOthersTh": {
+        "A": "A ถูกสำหรับ NOT established เพราะผู้ขายรับรองเพียง up to 85 kilograms และทีมไม่ได้ทดสอบน้ำหนักมากกว่านั้น",
+        "B": "B มีหลักฐานว่าทีม removed an upper divider และ replaced it without special tools",
+        "C": "C ระบุชัดว่า shelf rails ... set at three heights",
+        "D": "D ระบุชัดว่าซัพพลายเออร์อธิบาย frame ว่าเป็น powder-coated steel"
+      },
+      "coaching": {
+        "focus": [
+          "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency"
+        ],
+        "steps": [
+          "อ่านโจทย์แล้วขีดคุณสมบัติหรือข้อสรุปที่โจทย์ถามให้ชัด",
+          "หาหลักฐานเฉพาะในเอกสาร และแยกว่าเป็น stated, implied หรือ unsupported",
+          "ตรวจทุกข้อโดยเฉพาะตัวเลือกที่ใช้คำคล้ายกับเอกสารแต่เปลี่ยนประธานหรือคุณสมบัติ"
+        ],
+        "memory": "Vendor rating is UP TO 85kg evenly distributed; heavier load capacity has not been tested.",
+        "choiceReasons": {
+          "A": "A ถูกสำหรับ NOT established เพราะผู้ขายรับรองเพียง up to 85 kilograms และทีมไม่ได้ทดสอบน้ำหนักมากกว่านั้น",
+          "B": "B มีหลักฐานว่าทีม removed an upper divider และ replaced it without special tools",
+          "C": "C ระบุชัดว่า shelf rails ... set at three heights",
+          "D": "D ระบุชัดว่าซัพพลายเออร์อธิบาย frame ว่าเป็น powder-coated steel"
+        }
+      },
+      "targetSeconds": 65,
+      "passageId": "repair-20261012-p7-racks",
+      "evidence": "Our staff did not test heavier loads, so I would not recommend assuming a greater capacity.",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-inf07",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "What can be inferred about the purchasing committee's next decision?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "The new units have already been ordered and paid for."
+        },
+        {
+          "id": "B",
+          "text": "The supplier must replace the current racks before Thursday."
+        },
+        {
+          "id": "C",
+          "text": "The committee still needs dimensional information before recommending an order."
+        },
+        {
+          "id": "D",
+          "text": "The proposal was rejected because of the racks' appearance."
+        }
+      ],
+      "answer": "C",
+      "skills": [
+        "inference"
+      ],
+      "difficulty": 5,
+      "ruleId": "p7.inference-evidence-distractor",
+      "explanation": "Check the governing grammar pattern or the document evidence. A recommendation awaits aisle-clearance measurements and package dimensions; no order approved.",
+      "explanationTh": "C ถูก เพราะต้องวัด aisle clearance แล้วเปรียบเทียบกับ packaging dimensions ก่อนเสนอคำแนะนำ หลักจำ: A recommendation awaits aisle-clearance measurements and package dimensions; no order approved.",
+      "whyOthersTh": {
+        "A": "A ผิด เพราะยังไม่มีการอนุมัติคำสั่งซื้อ reserved five units ไม่ใช่ purchased",
+        "B": "B ผิด เพราะวันพฤหัสเป็นกำหนดส่ง aisle-clearance measurements ไม่ใช่วันเปลี่ยนชั้น",
+        "C": "C ถูก เพราะต้องวัด aisle clearance แล้วเปรียบเทียบกับ packaging dimensions ก่อนเสนอคำแนะนำ",
+        "D": "D ไม่มีข้อมูลว่า reject เพราะหน้าตา (appearance) และการตัดสินใจยังรอข้อมูล"
+      },
+      "coaching": {
+        "focus": [
+          "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency"
+        ],
+        "steps": [
+          "อ่านโจทย์แล้วขีดคุณสมบัติหรือข้อสรุปที่โจทย์ถามให้ชัด",
+          "หาหลักฐานเฉพาะในเอกสาร และแยกว่าเป็น stated, implied หรือ unsupported",
+          "ตรวจทุกข้อโดยเฉพาะตัวเลือกที่ใช้คำคล้ายกับเอกสารแต่เปลี่ยนประธานหรือคุณสมบัติ"
+        ],
+        "memory": "A recommendation awaits aisle-clearance measurements and package dimensions; no order approved.",
+        "choiceReasons": {
+          "A": "A ผิด เพราะยังไม่มีการอนุมัติคำสั่งซื้อ reserved five units ไม่ใช่ purchased",
+          "B": "B ผิด เพราะวันพฤหัสเป็นกำหนดส่ง aisle-clearance measurements ไม่ใช่วันเปลี่ยนชั้น",
+          "C": "C ถูก เพราะต้องวัด aisle clearance แล้วเปรียบเทียบกับ packaging dimensions ก่อนเสนอคำแนะนำ",
+          "D": "D ไม่มีข้อมูลว่า reject เพราะหน้าตา (appearance) และการตัดสินใจยังรอข้อมูล"
+        }
+      },
+      "targetSeconds": 65,
+      "passageId": "repair-20261012-p7-racks",
+      "evidence": "Before recommending a purchase ... aisle-clearance measurements ... compare those measurements with ... packaging dimensions. ... not yet approved an order.",
+      "source": "personalized"
+    },
+    {
+      "id": "repair-20261012-inf08",
+      "part": 7,
+      "focusId": "inference-evidence-trap",
+      "stem": "What does the message suggest about the lower electricity usage observed during the trial?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "It proves the new rack design saves energy."
+        },
+        {
+          "id": "B",
+          "text": "It may be explained by a change in the warehouse lighting schedule."
+        },
+        {
+          "id": "C",
+          "text": "It resulted from a new power-saving setting on the shelving units."
+        },
+        {
+          "id": "D",
+          "text": "It was recorded only after the committee approved the order."
+        }
+      ],
+      "answer": "B",
+      "skills": [
+        "inference"
+      ],
+      "difficulty": 5,
+      "ruleId": "p7.inference-evidence-distractor",
+      "explanation": "Check the governing grammar pattern or the document evidence. Correlation is not causation: earlier lights-off is an alternative explanation; racks use no power.",
+      "explanationTh": "B ถูก เพราะทีม maintenance ปิดไฟเร็วกว่าปกติ 2 ชั่วโมงในหลายวัน จึงเป็นสาเหตุที่อธิบายผลที่พบได้ หลักจำ: Correlation is not causation: earlier lights-off is an alternative explanation; racks use no power.",
+      "whyOthersTh": {
+        "A": "A ผิด เพราะผู้เขียนบอก explicitly ว่า lower electricity ไม่จำเป็นต้องเป็น benefit ของ rack",
+        "B": "B ถูก เพราะทีม maintenance ปิดไฟเร็วกว่าปกติ 2 ชั่วโมงในหลายวัน จึงเป็นสาเหตุที่อธิบายผลที่พบได้",
+        "C": "C ผิด เพราะตัวชั้นไม่ใช้ไฟฟ้า จึงไม่มี power-saving setting ให้เปิด",
+        "D": "D ผิด เพราะยังไม่มี approval และค่าไฟสังเกตได้ตั้งแต่ช่วงทดลองก่อนพิจารณาสั่งซื้อ"
+      },
+      "coaching": {
+        "focus": [
+          "ระบุประธานของคุณสมบัติให้ชัด (ตัวสินค้า vs ผลลัพธ์สินค้า) แล้วหาประโยคหลักฐานของแต่ละตัวเลือก แยก stated / reasonably implied / not supported โดยระวังการสลับคุณสมบัติ เช่น water efficiency ไม่ใช่ energy efficiency"
+        ],
+        "steps": [
+          "อ่านโจทย์แล้วขีดคุณสมบัติหรือข้อสรุปที่โจทย์ถามให้ชัด",
+          "หาหลักฐานเฉพาะในเอกสาร และแยกว่าเป็น stated, implied หรือ unsupported",
+          "ตรวจทุกข้อโดยเฉพาะตัวเลือกที่ใช้คำคล้ายกับเอกสารแต่เปลี่ยนประธานหรือคุณสมบัติ"
+        ],
+        "memory": "Correlation is not causation: earlier lights-off is an alternative explanation; racks use no power.",
+        "choiceReasons": {
+          "A": "A ผิด เพราะผู้เขียนบอก explicitly ว่า lower electricity ไม่จำเป็นต้องเป็น benefit ของ rack",
+          "B": "B ถูก เพราะทีม maintenance ปิดไฟเร็วกว่าปกติ 2 ชั่วโมงในหลายวัน จึงเป็นสาเหตุที่อธิบายผลที่พบได้",
+          "C": "C ผิด เพราะตัวชั้นไม่ใช้ไฟฟ้า จึงไม่มี power-saving setting ให้เปิด",
+          "D": "D ผิด เพราะยังไม่มี approval และค่าไฟสังเกตได้ตั้งแต่ช่วงทดลองก่อนพิจารณาสั่งซื้อ"
+        }
+      },
+      "targetSeconds": 65,
+      "passageId": "repair-20261012-p7-racks",
+      "evidence": "Maintenance staff had shut off the warehouse lighting two hours earlier ... The racks themselves do not require electricity.",
+      "source": "personalized"
+    }
+  ],
+  "passages": [
+    {
+      "id": "repair-20261012-p7-scanner",
+      "part": 7,
+      "kind": "advertisement",
+      "title": "VelaScan X3 — Office Document Scanner",
+      "body": "VELASCAN X3 | SMALL-OFFICE SCANNING SOLUTION\nProduct information — release date: October 2026\n\nThe VelaScan X3 is designed for offices that routinely process paperwork of different dimensions. Its two input guides slide independently, allowing narrow receipts and standard A4 sheets to be fed through the same tray. The guides can be moved into position without installing additional accessories.\n\nFor ordinary paper, the X3 can capture both sides in a single pass. Thick identification cards, however, must be scanned one side at a time. At its standard black-and-white setting, the scanner can process up to 24 pages per minute. Selecting the enhanced-color setting requires additional processing time, so customers should not expect the same throughput in every mode.\n\nThe standard package contains a USB cable, an output tray, and a two-year warranty on internal components. Offices wishing to transmit scans over a wireless network must purchase the NW-2 network module separately. The output tray can be removed and stored at the back of the unit when desk space is limited.\n\nRoutine cleaning of the scanning glass remains the user's responsibility; the quick-start guide recommends a soft, lint-free cloth. The description does not claim that the machine cleans itself. Replacement rollers and the network module are not included in the standard package.\n\nFor a demonstration, contact an authorized VelaScan dealer.",
+      "questions": [
+        "repair-20261012-inf01",
+        "repair-20261012-inf02",
+        "repair-20261012-inf03",
+        "repair-20261012-inf04"
+      ],
+      "sourceLabel": "Original TOEIC-style product description · evidence-based inference",
+      "examStyle": true
+    },
+    {
+      "id": "repair-20261012-p7-racks",
+      "part": 7,
+      "kind": "email",
+      "title": "Redfern SR-10 — Facilities Trial Follow-up",
+      "body": "INTERNAL E-MAIL\nTo: Purchasing Review Committee\nFrom: Elena Chao, Facilities Supervisor\nSubject: Follow-up — Redfern SR-10 storage racks\nDate: October 9, 2026\n\nHello committee members,\n\nOur warehouse team completed a trial of two SR-10 shelving units last week. Unlike our current racks, which have shelves fixed in place, the SR-10 samples have detachable dividers and shelf rails that can be set at three heights. The team removed an upper divider to accommodate a tall shipping container and later replaced it without special tools. Ordinarily, a container of this size is moved to our off-site overflow area.\n\nThe supplier describes the SR-10 frame as powder-coated steel. However, it has not confirmed whether the finish is scratch-resistant or whether the unit requires less cleaning than our current equipment. Redfern rates each shelf for loads of up to 85 kilograms when the weight is evenly distributed. Our staff did not test heavier loads, so I would not recommend assuming a greater capacity.\n\nThe finance office noticed that electricity usage was lower during the trial week. This does not necessarily represent a benefit of the racks: maintenance staff had shut off the warehouse lighting two hours earlier than usual on several days. The racks themselves do not require electricity.\n\nBefore recommending a purchase, our team must send the aisle-clearance measurements to purchasing by Thursday. Purchasing will compare those measurements with the supplier's packaging dimensions. A recommendation is expected next Monday, but the budget committee has not yet approved an order. Redfern has reserved five units for us through next Friday.\n\nRegards,\nElena",
+      "questions": [
+        "repair-20261012-inf05",
+        "repair-20261012-inf06",
+        "repair-20261012-inf07",
+        "repair-20261012-inf08"
+      ],
+      "sourceLabel": "Original TOEIC-style business email · inference and distractors",
+      "examStyle": true
+    }
+  ]
+}
